@@ -250,14 +250,18 @@
       padding: 0 32px;
       display: flex;
       overflow-x: auto;
-      scrollbar-width: none;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.12) transparent;
+      gap: 4px;
     }
-    .cat-band-inner::-webkit-scrollbar { display: none; }
+    .cat-band-inner::-webkit-scrollbar { height: 3px; }
+    .cat-band-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 2px; }
+    .cat-band-inner::-webkit-scrollbar-track { background: transparent; }
     .cat-tab {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      padding: 13px 16px;
+      gap: 8px;
+      padding: 14px 20px;
       font-family: var(--font-head);
       font-size: 12px;
       font-weight: 600;
@@ -269,18 +273,21 @@
       transition: all 0.18s;
       white-space: nowrap;
       letter-spacing: 0.03em;
+      flex-shrink: 0;
     }
-    .cat-tab:hover { color: rgba(255,255,255,0.78); }
+    .cat-tab:hover { color: rgba(255,255,255,0.78); background: rgba(255,255,255,0.04); border-radius: 4px 4px 0 0; }
     .cat-tab.active { color: var(--white); border-bottom-color: var(--sand); }
-    .cat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .cat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
     .cnt {
       background: rgba(255,255,255,0.07);
       border-radius: 10px;
-      padding: 1px 7px;
+      padding: 2px 8px;
       font-size: 10px;
       font-weight: 700;
       color: rgba(255,255,255,0.32);
       transition: all 0.18s;
+      min-width: 24px;
+      text-align: center;
     }
     .cat-tab.active .cnt { background: rgba(224,200,140,0.18); color: var(--sand); }
     .dot-all        { background: var(--sand); }
@@ -785,7 +792,7 @@
         <div class="about-card">
           <h3>Addressing Authority</h3>
           <p>The GIS &amp; Addressing Department serves as the addressing authority for Carbon County. We maintain the official database of road names and physical addresses for all structures within the County, primarily in support of 9-1-1 and emergency services.</p>
-          <p>To apply for a new physical address, visit <a href="https://carbonmt.gov" target="_blank" rel="noopener">carbonmt.gov</a> for current application information.</p>
+          <p>To apply for a new physical address, use the online <a href="https://carboncomt.forms.govos.com/ng/fa/CCDevelopmentPackage" target="_blank" rel="noopener">County Development Permit Package Application</a>.</p>
         </div>
         <div class="about-card">
           <h3>Contact Information</h3>
@@ -795,8 +802,33 @@
             10 Oakes Ave S, Suite F<br/>
             Red Lodge, MT 59068<br/><br/>
             <a href="tel:4064457271">406-445-7271</a><br/>
-            <a href="https://carbonmt.gov" target="_blank" rel="noopener">carbonmt.gov</a>
+            <a href="mailto:GIS@carbonmt.gov">GIS@carbonmt.gov</a>
           </p>
+        </div>
+        <div class="about-card" style="grid-column: 1 / -1;">
+          <h3>Send a Message</h3>
+          <p style="margin-bottom:18px;">Use the form below to send a message directly to the GIS &amp; Addressing Department.</p>
+          <form id="contact-form" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-600);">Name</label>
+              <input type="text" id="cf-name" placeholder="Your name" style="padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-family:var(--font-head);font-size:13px;color:var(--gray-800);background:var(--gray-100);outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--gray-200)'" />
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-600);">Your Email</label>
+              <input type="email" id="cf-email" placeholder="your@email.com" style="padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-family:var(--font-head);font-size:13px;color:var(--gray-800);background:var(--gray-100);outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--gray-200)'" />
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;grid-column:1/-1;">
+              <label style="font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-600);">Message</label>
+              <textarea id="cf-message" rows="4" placeholder="Your question or message…" style="padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;color:var(--gray-800);background:var(--gray-100);outline:none;resize:vertical;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--gray-200)'"></textarea>
+            </div>
+            <div style="grid-column:1/-1;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+              <button type="button" onclick="submitContactForm()" style="display:inline-flex;align-items:center;gap:7px;font-family:var(--font-head);font-size:13px;font-weight:700;color:var(--white);background:var(--teal);border:none;padding:10px 22px;border-radius:var(--radius-sm);cursor:pointer;letter-spacing:0.04em;transition:background 0.18s;" onmouseover="this.style.background='var(--teal-mid)'" onmouseout="this.style.background='var(--teal)'">
+                Send Message
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0121.485 12 59.768 59.768 0 013.27 20.875L5.999 12zm0 0h7.5"/></svg>
+              </button>
+              <span id="cf-status" style="font-family:var(--font-head);font-size:12px;font-weight:500;color:var(--gray-400);"></span>
+            </div>
+          </form>
         </div>
         <div class="about-card">
           <h3>GIS Data &amp; Maps</h3>
@@ -822,7 +854,7 @@
           Red Lodge, MT 59068<br/><br/>
           Patrick Benson, GIS Coordinator<br/>
           <a href="tel:4064457271">406-445-7271</a><br/>
-          <a href="https://carbonmt.gov" target="_blank" rel="noopener">carbonmt.gov</a>
+          <a href="mailto:GIS@carbonmt.gov">GIS@carbonmt.gov</a>
         </address>
       </div>
       <div class="footer-col">
@@ -1072,6 +1104,43 @@
     document.querySelectorAll('.cat-tab').forEach(btn => btn.addEventListener('click', () => setTag(btn.dataset.tag)));
 
     init();
+
+    // ── CONTACT FORM ──────────────────────────────────────────────────────
+    function submitContactForm() {
+      const name    = document.getElementById('cf-name').value.trim();
+      const email   = document.getElementById('cf-email').value.trim();
+      const message = document.getElementById('cf-message').value.trim();
+      const status  = document.getElementById('cf-status');
+
+      if (!name || !email || !message) {
+        status.textContent = 'Please fill in all fields.';
+        status.style.color = '#991b1b';
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        status.textContent = 'Please enter a valid email address.';
+        status.style.color = '#991b1b';
+        return;
+      }
+
+      // Build mailto link and open it — works without a server
+      const subject = encodeURIComponent(`GIS Open Data Inquiry from ${name}`);
+      const body    = encodeURIComponent(
+        `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`
+      );
+      window.location.href = `mailto:GIS@carbonmt.gov?subject=${subject}&body=${body}`;
+
+      status.textContent = 'Opening your email client…';
+      status.style.color = 'var(--teal)';
+
+      // Reset after a moment
+      setTimeout(() => {
+        document.getElementById('cf-name').value    = '';
+        document.getElementById('cf-email').value   = '';
+        document.getElementById('cf-message').value = '';
+        status.textContent = '';
+      }, 3000);
+    }
   </script>
 </body>
 </html>
