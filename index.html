@@ -3,689 +3,956 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Carbon County GIS Open Data</title>
+  <title>Carbon County GIS — Open Data</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --navy:   #002a86;
-      --navy-dark: #001d5e;
-      --navy-light: #1a3f99;
-      --gold:   #e8a800;
-      --gold-light: #ffd90f;
-      --gold-pale: #fff8e1;
-      --white:  #ffffff;
-      --gray-50: #f8f9fb;
-      --gray-100: #f0f2f6;
-      --gray-200: #e0e4ed;
-      --gray-400: #8892a4;
-      --gray-600: #4a5568;
-      --gray-800: #1a202c;
-      --shadow-sm: 0 1px 3px rgba(0,42,134,0.08), 0 1px 2px rgba(0,42,134,0.06);
-      --shadow-md: 0 4px 12px rgba(0,42,134,0.10), 0 2px 6px rgba(0,42,134,0.08);
-      --shadow-lg: 0 8px 28px rgba(0,42,134,0.13), 0 4px 10px rgba(0,42,134,0.09);
-      --radius: 8px;
+      --teal:       #00474f;
+      --teal-dark:  #002d33;
+      --teal-mid:   #005f6a;
+      --sand:       #e0c88c;
+      --charcoal:   #494949;
+      --white:      #ffffff;
+      --off-white:  #f7f5f0;
+      --gray-100:   #f0ede8;
+      --gray-200:   #dedad2;
+      --gray-400:   #a09a8e;
+      --gray-600:   #6b6560;
+      --gray-800:   #2e2a25;
+      --font-head:  'Plus Jakarta Sans', sans-serif;
+      --font-body:  'Lora', serif;
+      --radius-sm:  6px;
+      --radius:     10px;
+      --radius-lg:  16px;
     }
 
     html { scroll-behavior: smooth; }
+    body { font-family: var(--font-body); background: var(--off-white); color: var(--gray-800); min-height: 100vh; }
 
-    body {
-      font-family: 'Source Sans 3', sans-serif;
-      background: var(--gray-50);
-      color: var(--gray-800);
-      min-height: 100vh;
+    /* ── TOP BAR ── */
+    .topbar {
+      background: var(--teal-dark);
+      padding: 6px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
+    .topbar span {
+      font-family: var(--font-head);
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.38);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .topbar a {
+      font-family: var(--font-head);
+      font-size: 11px;
+      color: var(--sand);
+      text-decoration: none;
+      opacity: 0.75;
+      transition: opacity 0.2s;
+    }
+    .topbar a:hover { opacity: 1; }
 
     /* ── HEADER ── */
     header {
-      background: var(--navy);
+      background: var(--teal);
       position: sticky;
       top: 0;
       z-index: 100;
-      border-bottom: 3px solid var(--gold);
     }
-
     .header-inner {
-      max-width: 1200px;
+      max-width: 1280px;
       margin: 0 auto;
-      padding: 0 24px;
-      height: 68px;
+      padding: 0 32px;
+      height: 70px;
       display: flex;
       align-items: center;
       gap: 16px;
     }
-
-    .logo-mark {
-      width: 44px;
-      height: 44px;
-      background: var(--gold);
-      border-radius: 6px;
+    .logo-wrap {
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 14px;
+      text-decoration: none;
       flex-shrink: 0;
     }
-
-    .logo-mark svg { width: 26px; height: 26px; }
-
-    .header-title {
-      flex: 1;
+    .logo-img {
+      height: 44px;
+      width: auto;
+      filter: brightness(0) invert(1);
+      opacity: 0.88;
     }
-
-    .header-title h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 18px;
-      font-weight: 700;
+    .logo-divider { width: 1px; height: 32px; background: rgba(255,255,255,0.18); }
+    .logo-text h1 {
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 800;
       color: var(--white);
       line-height: 1.2;
-      letter-spacing: 0.01em;
+      letter-spacing: -0.01em;
     }
-
-    .header-title span {
-      font-family: 'Source Sans 3', sans-serif;
-      font-size: 11px;
-      font-weight: 400;
-      color: rgba(255,255,255,0.55);
-      text-transform: uppercase;
+    .logo-text span {
+      font-family: var(--font-head);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--sand);
       letter-spacing: 0.12em;
+      text-transform: uppercase;
       display: block;
-      margin-top: 1px;
+      margin-top: 2px;
+      opacity: 0.8;
     }
-
-    .header-link {
+    .header-spacer { flex: 1; }
+    .header-nav { display: flex; align-items: center; gap: 6px; }
+    .nav-link {
+      font-family: var(--font-head);
       font-size: 12px;
-      color: rgba(255,255,255,0.65);
+      font-weight: 600;
+      color: rgba(255,255,255,0.62);
       text-decoration: none;
-      font-weight: 500;
-      letter-spacing: 0.04em;
-      padding: 6px 14px;
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 4px;
-      transition: all 0.2s;
+      padding: 6px 13px;
+      border-radius: var(--radius-sm);
+      transition: all 0.18s;
+      letter-spacing: 0.03em;
       white-space: nowrap;
     }
-    .header-link:hover {
-      background: rgba(255,255,255,0.08);
-      color: var(--white);
-      border-color: rgba(255,255,255,0.4);
+    .nav-link:hover { background: rgba(255,255,255,0.1); color: var(--white); }
+    .nav-link.active { color: var(--white); background: rgba(255,255,255,0.1); }
+    .nav-link.cta { background: var(--sand); color: var(--teal-dark); font-weight: 700; }
+    .nav-link.cta:hover { background: #edd9a3; }
+
+    /* ── PAGE NAV (section tabs) ── */
+    .page-nav {
+      background: var(--teal-dark);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
     }
+    .page-nav-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 32px;
+      display: flex;
+      gap: 0;
+    }
+    .page-tab {
+      font-family: var(--font-head);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: rgba(255,255,255,0.45);
+      padding: 13px 18px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 3px solid transparent;
+      transition: all 0.18s;
+      white-space: nowrap;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .page-tab:hover { color: rgba(255,255,255,0.8); }
+    .page-tab.active { color: var(--white); border-bottom-color: var(--sand); }
 
     /* ── HERO ── */
     .hero {
-      background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 55%, var(--navy-light) 100%);
-      padding: 56px 24px 52px;
-      text-align: center;
+      background: var(--teal);
       position: relative;
       overflow: hidden;
+      padding: 52px 32px 48px;
     }
-
     .hero::before {
       content: '';
       position: absolute;
       inset: 0;
-      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: 0.05;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Cellipse cx='250' cy='250' rx='220' ry='110' fill='none' stroke='%23e0c88c' stroke-width='1.5'/%3E%3Cellipse cx='250' cy='250' rx='185' ry='82' fill='none' stroke='%23e0c88c' stroke-width='1.5'/%3E%3Cellipse cx='250' cy='250' rx='150' ry='58' fill='none' stroke='%23e0c88c' stroke-width='1.5'/%3E%3Cellipse cx='250' cy='250' rx='115' ry='38' fill='none' stroke='%23e0c88c' stroke-width='1.5'/%3E%3Cellipse cx='250' cy='250' rx='80' ry='22' fill='none' stroke='%23e0c88c' stroke-width='1.5'/%3E%3C/svg%3E");
+      background-size: 500px 500px;
+      background-position: right -60px top -80px;
+      background-repeat: no-repeat;
     }
-
-    .hero-content { position: relative; max-width: 680px; margin: 0 auto; }
-
-    .hero-eyebrow {
-      display: inline-block;
+    .hero-inner {
+      position: relative;
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 48px;
+      align-items: center;
+    }
+    .hero-dept {
+      font-family: var(--font-head);
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: var(--gold-light);
-      background: rgba(232,168,0,0.12);
-      border: 1px solid rgba(232,168,0,0.3);
-      padding: 4px 14px;
-      border-radius: 20px;
-      margin-bottom: 18px;
+      color: var(--sand);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-
-    .hero h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(28px, 5vw, 44px);
-      font-weight: 900;
+    .hero-dept::before { content: ''; display: block; width: 20px; height: 2px; background: var(--sand); border-radius: 2px; }
+    .hero-title {
+      font-family: var(--font-head);
+      font-size: clamp(24px, 3.5vw, 40px);
+      font-weight: 800;
       color: var(--white);
       line-height: 1.15;
-      margin-bottom: 16px;
+      letter-spacing: -0.025em;
+      margin-bottom: 14px;
     }
-
-    .hero h2 em {
-      font-style: normal;
-      color: var(--gold-light);
+    .hero-desc {
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.75;
+      color: rgba(255,255,255,0.62);
+      max-width: 560px;
     }
-
-    .hero p {
-      font-size: 16px;
-      line-height: 1.65;
-      color: rgba(255,255,255,0.72);
-      font-weight: 300;
-      margin-bottom: 28px;
-    }
-
     .hero-stats {
       display: flex;
-      justify-content: center;
-      gap: 32px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 0;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(224,200,140,0.16);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      flex-shrink: 0;
     }
-
     .hero-stat {
+      padding: 18px 28px;
       text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
     }
-
-    .hero-stat .num {
-      font-family: 'Playfair Display', serif;
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--gold-light);
+    .hero-stat:last-child { border-bottom: none; }
+    .stat-n {
+      font-family: var(--font-head);
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--sand);
       display: block;
       line-height: 1;
+      letter-spacing: -0.03em;
     }
-
-    .hero-stat .lbl {
-      font-size: 11px;
-      color: rgba(255,255,255,0.5);
+    .stat-l {
+      font-family: var(--font-head);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-top: 4px;
+      color: rgba(255,255,255,0.32);
       display: block;
+      margin-top: 5px;
     }
 
-    /* ── SEARCH + FILTER BAR ── */
-    .controls {
-      background: var(--white);
-      border-bottom: 1px solid var(--gray-200);
-      position: sticky;
-      top: 68px;
-      z-index: 90;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .controls-inner {
-      max-width: 1200px;
+    /* ── CATEGORY TABS ── */
+    .cat-band { background: var(--teal-dark); }
+    .cat-band-inner {
+      max-width: 1280px;
       margin: 0 auto;
-      padding: 14px 24px;
+      padding: 0 32px;
       display: flex;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .cat-band-inner::-webkit-scrollbar { display: none; }
+    .cat-tab {
+      display: inline-flex;
       align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .search-wrap {
-      position: relative;
-      flex: 1;
-      min-width: 200px;
-    }
-
-    .search-wrap svg {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--gray-400);
-      width: 16px;
-      height: 16px;
-    }
-
-    #search {
-      width: 100%;
-      padding: 9px 12px 9px 38px;
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius);
-      font-family: 'Source Sans 3', sans-serif;
-      font-size: 14px;
-      color: var(--gray-800);
-      background: var(--gray-50);
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    #search:focus {
-      border-color: var(--navy);
-      box-shadow: 0 0 0 3px rgba(0,42,134,0.08);
-      background: var(--white);
-    }
-
-    .filter-pills {
-      display: flex;
       gap: 7px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .pill {
-      padding: 6px 14px;
-      border-radius: 20px;
-      border: 1.5px solid var(--gray-200);
-      background: var(--white);
-      font-family: 'Source Sans 3', sans-serif;
+      padding: 13px 16px;
+      font-family: var(--font-head);
       font-size: 12px;
-      font-weight: 500;
-      color: var(--gray-600);
+      font-weight: 600;
+      color: rgba(255,255,255,0.42);
       cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 3px solid transparent;
       transition: all 0.18s;
       white-space: nowrap;
+      letter-spacing: 0.03em;
     }
-
-    .pill:hover {
-      border-color: var(--navy);
-      color: var(--navy);
+    .cat-tab:hover { color: rgba(255,255,255,0.78); }
+    .cat-tab.active { color: var(--white); border-bottom-color: var(--sand); }
+    .cat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .cnt {
+      background: rgba(255,255,255,0.07);
+      border-radius: 10px;
+      padding: 1px 7px;
+      font-size: 10px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.32);
+      transition: all 0.18s;
     }
+    .cat-tab.active .cnt { background: rgba(224,200,140,0.18); color: var(--sand); }
+    .dot-all        { background: var(--sand); }
+    .dot-boundaries { background: #60a5fa; }
+    .dot-roads      { background: #fbbf24; }
+    .dot-parcels    { background: #a78bfa; }
+    .dot-emergency  { background: #f87171; }
+    .dot-flood      { background: #22d3ee; }
+    .dot-parks      { background: #4ade80; }
 
-    .pill.active {
-      background: var(--navy);
-      border-color: var(--navy);
-      color: var(--white);
+    /* ── SEARCH BAR ── */
+    .search-bar {
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      padding: 12px 32px;
+      position: sticky;
+      top: 70px;
+      z-index: 90;
+      box-shadow: 0 2px 8px rgba(0,45,51,0.07);
     }
-
-    .pill[data-tag="Boundaries & Administration"].active  { background: #1e40af; border-color: #1e40af; }
-    .pill[data-tag="Roads & Transportation"].active       { background: #92400e; border-color: #92400e; }
-    .pill[data-tag="Parcels, Zoning & Land Use"].active   { background: #5b21b6; border-color: #5b21b6; }
-    .pill[data-tag="Emergency Management & Public Safety"].active { background: #991b1b; border-color: #991b1b; }
-    .pill[data-tag="Flood & Water"].active                { background: #155e75; border-color: #155e75; }
-    .pill[data-tag="Parks, Environment & Natural Resources"].active { background: #166534; border-color: #166534; }
-
-    /* ── MAIN CONTENT ── */
-    .main {
-      max-width: 1200px;
+    .search-bar-inner {
+      max-width: 1280px;
       margin: 0 auto;
-      padding: 32px 24px 64px;
-    }
-
-    .results-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 22px;
-      flex-wrap: wrap;
-      gap: 8px;
+      gap: 16px;
     }
-
-    .results-header h3 {
-      font-family: 'Playfair Display', serif;
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--navy);
+    .search-wrap { position: relative; flex: 1; max-width: 440px; }
+    .search-icon {
+      position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+      color: var(--gray-400); width: 15px; height: 15px; pointer-events: none;
     }
-
-    #results-count {
+    #search {
+      width: 100%;
+      padding: 9px 14px 9px 36px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius);
+      font-family: var(--font-head);
       font-size: 13px;
+      color: var(--gray-800);
+      background: var(--gray-100);
+      outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    #search::placeholder { color: var(--gray-400); }
+    #search:focus { border-color: var(--teal); background: var(--white); box-shadow: 0 0 0 3px rgba(0,71,79,0.08); }
+    .results-summary {
+      font-family: var(--font-head);
+      font-size: 12px;
+      font-weight: 500;
       color: var(--gray-400);
-      font-weight: 400;
+      margin-left: auto;
+    }
+    .results-summary strong { color: var(--teal); font-weight: 700; }
+
+    /* ── SECTION WRAPPER ── */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ── MAIN / GRID ── */
+    .main { max-width: 1280px; margin: 0 auto; padding: 32px 32px 80px; }
+    #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+
+    /* ── DATA CARD ── */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-200);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.22s cubic-bezier(.22,.68,0,1.15), box-shadow 0.22s, border-color 0.22s;
+      animation: cardIn 0.36s ease both;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0,45,51,0.11), 0 4px 10px rgba(0,45,51,0.07);
+      border-color: var(--gray-400);
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(14px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .card-thumb {
+      width: 100%; height: 148px;
+      position: relative; overflow: hidden;
+      background: var(--gray-100); flex-shrink: 0;
+    }
+    .card-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center top;
+      display: block; transition: transform 0.4s ease;
+    }
+    .card:hover .card-thumb img { transform: scale(1.05); }
+    .thumb-placeholder {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 8px;
+      position: relative; overflow: hidden;
+    }
+    .thumb-placeholder::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal-mid) 55%, var(--teal) 100%);
+    }
+    .thumb-placeholder::after {
+      content: ''; position: absolute; inset: 0; opacity: 0.09;
+      background-image: repeating-linear-gradient(-40deg, transparent, transparent 10px, rgba(224,200,140,0.7) 10px, rgba(224,200,140,0.7) 11px);
+    }
+    .thumb-icon { position: relative; z-index: 1; color: rgba(255,255,255,0.2); width: 34px; height: 34px; }
+    .thumb-lbl { position: relative; z-index: 1; font-family: var(--font-head); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.28); }
+    .card-stripe { position: absolute; top: 0; left: 0; width: 4px; height: 100%; z-index: 2; }
+    .stripe-boundaries { background: #3b82f6; }
+    .stripe-roads      { background: #eab308; }
+    .stripe-parcels    { background: #a855f7; }
+    .stripe-emergency  { background: #ef4444; }
+    .stripe-flood      { background: #06b6d4; }
+    .stripe-parks      { background: #22c55e; }
+    .stripe-default    { background: var(--gray-400); }
+    .card-type-badge {
+      position: absolute; bottom: 8px; right: 8px;
+      background: rgba(0,0,0,0.46); backdrop-filter: blur(5px);
+      color: rgba(255,255,255,0.88);
+      font-family: var(--font-head); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 4px; z-index: 2;
+    }
+    .card-body { padding: 16px 18px 12px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .card-cat-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--font-head); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.09em; text-transform: uppercase;
+      padding: 3px 9px 3px 6px; border-radius: 4px; width: fit-content;
+    }
+    .chip-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .chip-boundaries { background: #dbeafe; color: #1d4ed8; }
+    .chip-roads      { background: #fef9c3; color: #854d0e; }
+    .chip-parcels    { background: #f3e8ff; color: #6b21a8; }
+    .chip-emergency  { background: #fee2e2; color: #991b1b; }
+    .chip-flood      { background: #cffafe; color: #155e75; }
+    .chip-parks      { background: #dcfce7; color: #14532d; }
+    .chip-dot-boundaries { background: #3b82f6; }
+    .chip-dot-roads      { background: #eab308; }
+    .chip-dot-parcels    { background: #a855f7; }
+    .chip-dot-emergency  { background: #ef4444; }
+    .chip-dot-flood      { background: #06b6d4; }
+    .chip-dot-parks      { background: #22c55e; }
+    .card-title { font-family: var(--font-head); font-size: 14px; font-weight: 700; color: var(--gray-800); line-height: 1.35; letter-spacing: -0.01em; }
+    .card-desc { font-family: var(--font-body); font-size: 12.5px; color: var(--gray-600); line-height: 1.65; flex: 1; font-style: italic; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-footer { padding: 10px 18px; border-top: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .card-meta { font-family: var(--font-head); font-size: 10px; color: var(--gray-400); font-weight: 500; }
+    .card-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--font-head); font-size: 11px; font-weight: 700;
+      color: var(--teal); text-decoration: none;
+      padding: 5px 12px;
+      background: rgba(0,71,79,0.06);
+      border-radius: var(--radius-sm);
+      letter-spacing: 0.04em; transition: all 0.18s; white-space: nowrap;
+    }
+    .card-btn:hover { background: var(--teal); color: var(--white); }
+    .card-btn svg { width: 10px; height: 10px; }
+
+    /* ── PDF MAPS SECTION ── */
+    .maps-section { max-width: 1280px; margin: 0 auto; padding: 36px 32px 80px; }
+
+    .section-header { margin-bottom: 28px; }
+    .section-header h2 {
+      font-family: var(--font-head);
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--teal-dark);
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .section-header p {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--gray-600);
+      line-height: 1.7;
+      max-width: 640px;
+      font-style: italic;
     }
 
-    /* ── GRID ── */
-    #grid {
+    .pdf-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 20px;
     }
 
-    /* ── CARD ── */
-    .card {
+    .pdf-card {
       background: var(--white);
-      border-radius: 10px;
+      border-radius: var(--radius-lg);
       border: 1px solid var(--gray-200);
       overflow: hidden;
       display: flex;
       flex-direction: column;
       transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-      animation: fadeUp 0.35s ease both;
+      animation: cardIn 0.36s ease both;
     }
-
-    .card:hover {
+    .pdf-card:hover {
       transform: translateY(-3px);
-      box-shadow: var(--shadow-lg);
+      box-shadow: 0 10px 28px rgba(0,45,51,0.1), 0 3px 8px rgba(0,45,51,0.07);
       border-color: var(--gray-400);
     }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(14px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .card-thumb {
-      width: 100%;
-      height: 140px;
+    .pdf-thumb {
+      width: 100%; height: 148px;
       background: var(--gray-100);
-      position: relative;
-      overflow: hidden;
+      position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
     }
 
-    .card-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    /* Publisher color bands */
+    .pdf-thumb.usfs   { background: linear-gradient(135deg, #14532d 0%, #166534 60%, #15803d 100%); }
+    .pdf-thumb.blm    { background: linear-gradient(135deg, #7c2d12 0%, #9a3412 60%, #c2410c 100%); }
+    .pdf-thumb.county { background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal-mid) 60%, var(--teal) 100%); }
+
+    .pdf-thumb::after {
+      content: ''; position: absolute; inset: 0; opacity: 0.08;
+      background-image: repeating-linear-gradient(-40deg, transparent, transparent 10px, rgba(255,255,255,0.6) 10px, rgba(255,255,255,0.6) 11px);
     }
 
-    .card-thumb-placeholder {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    .pdf-thumb-inner {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
     }
 
-    .card-thumb-placeholder svg {
-      width: 40px;
-      height: 40px;
-      opacity: 0.25;
-      color: white;
-    }
+    .pdf-icon { color: rgba(255,255,255,0.28); width: 38px; height: 38px; }
 
-    .card-type-badge {
-      position: absolute;
-      bottom: 8px;
-      left: 8px;
-      background: rgba(0,0,0,0.55);
-      backdrop-filter: blur(4px);
-      color: white;
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      padding: 3px 8px;
-      border-radius: 4px;
+    .pdf-publisher-badge {
+      font-family: var(--font-head);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
     }
 
-    .card-body {
-      padding: 16px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    .pdf-format-badge {
+      position: absolute; top: 10px; right: 10px; z-index: 2;
+      background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+      color: rgba(255,255,255,0.85);
+      font-family: var(--font-head); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 4px;
     }
 
-    .card-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
+    .pdf-body { padding: 16px 18px 12px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+
+    .pdf-source-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--font-head); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.09em; text-transform: uppercase;
+      padding: 3px 9px; border-radius: 4px; width: fit-content;
     }
+    .chip-usfs   { background: #dcfce7; color: #14532d; }
+    .chip-blm    { background: #ffedd5; color: #9a3412; }
+    .chip-county { background: #ccfbf1; color: #134e4a; }
 
-    .tag-chip {
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      padding: 2px 8px;
-      border-radius: 3px;
-      text-transform: uppercase;
+    .pdf-title { font-family: var(--font-head); font-size: 14px; font-weight: 700; color: var(--gray-800); line-height: 1.35; letter-spacing: -0.01em; }
+    .pdf-desc { font-family: var(--font-body); font-size: 12.5px; color: var(--gray-600); line-height: 1.65; flex: 1; font-style: italic; }
+
+    .pdf-footer { padding: 10px 18px; border-top: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .pdf-meta { font-family: var(--font-head); font-size: 10px; color: var(--gray-400); font-weight: 500; }
+
+    .pdf-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--font-head); font-size: 11px; font-weight: 700;
+      color: var(--teal); text-decoration: none;
+      padding: 5px 12px; background: rgba(0,71,79,0.06);
+      border-radius: var(--radius-sm); letter-spacing: 0.04em;
+      transition: all 0.18s; white-space: nowrap;
     }
+    .pdf-btn:hover { background: var(--teal); color: var(--white); }
+    .pdf-btn svg { width: 10px; height: 10px; }
 
-    .tag-chip.boundaries  { background: #dbeafe; color: #1e40af; }
-    .tag-chip.roads       { background: #fef3c7; color: #92400e; }
-    .tag-chip.parcels     { background: #ede9fe; color: #5b21b6; }
-    .tag-chip.emergency   { background: #fee2e2; color: #991b1b; }
-    .tag-chip.flood       { background: #cffafe; color: #155e75; }
-    .tag-chip.parks       { background: #dcfce7; color: #166534; }
-    .tag-chip.default     { background: var(--gray-100); color: var(--gray-600); }
-
-    .card h4 {
-      font-family: 'Source Sans 3', sans-serif;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--gray-800);
-      line-height: 1.35;
-    }
-
-    .card p {
-      font-size: 13px;
-      color: var(--gray-600);
-      line-height: 1.55;
-      flex: 1;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .card-footer {
+    /* external link note */
+    .pdf-external-note {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: var(--sand-pale, #fdf8ee);
+      border: 1px solid rgba(224,200,140,0.5);
+      border-radius: var(--radius);
       padding: 12px 16px;
-      border-top: 1px solid var(--gray-100);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
+      margin-top: 24px;
     }
+    .pdf-external-note svg { width: 15px; height: 15px; color: var(--charcoal); flex-shrink: 0; margin-top: 2px; }
+    .pdf-external-note p { font-family: var(--font-body); font-size: 12.5px; color: var(--gray-600); line-height: 1.6; font-style: italic; }
+    .pdf-external-note p a { color: var(--teal); }
 
-    .card-date {
-      font-size: 11px;
-      color: var(--gray-400);
+    /* ── ABOUT SECTION ── */
+    .about-section { max-width: 1280px; margin: 0 auto; padding: 40px 32px 80px; }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 28px; }
+    .about-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 28px;
     }
-
-    .card-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--navy);
-      text-decoration: none;
-      padding: 5px 12px;
-      border: 1.5px solid var(--navy);
-      border-radius: 5px;
-      transition: all 0.18s;
-      white-space: nowrap;
+    .about-card h3 {
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--teal-dark);
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
     }
-
-    .card-btn:hover {
-      background: var(--navy);
-      color: var(--white);
+    .about-card p {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--gray-600);
+      line-height: 1.75;
     }
+    .about-card p + p { margin-top: 10px; }
+    .about-card a { color: var(--teal); }
 
-    .card-btn svg { width: 12px; height: 12px; }
-
-    /* ── LOADING / EMPTY ── */
-    .state-msg {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 64px 24px;
-      color: var(--gray-400);
-    }
-
-    .state-msg .spinner {
-      width: 36px;
-      height: 36px;
-      border: 3px solid var(--gray-200);
-      border-top-color: var(--navy);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin: 0 auto 16px;
-    }
-
+    /* ── STATES ── */
+    .state-wrap { grid-column: 1/-1; text-align: center; padding: 72px 24px; }
+    .spinner { width: 36px; height: 36px; border: 3px solid var(--gray-200); border-top-color: var(--teal); border-radius: 50%; animation: spin 0.72s linear infinite; margin: 0 auto 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    .state-msg p { font-size: 15px; }
+    .state-wrap h3 { font-family: var(--font-head); font-size: 15px; font-weight: 700; color: var(--charcoal); margin-bottom: 6px; }
+    .state-wrap p { font-family: var(--font-body); font-size: 13px; color: var(--gray-400); font-style: italic; }
 
     /* ── FOOTER ── */
-    footer {
-      background: var(--navy-dark);
-      border-top: 3px solid var(--gold);
-      padding: 28px 24px;
-      text-align: center;
-    }
-
-    footer p {
-      font-size: 12px;
-      color: rgba(255,255,255,0.4);
-      line-height: 1.7;
-    }
-
-    footer a {
-      color: var(--gold-light);
-      text-decoration: none;
-    }
-
-    footer a:hover { text-decoration: underline; }
+    footer { background: var(--teal-dark); padding: 40px 32px 0; }
+    .footer-inner { max-width: 1280px; margin: 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 36px; flex-wrap: wrap; padding-bottom: 32px; }
+    .footer-brand img { height: 40px; filter: brightness(0) invert(1); opacity: 0.5; margin-bottom: 12px; display: block; }
+    .footer-brand p { font-family: var(--font-body); font-size: 13px; color: rgba(255,255,255,0.36); font-style: italic; line-height: 1.65; max-width: 240px; }
+    .footer-col h4 { font-family: var(--font-head); font-size: 9px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.28); margin-bottom: 10px; }
+    .footer-col a { display: block; font-family: var(--font-head); font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.46); text-decoration: none; margin-bottom: 7px; transition: color 0.18s; }
+    .footer-col a:hover { color: var(--sand); }
+    .footer-bottom { max-width: 1280px; margin: 0 auto; border-top: 1px solid rgba(255,255,255,0.06); padding: 16px 0 20px; text-align: center; }
+    .footer-bottom p { font-family: var(--font-head); font-size: 10px; color: rgba(255,255,255,0.16); letter-spacing: 0.07em; }
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 600px) {
-      .header-link { display: none; }
-      .hero { padding: 40px 16px 36px; }
-      .main { padding: 24px 16px 48px; }
-      #grid { grid-template-columns: 1fr; }
+    @media (max-width: 768px) {
+      .topbar, .header-inner, .cat-band-inner, .search-bar, .main, .maps-section, .about-section { padding-left: 20px; padding-right: 20px; }
+      .hero { padding: 40px 20px 36px; }
+      .hero-inner { grid-template-columns: 1fr; }
+      .hero-stats { display: none; }
+      .header-nav { display: none; }
+      #grid, .pdf-grid { grid-template-columns: 1fr; }
+      .about-grid { grid-template-columns: 1fr; }
+      footer { padding: 32px 20px 0; }
     }
   </style>
 </head>
 <body>
 
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <span>Carbon County, Montana — GIS &amp; Addressing Department</span>
+    <a href="https://carbonmt.gov" target="_blank" rel="noopener">carbonmt.gov ↗</a>
+  </div>
+
   <!-- HEADER -->
   <header>
     <div class="header-inner">
-      <div class="logo-mark">
-        <!-- Mountain / map pin icon in navy on gold -->
-        <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 20 L9 9 L13 15 L17 8 L23 20 Z" fill="#002a86" stroke="#002a86" stroke-linejoin="round"/>
-          <circle cx="19" cy="7" r="2.5" fill="#002a86"/>
-        </svg>
-      </div>
-      <div class="header-title">
-        <h1>Carbon County GIS</h1>
-        <span>Open Data Portal &mdash; Montana</span>
-      </div>
-      <a class="header-link" href="https://carbonmt.gov" target="_blank" rel="noopener">↗ carbonmt.gov</a>
+      <a class="logo-wrap" href="/">
+        <img class="logo-img"
+          src="https://carbonmt.gov/wp-content/uploads/2024/07/Carbon-County-Logo-Medium.webp"
+          alt="Carbon County Montana"
+          onerror="this.style.display='none'" />
+        <div class="logo-divider"></div>
+        <div class="logo-text">
+          <h1>GIS Open Data</h1>
+          <span>Carbon County, MT</span>
+        </div>
+      </a>
+      <div class="header-spacer"></div>
+      <nav class="header-nav">
+        <a class="nav-link" href="https://carbonmt.maps.arcgis.com" target="_blank" rel="noopener">ArcGIS Portal</a>
+        <a class="nav-link" href="https://carbonmt.gov" target="_blank" rel="noopener">County Website</a>
+        <a class="nav-link cta" href="https://carbonmt.maps.arcgis.com/home/group.html?id=65a714d0ab784949a82002332d91748f#content" target="_blank" rel="noopener">All Datasets ↗</a>
+      </nav>
     </div>
   </header>
 
+  <!-- PAGE NAV -->
+  <div class="page-nav">
+    <div class="page-nav-inner">
+      <button class="page-tab active" data-section="data">GIS Data Catalog</button>
+      <button class="page-tab" data-section="maps">Downloadable Maps</button>
+      <button class="page-tab" data-section="about">About This Department</button>
+    </div>
+  </div>
+
   <!-- HERO -->
   <section class="hero">
-    <div class="hero-content">
-      <div class="hero-eyebrow">Carbon County, Montana &bull; Public GIS Data</div>
-      <h2>Geographic Data for<br/><em>Big Sky Country</em></h2>
-      <p>Explore, download, and use spatial data published by Carbon County. All datasets are publicly available and freely downloadable.</p>
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <div class="hero-dept">GIS &amp; Addressing Department</div>
+        <h2 class="hero-title">Carbon County<br/>Geographic Data</h2>
+        <p class="hero-desc">Spatial datasets, maps, and geographic resources published by Carbon County GIS. All data is freely available for download.</p>
+      </div>
       <div class="hero-stats">
         <div class="hero-stat">
-          <span class="num" id="stat-total">—</span>
-          <span class="lbl">Datasets</span>
+          <span class="stat-n" id="stat-total">—</span>
+          <span class="stat-l">Datasets</span>
         </div>
         <div class="hero-stat">
-          <span class="num">6</span>
-          <span class="lbl">Categories</span>
+          <span class="stat-n">6</span>
+          <span class="stat-l">Categories</span>
         </div>
         <div class="hero-stat">
-          <span class="num">Free</span>
-          <span class="lbl">To Download</span>
+          <span class="stat-n">Free</span>
+          <span class="stat-l">To Download</span>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CONTROLS -->
-  <div class="controls">
-    <div class="controls-inner">
-      <div class="search-wrap">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input type="text" id="search" placeholder="Search datasets…" autocomplete="off" />
-      </div>
-      <div class="filter-pills">
-        <button class="pill active" data-tag="all">All</button>
-        <button class="pill" data-tag="Boundaries & Administration">Boundaries</button>
-        <button class="pill" data-tag="Roads & Transportation">Roads</button>
-        <button class="pill" data-tag="Parcels, Zoning & Land Use">Parcels</button>
-        <button class="pill" data-tag="Emergency Management & Public Safety">Emergency</button>
-        <button class="pill" data-tag="Flood & Water">Flood &amp; Water</button>
-        <button class="pill" data-tag="Parks, Environment & Natural Resources">Parks &amp; Environment</button>
-      </div>
-    </div>
-  </div>
+  <!-- ═══════════════════════════════════════
+       SECTION: GIS DATA CATALOG
+  ════════════════════════════════════════ -->
+  <div class="section active" id="section-data">
 
-  <!-- MAIN -->
-  <main class="main">
-    <div class="results-header">
-      <h3>Available Datasets</h3>
-      <span id="results-count">Loading…</span>
-    </div>
-    <div id="grid">
-      <div class="state-msg">
-        <div class="spinner"></div>
-        <p>Fetching datasets from ArcGIS Online…</p>
+    <!-- Category Tabs -->
+    <div class="cat-band">
+      <div class="cat-band-inner">
+        <button class="cat-tab active" data-tag="all"><span class="cat-dot dot-all"></span>All<span class="cnt" id="cnt-all">—</span></button>
+        <button class="cat-tab" data-tag="Boundaries and Administration"><span class="cat-dot dot-boundaries"></span>Boundaries &amp; Administration<span class="cnt" id="cnt-boundaries">—</span></button>
+        <button class="cat-tab" data-tag="Roads and Transportation"><span class="cat-dot dot-roads"></span>Roads &amp; Transportation<span class="cnt" id="cnt-roads">—</span></button>
+        <button class="cat-tab" data-tag="Parcels Zoning and Land Use"><span class="cat-dot dot-parcels"></span>Parcels, Zoning &amp; Land Use<span class="cnt" id="cnt-parcels">—</span></button>
+        <button class="cat-tab" data-tag="Emergency Management and Public Safety"><span class="cat-dot dot-emergency"></span>Emergency Management<span class="cnt" id="cnt-emergency">—</span></button>
+        <button class="cat-tab" data-tag="Flood and Water"><span class="cat-dot dot-flood"></span>Flood &amp; Water<span class="cnt" id="cnt-flood">—</span></button>
+        <button class="cat-tab" data-tag="Parks Environment and Natural Resources"><span class="cat-dot dot-parks"></span>Parks &amp; Environment<span class="cnt" id="cnt-parks">—</span></button>
       </div>
     </div>
-  </main>
+
+    <!-- Search -->
+    <div class="search-bar">
+      <div class="search-bar-inner">
+        <div class="search-wrap">
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="search" placeholder="Search datasets…" autocomplete="off" />
+        </div>
+        <span class="results-summary" id="results-summary">&nbsp;</span>
+      </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="main">
+      <div id="grid">
+        <div class="state-wrap">
+          <div class="spinner"></div>
+          <h3>Loading datasets…</h3>
+          <p>Fetching from ArcGIS Online</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /section-data -->
+
+  <!-- ═══════════════════════════════════════
+       SECTION: DOWNLOADABLE MAPS
+  ════════════════════════════════════════ -->
+  <div class="section" id="section-maps">
+    <div class="maps-section">
+
+      <div class="section-header">
+        <h2>Downloadable Maps</h2>
+        <p>Geo-referenced PDF maps available for download at no cost. Printed copies are available through the GIS &amp; Addressing Department at a cost-recovery price.</p>
+      </div>
+
+      <div class="pdf-grid">
+
+        <!-- Carbon County Road Map -->
+        <div class="pdf-card">
+          <div class="pdf-thumb county">
+            <div class="pdf-thumb-inner">
+              <svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503-9.498 4.875-2.437a.75.75 0 011.068.68v11.25a.75.75 0 01-.37.648l-5.25 3a.75.75 0 01-.734 0L9.375 16.5l-5.25 3A.75.75 0 013 18.846V7.596a.75.75 0 01.37-.648l5.25-3a.75.75 0 01.734 0l5.626 3.22z"/></svg>
+              <span class="pdf-publisher-badge">Carbon County GIS</span>
+            </div>
+            <span class="pdf-format-badge">PDF</span>
+          </div>
+          <div class="pdf-body">
+            <span class="pdf-source-chip chip-county">Carbon County</span>
+            <div class="pdf-title">Carbon County Road Map</div>
+            <p class="pdf-desc">County road map including road names, route numbers, and road maintenance jurisdiction. 44" × 24" format.</p>
+          </div>
+          <div class="pdf-footer">
+            <span class="pdf-meta">Carbon County GIS</span>
+            <a class="pdf-btn" href="maps/CountyRoad_44x24_Field_Front_v1-5.pdf" download>
+              Download PDF
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Beartooth Ranger District West (USFS) -->
+        <div class="pdf-card">
+          <div class="pdf-thumb usfs">
+            <div class="pdf-thumb-inner">
+              <svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V18.375m0 0c0-.621.504-1.125 1.125-1.125H6m0 0V6.375m0 0A1.125 1.125 0 017.125 5.25h9.75A1.125 1.125 0 0118 6.375v12m0 0v.125c0 .621-.504 1.125-1.125 1.125H18m0-12.75v12.75m0 0h.375c.621 0 1.125-.504 1.125-1.125V18.375m0 0V6.375a1.125 1.125 0 00-1.125-1.125H18"/></svg>
+              <span class="pdf-publisher-badge">U.S. Forest Service</span>
+            </div>
+            <span class="pdf-format-badge">PDF</span>
+          </div>
+          <div class="pdf-body">
+            <span class="pdf-source-chip chip-usfs">U.S. Forest Service</span>
+            <div class="pdf-title">Beartooth Ranger District — West</div>
+            <p class="pdf-desc">Official U.S. Forest Service map for the western portion of the Beartooth Ranger District, Custer Gallatin National Forest.</p>
+          </div>
+          <div class="pdf-footer">
+            <span class="pdf-meta">USFS — Hosted externally</span>
+            <a class="pdf-btn" href="https://data.fs.usda.gov/geodata/rastergateway/data3/Ranger%20District/Beartooth%20Ranger%20District%20-%20West.pdf" target="_blank" rel="noopener">
+              Open PDF
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Placeholder card for future maps -->
+        <div class="pdf-card" style="border-style: dashed; opacity: 0.5;">
+          <div class="pdf-thumb blm" style="opacity:0.6;">
+            <div class="pdf-thumb-inner">
+              <svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+              <span class="pdf-publisher-badge">Coming Soon</span>
+            </div>
+          </div>
+          <div class="pdf-body">
+            <span class="pdf-source-chip chip-blm">BLM</span>
+            <div class="pdf-title">BLM Surface Management Map</div>
+            <p class="pdf-desc">Bureau of Land Management surface management map for Carbon County. Coming soon.</p>
+          </div>
+          <div class="pdf-footer">
+            <span class="pdf-meta">BLM</span>
+            <span class="pdf-btn" style="opacity:0.4;cursor:default;">Coming Soon</span>
+          </div>
+        </div>
+
+      </div><!-- /pdf-grid -->
+
+      <div class="pdf-external-note">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+        <p>Some maps link to files hosted by federal agencies. For the most current versions of USFS and BLM maps, visit <a href="https://data.fs.usda.gov" target="_blank" rel="noopener">data.fs.usda.gov</a> or <a href="https://www.blm.gov/maps" target="_blank" rel="noopener">blm.gov/maps</a> directly. Printed copies of county-produced maps are available through the GIS &amp; Addressing Department — contact us through <a href="https://carbonmt.gov" target="_blank" rel="noopener">carbonmt.gov</a> for pricing.</p>
+      </div>
+
+    </div>
+  </div><!-- /section-maps -->
+
+  <!-- ═══════════════════════════════════════
+       SECTION: ABOUT
+  ════════════════════════════════════════ -->
+  <div class="section" id="section-about">
+    <div class="about-section">
+
+      <div class="section-header">
+        <h2>GIS &amp; Addressing Department</h2>
+        <p>Carbon County, Montana</p>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-card">
+          <h3>Addressing Authority</h3>
+          <p>The GIS &amp; Addressing Department serves as the addressing authority for Carbon County. We maintain the official database of road names and physical addresses for all structures within the County, primarily in support of 9-1-1 and emergency services.</p>
+          <p>To apply for a new physical address, visit <a href="https://carbonmt.gov" target="_blank" rel="noopener">carbonmt.gov</a> for current application information.</p>
+        </div>
+        <div class="about-card">
+          <h3>GIS Data &amp; Maps</h3>
+          <p>This site provides access to publicly available geographic datasets maintained by Carbon County GIS. Data is published through ArcGIS Online and updated on a rolling basis as new information is available.</p>
+          <p>All datasets listed here are freely available for download. For questions about specific datasets or data not listed here, contact the department through <a href="https://carbonmt.gov" target="_blank" rel="noopener">carbonmt.gov</a>.</p>
+        </div>
+        <div class="about-card">
+          <h3>Printed Maps</h3>
+          <p>Printed versions of county-produced maps are available at a cost-recovery price. Map costs are determined by size, paper type, and finishing options such as lamination. Contact the department for current pricing and availability.</p>
+        </div>
+        <div class="about-card">
+          <h3>Data Currency &amp; Disclaimer</h3>
+          <p>Geographic data published here represents the best available information at the time of publication. Carbon County makes no warranties regarding the accuracy or completeness of this data for any particular purpose. Users assume all responsibility for any decisions made using this information.</p>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /section-about -->
 
   <!-- FOOTER -->
   <footer>
-    <p>
-      Carbon County GIS Open Data &bull; Red Lodge, Montana<br/>
-      Data hosted on <a href="https://carbonmt.maps.arcgis.com" target="_blank" rel="noopener">ArcGIS Online</a> &bull;
-      Questions? Contact <a href="https://carbonmt.gov" target="_blank" rel="noopener">Carbon County GIS</a>
-    </p>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="https://carbonmt.gov/wp-content/uploads/2024/07/Carbon-County-Logo-Medium.webp" alt="Carbon County Montana" onerror="this.style.display='none'" />
+        <p>GIS &amp; Addressing Department<br/>Carbon County, Montana</p>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="https://carbonmt.maps.arcgis.com" target="_blank" rel="noopener">ArcGIS Online Portal</a>
+        <a href="https://carbonmt.gov" target="_blank" rel="noopener">Carbon County Website</a>
+        <a href="https://carbonmt.maps.arcgis.com/home/group.html?id=65a714d0ab784949a82002332d91748f" target="_blank" rel="noopener">Open Data Group</a>
+        <a href="https://data.fs.usda.gov" target="_blank" rel="noopener">USFS Data</a>
+        <a href="https://www.blm.gov/maps" target="_blank" rel="noopener">BLM Maps</a>
+      </div>
+      <div class="footer-col">
+        <h4>Data Categories</h4>
+        <a href="#" onclick="switchSection('data');setTag('Boundaries and Administration');return false;">Boundaries &amp; Administration</a>
+        <a href="#" onclick="switchSection('data');setTag('Roads and Transportation');return false;">Roads &amp; Transportation</a>
+        <a href="#" onclick="switchSection('data');setTag('Parcels Zoning and Land Use');return false;">Parcels, Zoning &amp; Land Use</a>
+        <a href="#" onclick="switchSection('data');setTag('Emergency Management and Public Safety');return false;">Emergency Management</a>
+        <a href="#" onclick="switchSection('data');setTag('Flood and Water');return false;">Flood &amp; Water</a>
+        <a href="#" onclick="switchSection('data');setTag('Parks Environment and Natural Resources');return false;">Parks &amp; Environment</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>Carbon County GIS Open Data &bull; Red Lodge, Montana &bull; <span id="footer-year"></span></p>
+    </div>
   </footer>
 
   <script>
-    // ── CONFIG ──────────────────────────────────────────────────────────────
-    const GROUP_ID   = '65a714d0ab784949a82002332d91748f';
-    const AGOL_BASE  = 'https://carbonmt.maps.arcgis.com';
-    const PORTAL_URL = `${AGOL_BASE}/sharing/rest`;
+    // ── CONFIG ────────────────────────────────────────────────────────────
+    const GROUP_ID  = '65a714d0ab784949a82002332d91748f';
+    const AGOL_BASE = 'https://carbonmt.maps.arcgis.com';
 
-    // ── THEMATIC TAG → CSS class mapping ────────────────────────────────────
-    const TAG_CLASS = {
-      'Boundaries & Administration':          'boundaries',
-      'Roads & Transportation':               'roads',
-      'Parcels, Zoning & Land Use':           'parcels',
-      'Emergency Management & Public Safety': 'emergency',
-      'Flood & Water':                        'flood',
-      'Parks, Environment & Natural Resources': 'parks',
-    };
+    const CATEGORIES = [
+      { tag: 'Boundaries and Administration',           label: 'Boundaries & Administration',           cls: 'boundaries', cntId: 'cnt-boundaries' },
+      { tag: 'Roads and Transportation',                label: 'Roads & Transportation',                cls: 'roads',      cntId: 'cnt-roads'      },
+      { tag: 'Parcels Zoning and Land Use',             label: 'Parcels, Zoning & Land Use',            cls: 'parcels',    cntId: 'cnt-parcels'    },
+      { tag: 'Emergency Management and Public Safety',  label: 'Emergency Management & Public Safety',  cls: 'emergency',  cntId: 'cnt-emergency'  },
+      { tag: 'Flood and Water',                         label: 'Flood & Water',                         cls: 'flood',      cntId: 'cnt-flood'      },
+      { tag: 'Parks Environment and Natural Resources', label: 'Parks, Environment & Natural Resources', cls: 'parks',     cntId: 'cnt-parks'      },
+    ];
 
-    const THEMATIC_TAGS = Object.keys(TAG_CLASS);
-
-    // ── STATE ────────────────────────────────────────────────────────────────
-    let allItems = [];
+    let allItems  = [];
     let activeTag = 'all';
-    let searchTerm = '';
+    let searchQ   = '';
 
-    // ── FETCH ALL ITEMS FROM GROUP ───────────────────────────────────────────
-    async function fetchAllItems() {
-      let items = [];
-      let start = 1;
-      const num = 100;
+    // ── SECTION SWITCHING ─────────────────────────────────────────────────
+    function switchSection(name) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById('section-' + name).classList.add('active');
+      document.querySelectorAll('.page-tab').forEach(t => t.classList.toggle('active', t.dataset.section === name));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.querySelectorAll('.page-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchSection(btn.dataset.section));
+    });
+
+    // ── AGOL FETCH ────────────────────────────────────────────────────────
+    async function fetchAll() {
+      let items = [], start = 1;
       while (true) {
-        const url = `${PORTAL_URL}/search?q=group:${GROUP_ID}&f=json&num=${num}&start=${start}&sortField=title&sortOrder=asc`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if (data.results) items = items.concat(data.results);
-        if (!data.nextStart || data.nextStart === -1) break;
-        start = data.nextStart;
+        const url = `${AGOL_BASE}/sharing/rest/search?q=group:${GROUP_ID}&f=json&num=100&start=${start}&sortField=title&sortOrder=asc`;
+        const r = await fetch(url);
+        const d = await r.json();
+        if (d.results) items = items.concat(d.results);
+        if (!d.nextStart || d.nextStart === -1) break;
+        start = d.nextStart;
       }
       return items;
     }
 
-    // ── DETECT THEMATIC TAG ON AN ITEM ──────────────────────────────────────
-    function getThematicTag(item) {
+    // ── HELPERS ───────────────────────────────────────────────────────────
+    function getCat(item) {
       if (!item.tags) return null;
       const itemTags = item.tags.map(t => t.trim());
-      return THEMATIC_TAGS.find(t => itemTags.includes(t)) || null;
+      return CATEGORIES.find(c => itemTags.includes(c.tag)) || null;
     }
-
-    // ── THUMBNAIL URL ────────────────────────────────────────────────────────
     function thumbUrl(item) {
-      if (item.thumbnail) {
-        return `${AGOL_BASE}/sharing/rest/content/items/${item.id}/info/${item.thumbnail}`;
-      }
-      return null;
+      return item.thumbnail ? `${AGOL_BASE}/sharing/rest/content/items/${item.id}/info/${item.thumbnail}` : null;
     }
-
-    // ── ITEM DETAIL URL ──────────────────────────────────────────────────────
-    function itemUrl(item) {
-      return `${AGOL_BASE}/home/item.html?id=${item.id}`;
-    }
-
-    // ── FORMAT DATE ──────────────────────────────────────────────────────────
+    function itemUrl(item) { return `${AGOL_BASE}/home/item.html?id=${item.id}`; }
     function fmtDate(ts) {
       if (!ts) return '';
-      const d = new Date(ts);
-      return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      return new Date(ts).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
     }
-
-    // ── ITEM TYPE LABEL ──────────────────────────────────────────────────────
     function typeLabel(item) {
       const t = (item.type || '').toLowerCase();
       if (t.includes('feature')) return 'Feature Layer';
@@ -695,105 +962,107 @@
       return item.type || 'Dataset';
     }
 
-    // ── BUILD CARD HTML ──────────────────────────────────────────────────────
+    const MAP_SVG = `<svg class="thumb-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503-9.498 4.875-2.437a.75.75 0 011.068.68v11.25a.75.75 0 01-.37.648l-5.25 3a.75.75 0 01-.734 0L9.375 16.5l-5.25 3A.75.75 0 013 18.846V7.596a.75.75 0 01.37-.648l5.25-3a.75.75 0 01.734 0l5.626 3.22z"/></svg>`;
+    const EXT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>`;
+
+    // ── BUILD CARD ────────────────────────────────────────────────────────
     function buildCard(item, delay) {
-      const tag  = getThematicTag(item);
-      const cls  = tag ? TAG_CLASS[tag] : 'default';
+      const cat   = getCat(item);
+      const cls   = cat ? cat.cls : 'default';
       const thumb = thumbUrl(item);
-      const desc = (item.description || item.snippet || '').replace(/<[^>]*>/g, '').trim();
-      const url  = itemUrl(item);
+      const desc  = (item.snippet || item.description || '').replace(/<[^>]*>/g, '').trim();
+      const url   = itemUrl(item);
 
-      const thumbHtml = thumb
-        ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'card-thumb-placeholder\\'>${mapIcon()}</div>'" />`
-        : `<div class="card-thumb-placeholder">${mapIcon()}</div>`;
+      const placeholder = `<div class="thumb-placeholder">${MAP_SVG}<span class="thumb-lbl">${typeLabel(item)}</span></div>`;
+      const thumbHTML = thumb
+        ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=${JSON.stringify(placeholder)}" />`
+        : placeholder;
 
-      const tagHtml = tag
-        ? `<span class="tag-chip ${cls}">${tag}</span>`
+      const chipHTML = cat
+        ? `<span class="card-cat-chip chip-${cls}"><span class="chip-dot chip-dot-${cls}"></span>${cat.label}</span>`
         : '';
 
       return `
         <div class="card" style="animation-delay:${delay}ms">
           <div class="card-thumb">
-            ${thumbHtml}
+            <div class="card-stripe stripe-${cls}"></div>
+            ${thumbHTML}
             <span class="card-type-badge">${typeLabel(item)}</span>
           </div>
           <div class="card-body">
-            <div class="card-tags">${tagHtml}</div>
-            <h4>${item.title || 'Untitled'}</h4>
-            <p>${desc || 'No description available.'}</p>
+            ${chipHTML}
+            <div class="card-title">${item.title || 'Untitled Dataset'}</div>
+            <p class="card-desc">${desc || 'No description provided.'}</p>
           </div>
           <div class="card-footer">
-            <span class="card-date">${fmtDate(item.modified)}</span>
-            <a class="card-btn" href="${url}" target="_blank" rel="noopener">
-              View &amp; Download
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path d="M7 17 17 7M17 7H7M17 7v10"/>
-              </svg>
-            </a>
+            <span class="card-meta">${fmtDate(item.modified) ? 'Updated ' + fmtDate(item.modified) : ''}</span>
+            <a class="card-btn" href="${url}" target="_blank" rel="noopener">View &amp; Download ${EXT_SVG}</a>
           </div>
         </div>`;
     }
 
-    function mapIcon() {
-      return `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503-9.498 4.875-2.437a.75.75 0 0 1 1.068.68v11.25a.75.75 0 0 1-.37.648l-5.25 3a.75.75 0 0 1-.734 0L9.375 16.5l-5.25 3A.75.75 0 0 1 3 18.846V7.596a.75.75 0 0 1 .37-.648l5.25-3a.75.75 0 0 1 .734 0l5.626 3.22Z"/></svg>`;
-    }
-
-    // ── RENDER ───────────────────────────────────────────────────────────────
+    // ── RENDER ────────────────────────────────────────────────────────────
     function render() {
-      const q = searchTerm.toLowerCase();
+      const q = searchQ.toLowerCase();
       const filtered = allItems.filter(item => {
-        const matchTag = activeTag === 'all' || getThematicTag(item) === activeTag;
-        const matchSearch = !q ||
-          (item.title || '').toLowerCase().includes(q) ||
-          (item.snippet || '').toLowerCase().includes(q) ||
-          (item.description || '').toLowerCase().includes(q) ||
-          (item.tags || []).join(' ').toLowerCase().includes(q);
+        const cat = getCat(item);
+        const matchTag = activeTag === 'all' || (cat && cat.tag === activeTag);
+        const matchSearch = !q
+          || (item.title || '').toLowerCase().includes(q)
+          || (item.snippet || '').toLowerCase().includes(q)
+          || (item.tags || []).join(' ').toLowerCase().includes(q);
         return matchTag && matchSearch;
       });
 
+      document.getElementById('results-summary').innerHTML =
+        `Showing <strong>${filtered.length}</strong> of ${allItems.length} datasets`;
+
       const grid = document.getElementById('grid');
-      const count = document.getElementById('results-count');
-
-      count.textContent = `${filtered.length} dataset${filtered.length !== 1 ? 's' : ''}`;
-
       if (filtered.length === 0) {
-        grid.innerHTML = `<div class="state-msg"><p>No datasets match your search.</p></div>`;
+        grid.innerHTML = `<div class="state-wrap"><h3>No datasets found</h3><p>Try adjusting your search or category filter.</p></div>`;
         return;
       }
-
-      grid.innerHTML = filtered.map((item, i) => buildCard(item, i * 30)).join('');
+      grid.innerHTML = filtered.map((item, i) => buildCard(item, Math.min(i * 20, 260))).join('');
     }
 
-    // ── INIT ─────────────────────────────────────────────────────────────────
+    // ── SET TAG ───────────────────────────────────────────────────────────
+    function setTag(tag) {
+      activeTag = tag;
+      document.querySelectorAll('.cat-tab').forEach(b => b.classList.toggle('active', b.dataset.tag === tag));
+      render();
+    }
+
+    // ── UPDATE COUNTS ─────────────────────────────────────────────────────
+    function updateCounts() {
+      document.getElementById('cnt-all').textContent = allItems.length;
+      document.getElementById('stat-total').textContent = allItems.length;
+      CATEGORIES.forEach(cat => {
+        const n = allItems.filter(item => { const c = getCat(item); return c && c.tag === cat.tag; }).length;
+        const el = document.getElementById(cat.cntId);
+        if (el) el.textContent = n;
+      });
+    }
+
+    // ── INIT ──────────────────────────────────────────────────────────────
     async function init() {
+      document.getElementById('footer-year').textContent = new Date().getFullYear();
       try {
-        allItems = await fetchAllItems();
-        document.getElementById('stat-total').textContent = allItems.length;
+        allItems = await fetchAll();
+        updateCounts();
         render();
       } catch (err) {
         document.getElementById('grid').innerHTML = `
-          <div class="state-msg">
-            <p>⚠️ Could not load datasets. Check your network or ArcGIS Online group settings.<br/>
-            <small style="margin-top:8px;display:block;font-size:11px;">${err.message}</small></p>
+          <div class="state-wrap">
+            <h3>Could not load datasets</h3>
+            <p>Confirm the ArcGIS Online group is shared publicly.<br/>
+            <small style="font-size:10px;opacity:.45;display:block;margin-top:5px">${err.message}</small></p>
           </div>`;
-        document.getElementById('results-count').textContent = 'Error loading data';
       }
     }
 
-    // ── EVENT LISTENERS ──────────────────────────────────────────────────────
-    document.getElementById('search').addEventListener('input', e => {
-      searchTerm = e.target.value;
-      render();
-    });
-
-    document.querySelectorAll('.pill').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-        btn.classList.add('active');
-        activeTag = btn.dataset.tag;
-        render();
-      });
-    });
+    // ── EVENTS ────────────────────────────────────────────────────────────
+    document.getElementById('search').addEventListener('input', e => { searchQ = e.target.value; render(); });
+    document.querySelectorAll('.cat-tab').forEach(btn => btn.addEventListener('click', () => setTag(btn.dataset.tag)));
 
     init();
   </script>
