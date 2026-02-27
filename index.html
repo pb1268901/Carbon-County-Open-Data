@@ -469,7 +469,7 @@
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
     .pdf-thumb.usfs   { background: linear-gradient(135deg, #14532d 0%, #166534 60%, #15803d 100%); }
-    .pdf-thumb.blm    { background: linear-gradient(135deg, #7c2d12 0%, #9a3412 60%, #c2410c 100%); }
+    .pdf-thumb.blm    { background: linear-gradient(135deg, #92650a 0%, #b07d12 60%, #d4a017 100%); }
     .pdf-thumb.county { background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal-mid) 60%, var(--teal) 100%); }
     .pdf-thumb::after { content: ''; position: absolute; inset: 0; opacity: 0.08; background-image: repeating-linear-gradient(-40deg, transparent, transparent 10px, rgba(255,255,255,0.6) 10px, rgba(255,255,255,0.6) 11px); }
     .pdf-thumb-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
@@ -492,6 +492,156 @@
     .pdf-external-note svg { width: 15px; height: 15px; color: var(--charcoal); flex-shrink: 0; margin-top: 2px; }
     .pdf-external-note p { font-family: var(--font-body); font-size: 12.5px; color: var(--gray-600); line-height: 1.6; font-style: italic; }
     .pdf-external-note p a { color: var(--teal); }
+
+    /* ── ADDRESS LOOKUP ── */
+    .lookup-section { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+    .lookup-intro { margin-bottom: 36px; }
+    .lookup-intro h2 { font-family: var(--font-head); font-size: 22px; font-weight: 800; color: var(--teal-dark); letter-spacing: -0.02em; margin-bottom: 10px; }
+    .lookup-intro p { font-family: var(--font-body); font-size: 14px; color: var(--gray-600); line-height: 1.75; font-style: italic; max-width: 580px; }
+
+    .lookup-box {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+    .lookup-input-row {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+    .lookup-wrap { position: relative; flex: 1; }
+    .lookup-icon {
+      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+      color: var(--gray-400); width: 17px; height: 17px; pointer-events: none;
+    }
+    #addr-input {
+      width: 100%;
+      padding: 13px 16px 13px 42px;
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius);
+      font-family: var(--font-head);
+      font-size: 15px;
+      color: var(--gray-800);
+      background: var(--gray-100);
+      outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    #addr-input::placeholder { color: var(--gray-400); }
+    #addr-input:focus { border-color: var(--teal); background: var(--white); box-shadow: 0 0 0 3px rgba(0,71,79,0.08); }
+    #addr-input.has-error { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.08); }
+
+    .lookup-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: var(--font-head); font-size: 14px; font-weight: 700;
+      color: var(--white); background: var(--teal);
+      border: none; padding: 13px 24px;
+      border-radius: var(--radius); cursor: pointer;
+      letter-spacing: 0.03em; transition: background 0.18s;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .lookup-btn:hover { background: var(--teal-mid); }
+    .lookup-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
+    .lookup-btn svg { width: 15px; height: 15px; }
+    .lookup-btn .spinner-sm {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      display: none;
+    }
+    .lookup-btn.loading .btn-label { display: none; }
+    .lookup-btn.loading .spinner-sm { display: block; }
+
+    .lookup-hint {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--gray-400);
+      font-style: italic;
+      margin-top: 10px;
+    }
+
+    /* Result states */
+    #lookup-result { margin-top: 20px; display: none; }
+
+    .result-found {
+      background: #f0fdf4;
+      border: 1.5px solid #86efac;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+    .result-found-header {
+      display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px;
+    }
+    .result-found-icon {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #22c55e; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .result-found-icon svg { width: 18px; height: 18px; color: white; }
+    .result-found-title { font-family: var(--font-head); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #16a34a; margin-bottom: 4px; }
+    .result-found-address { font-family: var(--font-head); font-size: 18px; font-weight: 800; color: var(--gray-800); letter-spacing: -0.01em; }
+    .result-attrs {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+      padding: 16px;
+      background: white;
+      border-radius: var(--radius);
+      border: 1px solid #dcfce7;
+      margin-bottom: 16px;
+    }
+    .attr-item { display: flex; flex-direction: column; gap: 3px; }
+    .attr-label { font-family: var(--font-head); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-400); }
+    .attr-val { font-family: var(--font-head); font-size: 13px; font-weight: 600; color: var(--gray-800); }
+    .result-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .result-action-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--font-head); font-size: 12px; font-weight: 700;
+      text-decoration: none; padding: 8px 16px;
+      border-radius: var(--radius-sm); letter-spacing: 0.04em;
+      transition: all 0.18s; border: none; cursor: pointer;
+    }
+    .btn-view { background: var(--teal); color: white; }
+    .btn-view:hover { background: var(--teal-mid); }
+    .btn-view svg { width: 11px; height: 11px; }
+
+    .result-not-found {
+      background: #fef9f0;
+      border: 1.5px solid #fcd34d;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+    .result-not-found-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+    .result-not-found-icon {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #f59e0b; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .result-not-found-icon svg { width: 18px; height: 18px; color: white; }
+    .result-not-found-title { font-family: var(--font-head); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #b45309; margin-bottom: 4px; }
+    .result-not-found-msg { font-family: var(--font-body); font-size: 14px; color: var(--gray-600); line-height: 1.65; font-style: italic; }
+    .not-found-actions { margin-top: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .btn-report {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: var(--font-head); font-size: 12px; font-weight: 700;
+      color: white; background: #b45309;
+      border: none; padding: 9px 18px;
+      border-radius: var(--radius-sm); cursor: pointer;
+      letter-spacing: 0.04em; transition: background 0.18s; text-decoration: none;
+    }
+    .btn-report:hover { background: #92400e; }
+    .btn-report svg { width: 11px; height: 11px; }
+    .not-found-alt { font-family: var(--font-body); font-size: 12px; color: var(--gray-400); font-style: italic; }
+    .not-found-alt a { color: var(--teal); }
+
+    .result-error {
+      background: #fef2f2; border: 1.5px solid #fca5a5;
+      border-radius: var(--radius-lg); padding: 20px;
+      font-family: var(--font-head); font-size: 13px; color: #991b1b;
+    }
 
     /* ── ABOUT ── */
     .about-section { max-width: 1280px; margin: 0 auto; padding: 40px 32px 80px; }
@@ -613,6 +763,7 @@
   <!-- PAGE NAV -->
   <div class="page-nav">
     <div class="page-nav-inner">
+      <button class="page-tab" data-section="lookup">Address Lookup</button>
       <button class="page-tab active" data-section="data">GIS Data Catalog</button>
       <button class="page-tab" data-section="maps">Downloadable Maps</button>
       <button class="page-tab" data-section="about">About &amp; Contact</button>
@@ -643,6 +794,41 @@
       </div>
     </div>
   </section>
+
+  <!-- ══════════════════════════════════════
+       SECTION: ADDRESS LOOKUP
+  ═══════════════════════════════════════ -->
+  <div class="section" id="section-lookup">
+    <div class="lookup-section">
+
+      <div class="lookup-intro">
+        <h2>Address Lookup</h2>
+        <p>Search the Carbon County 9-1-1 address database to verify whether a physical address is on record. Enter a street address below to check. This database is maintained by the GIS &amp; Addressing Department for emergency services purposes.</p>
+      </div>
+
+      <div class="lookup-box">
+        <div class="lookup-input-row">
+          <div class="lookup-wrap">
+            <svg class="lookup-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+            <input type="text" id="addr-input" placeholder="e.g. 123 Main St, Red Lodge" autocomplete="off"
+              onkeydown="if(event.key==='Enter')runLookup()" />
+          </div>
+          <button class="lookup-btn" id="lookup-btn" onclick="runLookup()">
+            <span class="btn-label">Search</span>
+            <div class="spinner-sm"></div>
+          </button>
+        </div>
+        <p class="lookup-hint">Enter a partial or full street address. Example: "123 Main" or "123 Main St Red Lodge"</p>
+        <div id="lookup-result"></div>
+      </div>
+
+      <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:20px 24px;">
+        <p style="font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-400);margin-bottom:8px;">About This Database</p>
+        <p style="font-family:var(--font-body);font-size:13px;color:var(--gray-600);line-height:1.7;font-style:italic;">This tool queries the official Carbon County NG911 site address point (SSAP) database. Not all rural or newly constructed addresses may appear. If your address is not found, use the report button to notify the GIS &amp; Addressing Department. To apply for a new address, use the <a href="https://carboncomt.forms.govos.com/ng/fa/CCDevelopmentPackage" target="_blank" rel="noopener" style="color:var(--teal);">County Development Permit Package Application</a>.</p>
+      </div>
+
+    </div>
+  </div>
 
   <!-- ══════════════════════════════════════
        SECTION: GIS DATA CATALOG
@@ -875,7 +1061,7 @@
             10 Oakes Ave S, Suite F<br/>
             Red Lodge, MT 59068<br/><br/>
             <a href="tel:4064457271">406-445-7271</a><br/>
-            <a href="mailto:GIS&#64;carbonmt.gov">GIS&#64;carbonmt.gov</a>
+            <a href="/cdn-cgi/l/email-protection#64232d3724070516060b0a09104a030b12"><span class="__cf_email__" data-cfemail="f1b6b8a2b1929083939e9f9c85df969e87">[email&#160;protected]</span></a>
           </p>
         </div>
         <div class="about-card" style="grid-column: 1 / -1;">
@@ -927,7 +1113,7 @@
           Red Lodge, MT 59068<br/><br/>
           Patrick Benson, GIS Coordinator<br/>
           <a href="tel:4064457271">406-445-7271</a><br/>
-          <a href="mailto:GIS&#64;carbonmt.gov">GIS&#64;carbonmt.gov</a>
+          <a href="/cdn-cgi/l/email-protection#fabdb3a9ba999b88989594978ed49d958c"><span class="__cf_email__" data-cfemail="793e302a391a180b1b1617140d571e160f">[email&#160;protected]</span></a>
         </address>
       </div>
       <div class="footer-col">
@@ -1152,6 +1338,155 @@
         const el = document.getElementById(cat.cntId);
         if (el) el.textContent = n;
       });
+    }
+
+    // ── ADDRESS LOOKUP ────────────────────────────────────────────────────
+    const SSAP_URL   = 'https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/NG911_Core_Layers_View20251017/FeatureServer';
+    const SSAP_LAYER = 0; // adjust if SSAP is not layer 0 — check service endpoint
+    const ADDR_FIELD = 'Abbrv_Address'; // field name — underscored for URL safety; try variations if 0 results
+
+    // We'll try a few field name variants since AGOL sometimes stores spaces as underscores
+    const FIELD_VARIANTS = ['Abbrv_Address', 'AbbrvAddress', 'Abbrv Address', 'SITE_ADDRES', 'FullAddress', 'Address'];
+
+    async function querySSAP(searchTerm, fieldName) {
+      const where   = `UPPER(${fieldName}) LIKE UPPER('%${searchTerm.replace(/'/g, "''")}%')`;
+      const params  = new URLSearchParams({
+        where, outFields: '*', returnGeometry: true,
+        resultRecordCount: 5, f: 'json'
+      });
+      const url = `${SSAP_URL}/${SSAP_LAYER}/query?${params}`;
+      const r   = await fetch(url);
+      const d   = await r.json();
+      return d;
+    }
+
+    async function runLookup() {
+      const input   = document.getElementById('addr-input');
+      const btn     = document.getElementById('lookup-btn');
+      const result  = document.getElementById('lookup-result');
+      const term    = input.value.trim();
+
+      if (!term) {
+        input.classList.add('has-error');
+        input.focus();
+        setTimeout(() => input.classList.remove('has-error'), 1500);
+        return;
+      }
+
+      // Loading state
+      btn.disabled = true;
+      btn.classList.add('loading');
+      result.style.display = 'none';
+
+      try {
+        // Try each field name variant until we get a valid response (not an error)
+        let data = null;
+        let usedField = ADDR_FIELD;
+        for (const variant of FIELD_VARIANTS) {
+          const d = await querySSAP(term, variant);
+          if (!d.error) { data = d; usedField = variant; break; }
+        }
+
+        if (!data || data.error) {
+          result.innerHTML = `<div class="result-error">⚠️ Could not reach the address database. Check that the feature layer is publicly accessible.<br/><small style="opacity:.6;font-size:10px;">${data?.error?.message || 'Service unavailable'}</small></div>`;
+          result.style.display = 'block';
+          return;
+        }
+
+        const features = data.features || [];
+
+        if (features.length > 0) {
+          // ── FOUND ──
+          const f    = features[0].attributes;
+          const geom = features[0].geometry;
+
+          // Build attribute display — show whatever fields exist
+          const showFields = [
+            { key: usedField,       label: 'Address'     },
+            { key: 'City',          label: 'City'        },
+            { key: 'State',         label: 'State'       },
+            { key: 'Zip',           label: 'ZIP'         },
+            { key: 'ZIP',           label: 'ZIP'         },
+            { key: 'PostCode',      label: 'ZIP'         },
+            { key: 'Unit',          label: 'Unit'        },
+            { key: 'StreetName',    label: 'Street'      },
+            { key: 'RoadClass',     label: 'Road Type'   },
+            { key: 'AddNum',        label: 'Number'      },
+          ];
+
+          // Deduplicate by label, skip nulls
+          const seen = new Set();
+          const attrHTML = showFields
+            .filter(sf => f[sf.key] != null && f[sf.key] !== '' && !seen.has(sf.label) && seen.add(sf.label))
+            .map(sf => `<div class="attr-item"><span class="attr-label">${sf.label}</span><span class="attr-val">${f[sf.key]}</span></div>`)
+            .join('');
+
+          // Build AGOL map view link
+          let mapLink = `https://carbonmt.maps.arcgis.com/apps/mapviewer/index.html?layers=a4d565d459f64c33925acb1f3d12579f`;
+          if (geom) {
+            mapLink += `&center=${geom.x},${geom.y}&level=17`;
+          }
+
+          const displayAddr = f[usedField] || term;
+          const multiMsg = features.length > 1
+            ? `<p style="font-family:var(--font-head);font-size:11px;color:#16a34a;margin-top:6px;">${features.length} matching records found — showing best match.</p>`
+            : '';
+
+          result.innerHTML = `
+            <div class="result-found">
+              <div class="result-found-header">
+                <div class="result-found-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg></div>
+                <div>
+                  <div class="result-found-title">Address Found in Database</div>
+                  <div class="result-found-address">${displayAddr}</div>
+                  ${multiMsg}
+                </div>
+              </div>
+              ${attrHTML ? `<div class="result-attrs">${attrHTML}</div>` : ''}
+              <div class="result-actions">
+                <a class="result-action-btn btn-view" href="${mapLink}" target="_blank" rel="noopener">
+                  View on Map
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+                </a>
+              </div>
+            </div>`;
+
+        } else {
+          // ── NOT FOUND ──
+          const subject = encodeURIComponent('Address Not Found in Carbon County Database');
+          const body    = encodeURIComponent(
+            `Hello,\n\nI searched for the following address using the Carbon County GIS Address Lookup tool and it was not found in the database:\n\n"${term}"\n\nCould you please look into this?\n\nThank you.`
+          );
+          const mailLink = `mailto:GIS@carbonmt.gov?subject=${subject}&body=${body}`;
+
+          result.innerHTML = `
+            <div class="result-not-found">
+              <div class="result-not-found-header">
+                <div class="result-not-found-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg></div>
+                <div>
+                  <div class="result-not-found-title">Address Not Found</div>
+                  <div class="result-not-found-msg">No record matching <strong>"${term}"</strong> was found in the Carbon County 9-1-1 address database. Try a shorter search (just the house number and street name) or check the spelling.</div>
+                </div>
+              </div>
+              <div class="not-found-actions">
+                <a class="btn-report" href="${mailLink}">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0121.485 12 59.768 59.768 0 013.27 20.875L5.999 12zm0 0h7.5"/></svg>
+                  Report Missing Address
+                </a>
+                <span class="not-found-alt">Or apply for a new address via the <a href="https://carboncomt.forms.govos.com/ng/fa/CCDevelopmentPackage" target="_blank" rel="noopener">Development Permit Application</a>.</span>
+              </div>
+            </div>`;
+        }
+
+        result.style.display = 'block';
+
+      } catch (err) {
+        result.innerHTML = `<div class="result-error">⚠️ An error occurred while searching. Please try again.<br/><small style="opacity:.6;font-size:10px;">${err.message}</small></div>`;
+        result.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('loading');
+      }
     }
 
     // ── INIT ──────────────────────────────────────────────────────────────
