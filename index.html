@@ -1342,17 +1342,26 @@
 
     // ── ADDRESS LOOKUP ────────────────────────────────────────────────────
     const SSAP_URL   = 'https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/NG911_Core_Layers_View20251017/FeatureServer';
-    const SSAP_LAYER = 0; // adjust if SSAP is not layer 0 — check service endpoint
+    const SSAP_LAYER = 8; // SSAP is layer index 8 in this service
     const ADDR_FIELD = 'Abbrv_Address'; // field name — underscored for URL safety; try variations if 0 results
 
-    // We'll try a few field name variants since AGOL sometimes stores spaces as underscores
-    const FIELD_VARIANTS = ['Abbrv_Address', 'AbbrvAddress', 'Abbrv Address', 'SITE_ADDRES', 'FullAddress', 'Address'];
+    // NG911 standard field names to try in order — will auto-detect which one works
+    const FIELD_VARIANTS = [
+      'Abbrv_Address', 'AbbrvAddress', 'Abbrv Address',
+      'Site_Add_Prefix_Number', 'AddNum_Pre', 'Add_Number',
+      'FullAddress', 'SITEADDRESS', 'SITE_ADDRES',
+      'Address', 'LABEL', 'Label'
+    ];
 
     async function querySSAP(searchTerm, fieldName) {
       const where   = `UPPER(${fieldName}) LIKE UPPER('%${searchTerm.replace(/'/g, "''")}%')`;
       const params  = new URLSearchParams({
-        where, outFields: '*', returnGeometry: true,
-        resultRecordCount: 5, f: 'json'
+        where,
+        outFields: '*',
+        returnGeometry: true,
+        outSR: 4326,           // return coords in WGS84 lat/lon for map links
+        resultRecordCount: 5,
+        f: 'json'
       });
       const url = `${SSAP_URL}/${SSAP_LAYER}/query?${params}`;
       const r   = await fetch(url);
@@ -1379,12 +1388,20 @@
       result.style.display = 'none';
 
       try {
-        // Try each field name variant until we get a valid response (not an error)
+        // Try each field name variant until we get a response without an API error.
+        // Note: 0 features returned is NOT an error — it means field worked, address just not found.
         let data = null;
         let usedField = ADDR_FIELD;
         for (const variant of FIELD_VARIANTS) {
           const d = await querySSAP(term, variant);
-          if (!d.error) { data = d; usedField = variant; break; }
+          if (!d.error) {
+            data = d;
+            usedField = variant;
+            break; // valid response — stop trying variants regardless of feature count
+          }
+          // Only keep trying if this looks like a field-name error; stop on other errors
+          const msg = (d.error?.message || '').toLowerCase();
+          if (!msg.includes('field') && !msg.includes('invalid') && !msg.includes('column')) break;
         }
 
         if (!data || data.error) {
