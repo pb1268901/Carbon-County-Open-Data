@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/esri-leaflet@3.0.12/dist/esri-leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-textpath@1.2.3/leaflet.textpath.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -251,6 +252,13 @@
       white-space: nowrap;
     }
     .map-zoom-notice.visible { opacity: 1; }
+
+    /* Road name labels */
+    .road-label { background:none!important;border:none!important;box-shadow:none!important;font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:700;color:#222;text-shadow:1px 1px 0 #fff,-1px 1px 0 #fff,1px -1px 0 #fff,-1px -1px 0 #fff;white-space:nowrap;padding:0!important; }
+    .road-label::before { display:none!important; }
+    /* Address point labels */
+    .addr-label { background:none!important;border:none!important;box-shadow:none!important;font-family:'Plus Jakarta Sans',sans-serif;font-size:9px;font-weight:600;color:#002d33;text-shadow:1px 1px 0 rgba(255,255,255,0.95),-1px 1px 0 rgba(255,255,255,0.95),1px -1px 0 rgba(255,255,255,0.95),-1px -1px 0 rgba(255,255,255,0.95);white-space:nowrap;padding:0!important; }
+    .addr-label::before { display:none!important; }
 
     /* ══════════════════════════════════
        PDF MAPS SECTION
@@ -595,18 +603,10 @@
       <button class="layer-toggle tog-grouse" data-layer="grouse" onclick="toggleLayer(this)">
         <span class="tog-dot" style="background:#15803d"></span> Sage Grouse Habitat
       </button>
-      <span style="font-family:var(--fbody);font-size:11px;color:var(--gray-400);font-style:italic;margin-left:auto;">Click anywhere on the map to look up parcel &amp; flood info</span>
     </div>
-    <div style="position:relative;display:flex;">
+    <div style="position:relative;">
       <div id="map"></div>
-      <div id="map-panel" style="display:none;position:absolute;top:12px;right:12px;z-index:400;width:300px;background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,45,51,0.18);overflow:hidden;max-height:calc(100% - 24px);overflow-y:auto;">
-        <div style="background:var(--teal);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-family:var(--fhead);font-size:12px;font-weight:700;color:white;letter-spacing:0.04em;" id="panel-title">Location Info</span>
-          <button onclick="document.getElementById('map-panel').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;font-size:18px;line-height:1;padding:0 2px;">&times;</button>
-        </div>
-        <div id="panel-body" style="padding:14px;font-family:var(--fhead);font-size:13px;color:var(--gray-600);">Click the map to look up a location.</div>
-      </div>
-      <div class="map-zoom-notice" id="zoom-notice">Zoom in further to see parcels</div>
+      <div class="map-zoom-notice" id="zoom-notice">Zoom in to see this layer</div>
     </div>
   </div>
 </div>
@@ -969,7 +969,7 @@ function initMap() {
     opacity: 0.75, attribution: 'MT State Library'
   });
 
-  // ── Roads (RCL) with full renderer ──
+  // ── Roads (RCL) with renderer + labels at zoom 13+ ──
   layers.roads = L.esri.featureLayer({
     url: 'https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/NG911_Core_Layers_View20251017/FeatureServer/15',
     style: rclStyle,
@@ -977,18 +977,28 @@ function initMap() {
     attribution: 'Carbon County GIS',
     onEachFeature: (feature, layer) => {
       const p = feature.properties;
-      const name = p.RoadName || p.FullName || p.St_Name || '';
-      const type = p.RoadSym  || p.RoadClass || '';
+      const name = p.RoadName || p.FullName || p.St_Name || p.ROAD_NAME || '';
+      const type = p.RoadSym  || '';
+      // Popup on click
       layer.bindPopup(`
-        <div style="font-family:'Plus Jakarta Sans',sans-serif;min-width:180px;">
-          <div style="font-weight:800;font-size:14px;color:#002d33;margin-bottom:6px;">${name || 'Unnamed Road'}</div>
-          ${type ? `<div style="font-size:11px;color:#6b6560;margin-bottom:3px;"><b>Type:</b> ${type}</div>` : ''}
-          ${p.COUNTY ? `<div style="font-size:11px;color:#6b6560;"><b>County:</b> ${p.COUNTY}</div>` : ''}
-        </div>`, { maxWidth: 260 });
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;min-width:160px;">
+          <div style="font-weight:800;font-size:13px;color:#002d33;margin-bottom:6px;">${name || 'Unnamed Road'}</div>
+          ${type ? `<div style="font-size:11px;color:#6b6560;"><b>Type:</b> ${type}</div>` : ''}
+        </div>`, { maxWidth: 220 });
+      // Label: permanent tooltip that follows the line, shown only at zoom 13+
+      if (name) {
+        const sym = RCL_RENDERER[type] || { color: '#828282' };
+        layer.bindTooltip(name, {
+          permanent: true,
+          direction: 'center',
+          className: 'road-label',
+          opacity: map.getZoom() >= 13 ? 0.9 : 0
+        });
+      }
     }
   });
 
-  // ── SSAP Address Points with full renderer ──
+  // ── SSAP Address Points with renderer + labels at zoom 15+ ──
   layers.ssap = L.esri.featureLayer({
     url: 'https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/NG911_Core_Layers_View20251017/FeatureServer/8',
     pointToLayer: ssapMarker,
@@ -996,21 +1006,28 @@ function initMap() {
     attribution: 'Carbon County GIS',
     onEachFeature: (feature, layer) => {
       const p = feature.properties;
-      const addr   = p.AbbrvAdd  || '';
-      const comm   = p.Post_Comm || p.MSAGComm || '';
-      const zip    = p.Post_Code || p.ZIP || '';
+      const addr = p.AbbrvAdd || '';
+      const comm = p.Post_Comm || p.MSAGComm || '';
       const status = p.MT_PlcType === '2' ? 'Not Present' : 'Structure';
       layer.bindPopup(`
-        <div style="font-family:'Plus Jakarta Sans',sans-serif;min-width:180px;">
-          <div style="font-weight:800;font-size:14px;color:#002d33;margin-bottom:6px;">${addr || 'Address Point'}</div>
-          ${comm ? `<div style="font-size:11px;color:#6b6560;margin-bottom:3px;">${comm}${zip ? ', ' + zip : ''}</div>` : ''}
-          <div style="font-size:11px;color:#6b6560;margin-bottom:3px;"><b>Status:</b> ${status}</div>
-          ${p.AddNum ? `<div style="font-size:11px;color:#6b6560;"><b>AddNum:</b> ${p.AddNum}</div>` : ''}
-        </div>`, { maxWidth: 260 });
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;min-width:160px;">
+          <div style="font-weight:800;font-size:13px;color:#002d33;margin-bottom:6px;">${addr || 'Address Point'}</div>
+          ${comm ? `<div style="font-size:11px;color:#6b6560;">${comm}</div>` : ''}
+          <div style="font-size:11px;color:#6b6560;"><b>Status:</b> ${status}</div>
+        </div>`, { maxWidth: 220 });
+      // Label: shown only at zoom 15+
+      if (addr) {
+        layer.bindTooltip(addr, {
+          permanent: true,
+          direction: 'top',
+          offset: [0, -6],
+          className: 'addr-label',
+          opacity: map.getZoom() >= 15 ? 0.9 : 0
+        });
+      }
     }
   });
 
-  // ── Zoom handling for parcels + ssap ──
   map.on('zoomend', () => {
     const z = map.getZoom();
     const notice = document.getElementById('zoom-notice');
@@ -1025,55 +1042,54 @@ function initMap() {
       else { notice.classList.remove('visible'); if (!map.hasLayer(layers.ssap)) map.addLayer(layers.ssap); }
     }
     if (!parcelOn && !ssapOn) notice.classList.remove('visible');
+
+    // Road labels: show at zoom 13+
+    if (map.hasLayer(layers.roads)) {
+      layers.roads.eachFeature(l => {
+        const tt = l.getTooltip();
+        if (tt) tt.setOpacity(z >= 13 ? 0.9 : 0);
+      });
+    }
+    // Address labels: show at zoom 15+
+    if (map.hasLayer(layers.ssap)) {
+      layers.ssap.eachFeature(l => {
+        const tt = l.getTooltip();
+        if (tt) tt.setOpacity(z >= 15 ? 0.9 : 0);
+      });
+    }
   });
 
   // ── Map click — FEMA flood query + parcel link-out ──
-  map.on('click', async (e) => {
+  // ── Parcel clicks via MapServer identify ──
+  map.on('click', (e) => {
+    if (!map.hasLayer(layers.parcels)) return; // only fire if parcels layer is on
     const { lat, lng } = e.latlng;
-    const panel = document.getElementById('map-panel');
-    const body  = document.getElementById('panel-body');
-    const title = document.getElementById('panel-title');
-    panel.style.display = 'block';
-    title.textContent = 'Checking location…';
-    body.innerHTML = '<div style="text-align:center;padding:20px 0"><div class="spinner-lg" style="margin:0 auto"></div></div>';
-
-    let html = `<div style="font-size:11px;color:var(--gray-400);font-style:italic;margin-bottom:12px;">${lat.toFixed(5)}, ${lng.toFixed(5)}</div>`;
-
-    // FEMA flood zone query
-    try {
-      const fp = new URLSearchParams({
-        geometry: `${lng},${lat}`, geometryType: 'esriGeometryPoint',
-        inSR: 4326, spatialRel: 'esriSpatialRelIntersects',
-        outFields: 'FLD_ZONE,ZONE_SUBTY,SFHA_TF', returnGeometry: false, f: 'json'
-      });
-      const fd = await (await fetch(`${FEMA_URL}/28/query?${fp}`)).json();
-      const ff = fd.features?.[0]?.attributes;
-      if (ff) {
-        const inFlood = ff.SFHA_TF === 'T' || (ff.FLD_ZONE||'').startsWith('A') || (ff.FLD_ZONE||'').startsWith('V');
-        html += `<div style="background:${inFlood?'#fef2f2':'#f0fdf4'};border:1px solid ${inFlood?'#fca5a5':'#86efac'};border-radius:8px;padding:10px 12px;margin-bottom:10px;">
-          <div style="font-weight:700;color:${inFlood?'#dc2626':'#16a34a'};font-size:12px;margin-bottom:3px;">${inFlood?'⚠️ In Special Flood Hazard Area':'✓ Not in Special Flood Hazard Area'}</div>
-          <div style="font-size:11px;color:#6b6560;">FEMA Zone: <strong>${ff.FLD_ZONE||'X'}${ff.ZONE_SUBTY?' — '+ff.ZONE_SUBTY:''}</strong></div>
-        </div>`;
-      } else {
-        html += `<div style="background:#f8fafc;border:1px solid #dedad2;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#a09a8e;">No flood zone mapped at this location.</div>`;
-      }
-    } catch(e) {
-      html += `<div style="font-size:11px;color:#a09a8e;margin-bottom:10px;">Flood data unavailable — FEMA server may be unreachable.</div>`;
-    }
-
-    // Parcel info — link out to Montana Cadastral viewer (cross-origin query blocked)
-    const cadastralLink = `https://svc.mt.gov/msl/montanacadastral/?search=${encodeURIComponent(lat.toFixed(5)+','+lng.toFixed(5))}`;
-    html += `<div style="background:#faf5ff;border:1px solid #d8b4fe;border-radius:8px;padding:10px 12px;margin-bottom:10px;">
-      <div style="font-weight:700;font-size:12px;color:#6b21a8;margin-bottom:6px;">Parcel Info</div>
-      <div style="font-size:12px;color:#6b6560;margin-bottom:8px;">Click the button below to look up parcel ownership and details for this location on the Montana Cadastral viewer.</div>
-      <a href="${cadastralLink}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:white;background:#6d28d9;padding:6px 12px;border-radius:6px;text-decoration:none;">Open Parcel Info ↗</a>
-    </div>`;
-
-    html += `<a href="https://msc.fema.gov/portal/search?AddressQuery=${lat},${lng}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:#00474f;text-decoration:none;">View on FEMA Map Service ↗</a>`;
-    html += `<p style="font-size:10px;color:#a09a8e;font-style:italic;margin-top:10px;">Click a road or address point directly to see its details.</p>`;
-
-    title.textContent = 'Location Info';
-    body.innerHTML = html;
+    L.esri.identifyFeatures({
+      url: 'https://gisservicemt.gov/arcgis/rest/services/MSDI_Framework/Parcels/MapServer'
+    })
+    .on(map)
+    .at([lat, lng])
+    .tolerance(3)
+    .run((err, featureCollection) => {
+      if (err || !featureCollection?.features?.length) return;
+      const p = featureCollection.features[0].properties;
+      const owner = [p.OWNERNME1, p.OWNERNME2].filter(Boolean).join('<br>') || 'Unknown';
+      const acres = p.ACREAGE ? parseFloat(p.ACREAGE).toFixed(2) + ' ac' : '';
+      L.popup({ maxWidth: 280 })
+        .setLatLng(e.latlng)
+        .setContent(`
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;">
+            <div style="font-weight:800;font-size:13px;color:#002d33;margin-bottom:8px;border-bottom:1px solid #e5e1d8;padding-bottom:6px;">Parcel</div>
+            <div style="font-size:11px;color:#6b6560;line-height:1.8;">
+              <div><span style="text-transform:uppercase;font-size:9px;letter-spacing:.08em;color:#a09a8e;">Owner</span><br><strong style="color:#1a1a1a;">${owner}</strong></div>
+              ${p.SITUSADD ? `<div style="margin-top:5px;"><span style="text-transform:uppercase;font-size:9px;letter-spacing:.08em;color:#a09a8e;">Address</span><br>${p.SITUSADD}</div>` : ''}
+              ${p.GEOCODE  ? `<div style="margin-top:5px;"><span style="text-transform:uppercase;font-size:9px;letter-spacing:.08em;color:#a09a8e;">Geocode</span><br>${p.GEOCODE}</div>` : ''}
+              ${acres      ? `<div style="margin-top:5px;"><span style="text-transform:uppercase;font-size:9px;letter-spacing:.08em;color:#a09a8e;">Acreage</span><br>${acres}</div>` : ''}
+              ${p.LEGALDES ? `<div style="margin-top:5px;"><span style="text-transform:uppercase;font-size:9px;letter-spacing:.08em;color:#a09a8e;">Legal</span><br>${p.LEGALDES}</div>` : ''}
+            </div>
+          </div>`)
+        .openOn(map);
+    });
   });
 
   fetchCountyBoundary();
