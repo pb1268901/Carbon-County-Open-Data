@@ -318,8 +318,8 @@
     .cs-summary strong { color: var(--teal); font-weight: 700; }
 
     .catalog-main { max-width: 1280px; margin: 0 auto; padding: 28px 32px 80px; }
-    #data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; }
-    .dcard { background: var(--white); border-radius: var(--rlg); border: 1px solid var(--gray-200); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; animation: cardIn 0.36s ease both; }
+    #data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; align-items: start; }
+    .dcard { background: var(--white); border-radius: var(--rlg); border: 1px solid var(--gray-200); overflow: hidden; display: flex; flex-direction: column; min-width: 0; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; animation: cardIn 0.36s ease both; }
     .dcard:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,45,51,0.1); border-color: var(--gray-400); }
     @keyframes cardIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
     .dcard-thumb { width: 100%; height: 136px; position: relative; overflow: hidden; background: var(--gray-100); flex-shrink: 0; }
@@ -447,8 +447,6 @@
     <button class="ptab active" data-tab="home">Home</button>
     <button class="ptab" data-tab="address">Address Lookup</button>
     <button class="ptab" data-tab="map">Explore the Map</button>
-    <button class="ptab" data-tab="parcel">Property &amp; Parcel</button>
-    <button class="ptab" data-tab="flood">Floodplain Check</button>
     <button class="ptab" data-tab="maps">Downloadable Maps</button>
     <button class="ptab" data-tab="data">All GIS Data</button>
     <button class="ptab" data-tab="about">About &amp; Contact</button>
@@ -481,21 +479,21 @@
           <div class="action-desc">View parcels, roads, floodplains, and sage grouse habitat on an interactive map.</div>
           <div class="action-arrow">Open map →</div>
         </div>
-        <div class="action-card" onclick="goTab('parcel')">
+        <div class="action-card" onclick="goTab('map')">
           <div class="action-icon" style="background:rgba(109,40,217,0.15)">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#7c3aed" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/></svg>
           </div>
           <div class="action-title">Look Up a Property</div>
-          <div class="action-desc">Find parcel information and ownership records for any property in Carbon County.</div>
-          <div class="action-arrow">Search parcels →</div>
+          <div class="action-desc">View parcel boundaries and search ownership records on the interactive map.</div>
+          <div class="action-arrow">Open map →</div>
         </div>
-        <div class="action-card" onclick="goTab('flood')">
+        <div class="action-card" onclick="goTab('map')">
           <div class="action-icon" style="background:rgba(3,105,161,0.15)">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#0369a1" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"/></svg>
           </div>
           <div class="action-title">Check for Flood Risk</div>
-          <div class="action-desc">See if a property or address falls within a FEMA designated flood hazard area.</div>
-          <div class="action-arrow">Check floodplain →</div>
+          <div class="action-desc">Toggle the FEMA floodplain layer on the map to see flood hazard areas near any property.</div>
+          <div class="action-arrow">Open map →</div>
         </div>
         <div class="action-card" onclick="goTab('maps')">
           <div class="action-icon" style="background:rgba(180,83,9,0.15)">
@@ -533,7 +531,7 @@
         <div class="home-band-contact">
           <span style="font-family:var(--fhead);font-size:13px;font-weight:700;color:var(--gray-800);">Patrick Benson, GIS Coordinator</span>
           <a href="tel:4064457271">406-445-7271</a>
-          <a id="home-email" href="#">GIS@carbonmt.gov</a>
+          <a id="home-email" href="#"><span class="__cf_email__" data-cfemail="eaada3b9aa898b98888584879ec48d859c">[email&#160;protected]</span></a>
           <span style="font-family:var(--fbody);font-size:12px;color:var(--gray-400);font-style:italic;">10 Oakes Ave S, Suite F · Red Lodge, MT</span>
         </div>
       </div>
@@ -596,9 +594,17 @@
       <button class="layer-toggle tog-grouse" data-layer="grouse" onclick="toggleLayer(this)">
         <span class="tog-dot" style="background:#15803d"></span> Sage Grouse Habitat
       </button>
+      <span style="font-family:var(--fbody);font-size:11px;color:var(--gray-400);font-style:italic;margin-left:auto;">Click anywhere on the map to look up parcel &amp; flood info</span>
     </div>
-    <div style="position:relative;">
+    <div style="position:relative;display:flex;">
       <div id="map"></div>
+      <div id="map-panel" style="display:none;position:absolute;top:12px;right:12px;z-index:400;width:300px;background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,45,51,0.18);overflow:hidden;max-height:calc(100% - 24px);overflow-y:auto;">
+        <div style="background:var(--teal);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-family:var(--fhead);font-size:12px;font-weight:700;color:white;letter-spacing:0.04em;" id="panel-title">Location Info</span>
+          <button onclick="document.getElementById('map-panel').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;font-size:18px;line-height:1;padding:0 2px;">&times;</button>
+        </div>
+        <div id="panel-body" style="padding:14px;font-family:var(--fhead);font-size:13px;color:var(--gray-600);">Click the map to look up a location.</div>
+      </div>
       <div class="map-zoom-notice" id="zoom-notice">Zoom in further to see parcels</div>
     </div>
   </div>
@@ -771,7 +777,7 @@
           <strong>Patrick Benson, GIS Coordinator</strong>
           <span style="font-family:var(--fbody);font-size:13px;color:var(--gray-600);font-style:italic;">10 Oakes Ave S, Suite F<br/>Red Lodge, MT 59068</span>
           <a href="tel:4064457271">406-445-7271</a>
-          <a id="about-email" href="#">GIS@carbonmt.gov</a>
+          <a id="about-email" href="#"><span class="__cf_email__" data-cfemail="0f48465c4f6c6e7d6d6061627b21686079">[email&#160;protected]</span></a>
         </div>
       </div>
       <div class="acard">
@@ -816,15 +822,15 @@
         10 Oakes Ave S, Suite F<br/>Red Lodge, MT 59068<br/><br/>
         Patrick Benson, GIS Coordinator<br/>
         <a href="tel:4064457271">406-445-7271</a><br/>
-        <a id="footer-email" href="#">GIS@carbonmt.gov</a>
+        <a id="footer-email" href="#"><span class="__cf_email__" data-cfemail="66212f35260507140409080b1248010910">[email&#160;protected]</span></a>
       </address>
     </div>
     <div class="fcol">
       <h4>Tools</h4>
       <a onclick="goTab('address')">9-1-1 Address Lookup</a>
       <a onclick="goTab('map')">Explore the Map</a>
-      <a onclick="goTab('parcel')">Property &amp; Parcel</a>
-      <a onclick="goTab('flood')">Floodplain Check</a>
+      <a onclick="goTab('map')">Property &amp; Parcel</a>
+      <a onclick="goTab('map')">Floodplain Check</a>
       <a onclick="goTab('maps')">Downloadable Maps</a>
     </div>
     <div class="fcol">
@@ -839,7 +845,7 @@
   <div class="footer-bottom"><p>Carbon County GIS &bull; Red Lodge, Montana &bull; <span id="footer-year"></span></p></div>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ══════════════════════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════════════════════
@@ -892,55 +898,42 @@ let map, layers = {}, parcelsVisible = false;
 function initMap() {
   mapInitialized = true;
 
-  map = L.map('map', {
-    center: COUNTY_CENTER,
-    zoom: 10,
-    zoomControl: true
-  });
+  map = L.map('map', { center: COUNTY_CENTER, zoom: 10, zoomControl: true });
 
-  // Basemap — CartoDB Positron (clean, readable for non-technical users)
+  // Basemap
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
     subdomains: 'abcd', maxZoom: 20
   }).addTo(map);
 
-  // Fit to county bounds
   map.fitBounds(COUNTY_BOUNDS);
 
-  // ── County Boundary ──
-  fetchCountyBoundary();
+  // ── Define all layers (not added to map yet except boundary) ──
 
-  // ── Sage Grouse (MapServer tile overlay) ──
-  layers.grouse = L.tileLayer.wms('https://gis.dnrc.mt.gov/arcgis/rest/services/MSGHCP/SageGrouseAdministrative/MapServer/export', {
-    layers: 'show:0',
-    format: 'png32',
-    transparent: true,
-    opacity: 0.5,
-    attribution: 'MT DNRC'
-  });
-  // Use AGOL REST export format for MapServer
+  // Sage Grouse — DNRC MapServer dynamic export via L.imageOverlay approach won't work;
+  // use ArcGIS tile cache instead
   layers.grouse = L.tileLayer(
     'https://gis.dnrc.mt.gov/arcgis/rest/services/MSGHCP/SageGrouseAdministrative/MapServer/tile/{z}/{y}/{x}',
-    { maxZoom: 18, opacity: 0.5, attribution: 'MT DNRC' }
+    { maxZoom: 18, opacity: 0.55, attribution: 'MT DNRC', crossOrigin: true }
   );
 
-  // ── FEMA Floodplain (MapServer) ──
-  layers.flood = L.tileLayer(
-    'https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/tile/{z}/{y}/{x}',
-    { maxZoom: 20, opacity: 0.55, attribution: 'FEMA NFHL' }
+  // FEMA Floodplain — use dynamic map export (avoids CORS on tile endpoint)
+  layers.flood = L.tileLayer.wms(
+    'https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/WMSServer',
+    { layers: '28', format: 'image/png', transparent: true, opacity: 0.55, attribution: 'FEMA NFHL', version: '1.3.0' }
   );
 
-  // ── Montana Parcels (MapServer) — zoom restricted ──
+  // Montana Parcels — using the Parcels MapServer (not Cadastral)
   layers.parcels = L.tileLayer(
     'https://gisservicemt.gov/arcgis/rest/services/MSDI_Framework/Parcels/MapServer/tile/{z}/{y}/{x}',
-    { maxZoom: 20, opacity: 0.7, attribution: 'MT State Library' }
+    { maxZoom: 20, opacity: 0.7, attribution: 'MT State Library', crossOrigin: true }
   );
 
-  // ── Roads & Addresses (AGOL FeatureServer — rendered as tile) ──
-  // Use dynamic tile endpoint for FeatureServer
+  // Roads — use AGOL dynamic map export for FeatureServer (tile endpoint needs token)
+  // Use the public hosted feature service via dynamic tile
   layers.roads = L.tileLayer(
-    `https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/NG911_Core_Layers_View20251017/FeatureServer/tile/{z}/{y}/{x}`,
-    { maxZoom: 20, opacity: 0.8, attribution: 'Carbon County GIS' }
+    'https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/NG911_Core_Layers_View20251017/FeatureServer/tile/{z}/{y}/{x}',
+    { maxZoom: 20, opacity: 0.85, attribution: 'Carbon County GIS', crossOrigin: true }
   );
 
   // Zoom notice for parcels
@@ -960,6 +953,90 @@ function initMap() {
       notice.classList.remove('visible');
     }
   });
+
+  // ── Map click — look up parcel + floodplain info ──
+  map.on('click', async (e) => {
+    const { lat, lng } = e.latlng;
+    const panel = document.getElementById('map-panel');
+    const body  = document.getElementById('panel-body');
+    const title = document.getElementById('panel-title');
+    panel.style.display = 'block';
+    title.textContent = 'Looking up location…';
+    body.innerHTML = '<div style="text-align:center;padding:20px 0"><div class="spinner-lg" style="margin:0 auto"></div></div>';
+
+    let html = `<div style="font-size:11px;color:var(--gray-400);font-style:italic;margin-bottom:12px;">${lat.toFixed(5)}, ${lng.toFixed(5)}</div>`;
+
+    // Query FEMA flood zone at clicked point
+    try {
+      const femaParams = new URLSearchParams({
+        geometry: `${lng},${lat}`,
+        geometryType: 'esriGeometryPoint',
+        inSR: 4326,
+        spatialRel: 'esriSpatialRelIntersects',
+        outFields: 'FLD_ZONE,ZONE_SUBTY,SFHA_TF',
+        returnGeometry: false,
+        f: 'json'
+      });
+      const fd = await (await fetch(`${FEMA_URL}/28/query?${femaParams}`)).json();
+      const ff = fd.features?.[0]?.attributes;
+      if (ff) {
+        const inFlood = ff.SFHA_TF === 'T' || (ff.FLD_ZONE||'').startsWith('A') || (ff.FLD_ZONE||'').startsWith('V');
+        const color   = inFlood ? '#dc2626' : '#16a34a';
+        const label   = inFlood ? '⚠️ In Special Flood Hazard Area' : '✓ Not in Special Flood Hazard Area';
+        html += `<div style="background:${inFlood?'#fef2f2':'#f0fdf4'};border:1px solid ${inFlood?'#fca5a5':'#86efac'};border-radius:8px;padding:10px 12px;margin-bottom:10px;">
+          <div style="font-weight:700;color:${color};font-size:12px;margin-bottom:3px;">${label}</div>
+          <div style="font-size:11px;color:var(--gray-600);">FEMA Zone: <strong>${ff.FLD_ZONE||'X'}${ff.ZONE_SUBTY?' — '+ff.ZONE_SUBTY:''}</strong></div>
+        </div>`;
+      } else {
+        html += `<div style="background:#f8fafc;border:1px solid var(--gray-200);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--gray-400);">No FEMA flood zone data for this location.</div>`;
+      }
+    } catch(e) {
+      html += `<div style="font-size:11px;color:var(--gray-400);margin-bottom:10px;">Flood zone data unavailable.</div>`;
+    }
+
+    // Montana Cadastral parcel query at clicked point
+    try {
+      const parcelParams = new URLSearchParams({
+        geometry: `${lng},${lat}`,
+        geometryType: 'esriGeometryPoint',
+        inSR: 4326,
+        spatialRel: 'esriSpatialRelIntersects',
+        where: "UPPER(COUNTY) = 'CARBON'",
+        outFields: 'GEOCODE,OWNERNME1,OWNERNME2,SITUSADD,LEGALDES,ACREAGE',
+        returnGeometry: false,
+        f: 'json'
+      });
+      const pd = await (await fetch(`${CADASTRAL_URL}/0/query?${parcelParams}`)).json();
+      const pf = pd.features?.[0]?.attributes;
+      if (pf) {
+        const owner  = [pf.OWNERNME1, pf.OWNERNME2].filter(Boolean).join(' / ') || 'Unknown';
+        const acres  = pf.ACREAGE ? parseFloat(pf.ACREAGE).toFixed(2) + ' ac' : '';
+        html += `<div style="background:#faf5ff;border:1px solid #d8b4fe;border-radius:8px;padding:10px 12px;margin-bottom:10px;">
+          <div style="font-weight:700;font-size:12px;color:#6b21a8;margin-bottom:6px;">Parcel Info</div>
+          <div style="font-size:12px;line-height:1.7;color:var(--gray-800);">
+            <div><span style="color:var(--gray-400);font-size:10px;text-transform:uppercase;letter-spacing:.08em;">Owner</span><br/><strong>${owner}</strong></div>
+            ${pf.SITUSADD ? `<div style="margin-top:6px;"><span style="color:var(--gray-400);font-size:10px;text-transform:uppercase;letter-spacing:.08em;">Address</span><br/>${pf.SITUSADD}</div>` : ''}
+            ${pf.GEOCODE  ? `<div style="margin-top:6px;"><span style="color:var(--gray-400);font-size:10px;text-transform:uppercase;letter-spacing:.08em;">Geocode</span><br/>${pf.GEOCODE}</div>` : ''}
+            ${acres ? `<div style="margin-top:6px;"><span style="color:var(--gray-400);font-size:10px;text-transform:uppercase;letter-spacing:.08em;">Acreage</span><br/>${acres}</div>` : ''}
+          </div>
+        </div>`;
+      } else {
+        html += `<div style="background:#f8fafc;border:1px solid var(--gray-200);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--gray-400);">No parcel record found at this location.</div>`;
+      }
+    } catch(e) {
+      html += `<div style="font-size:11px;color:var(--gray-400);margin-bottom:10px;">Parcel data unavailable.</div>`;
+    }
+
+    const femaLink = `https://msc.fema.gov/portal/search?AddressQuery=${lat},${lng}`;
+    html += `<a href="${femaLink}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--teal);text-decoration:none;">View on FEMA Map Service ↗</a>`;
+    html += `<p style="font-size:10px;color:var(--gray-400);font-style:italic;margin-top:10px;">Click anywhere on the map to look up that location. Parcel data from Montana State Library.</p>`;
+
+    title.textContent = 'Location Info';
+    body.innerHTML = html;
+  });
+
+  // Load boundary last so it renders on top
+  fetchCountyBoundary();
 }
 
 async function fetchCountyBoundary() {
@@ -969,28 +1046,21 @@ async function fetchCountyBoundary() {
     const geojson = await r.json();
     if (geojson.features && geojson.features.length > 0) {
       layers.boundary = L.geoJSON(geojson, {
-        style: {
-          color: '#002d33',
-          weight: 2.5,
-          fillColor: 'transparent',
-          fillOpacity: 0,
-          dashArray: '6,4'
-        }
+        style: { color: '#002d33', weight: 2.5, fillOpacity: 0, dashArray: '6,4' }
       }).addTo(map);
-      // Fit map to actual boundary
       map.fitBounds(layers.boundary.getBounds(), { padding: [20, 20] });
     }
   } catch(e) {
-    // Fallback to hardcoded bounds — boundary still works visually
     map.fitBounds(COUNTY_BOUNDS);
   }
 }
 
 function toggleLayer(btn) {
   const name = btn.dataset.layer;
-  const isOn = btn.classList.contains('on');
 
+  // Boundary is a GeoJSON layer — slightly different handling
   if (name === 'boundary') {
+    const isOn = btn.classList.contains('on');
     btn.classList.toggle('on');
     if (layers.boundary) {
       isOn ? map.removeLayer(layers.boundary) : map.addLayer(layers.boundary);
@@ -998,24 +1068,27 @@ function toggleLayer(btn) {
     return;
   }
 
-  if (!map) return;
+  if (!map || !layers[name]) return;
 
-  if (isOn) {
+  const currentlyOn = map.hasLayer(layers[name]);
+
+  if (currentlyOn) {
+    // Turn off
+    map.removeLayer(layers[name]);
     btn.classList.remove('on');
-    if (layers[name] && map.hasLayer(layers[name])) map.removeLayer(layers[name]);
     if (name === 'parcels') document.getElementById('zoom-notice').classList.remove('visible');
   } else {
-    btn.classList.add('on');
-    if (name === 'parcels') {
-      if (map.getZoom() >= 13) {
-        map.addLayer(layers[name]);
-      } else {
-        document.getElementById('zoom-notice').classList.add('visible');
-        setTimeout(() => document.getElementById('zoom-notice').classList.remove('visible'), 3000);
-      }
-    } else {
-      if (layers[name]) map.addLayer(layers[name]);
+    // Turn on
+    if (name === 'parcels' && map.getZoom() < 13) {
+      const notice = document.getElementById('zoom-notice');
+      notice.classList.add('visible');
+      setTimeout(() => notice.classList.remove('visible'), 3000);
+      // Still toggle the button so user knows it's "on" and will appear on zoom
+      btn.classList.add('on');
+      return;
     }
+    map.addLayer(layers[name]);
+    btn.classList.add('on');
   }
 }
 
@@ -1381,6 +1454,8 @@ function esc(s) { return s.replace(/'/g, "''"); }
 function attr(label, val) { return `<div class="attr-item"><span class="attr-lbl">${label}</span><span class="attr-val">${val}</span></div>`; }
 function errBox(msg) { return `<div class="res-error">⚠️ An error occurred. Please try again.<br/><small style="opacity:.5;font-size:10px;">${msg||''}</small></div>`; }
 function setLoading(btn, on) { btn.disabled = on; btn.classList.toggle('loading', on); }
+
+// ══════════════════════════════════════════�
 
 // ══════════════════════════════════════════════════════════════
 // INIT
