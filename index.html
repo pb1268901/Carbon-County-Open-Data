@@ -894,14 +894,52 @@ function injectEmails() {
 // ══════════════════════════════════════════════════════════════
 // LEAFLET MAP
 // ══════════════════════════════════════════════════════════════
-let map, layers = {}, parcelsVisible = false;
+let map, layers = {};
+
+// RCL road renderer from service drawingInfo
+const RCL_RENDERER = {
+  'US Highway':             { color: '#e60000', weight: 3,   dashArray: null },
+  'Other Highway':          { color: '#e60000', weight: 3,   dashArray: null },
+  'State Highway':          { color: '#e60000', weight: 3,   dashArray: null },
+  'County Road':            { color: '#828282', weight: 2,   dashArray: null },
+  'City / Town Street':     { color: '#000000', weight: 1,   dashArray: null },
+  'Alley':                  { color: '#b2b2b2', weight: 1,   dashArray: null },
+  'Private Road':           { color: '#a900e6', weight: 1.5, dashArray: null },
+  'Public Land Access Road':{ color: '#4ce600', weight: 1.5, dashArray: null },
+  'Public - OHV':           { color: '#4ce600', weight: 1.5, dashArray: '6,4' },
+  'Agency Admin Use Only':  { color: '#ff0000', weight: 1.5, dashArray: '6,4' },
+};
+
+// SSAP renderer from service drawingInfo
+const SSAP_RENDERER = {
+  structure: { shape: 'square', color: '#000000', size: 4 },
+  notPresent: { shape: 'circle', color: '#55ff00', size: 5 },
+};
+
+function rclStyle(feature) {
+  const sym = RCL_RENDERER[feature.properties.RoadSym] || { color: '#828282', weight: 1.5, dashArray: null };
+  return { color: sym.color, weight: sym.weight, dashArray: sym.dashArray, opacity: 0.9 };
+}
+
+function ssapMarker(feature, latlng) {
+  const t = String(feature.properties.MT_PlcType || '1');
+  const isNotPresent = t === '2';
+  const sym = isNotPresent ? SSAP_RENDERER.notPresent : SSAP_RENDERER.structure;
+  if (sym.shape === 'square') {
+    return L.marker(latlng, { icon: L.divIcon({
+      className: '',
+      html: `<div style="width:${sym.size}px;height:${sym.size}px;background:${sym.color};transform:translate(-50%,-50%)"></div>`,
+      iconSize: [sym.size, sym.size], iconAnchor: [sym.size/2, sym.size/2]
+    })});
+  }
+  return L.circleMarker(latlng, { radius: sym.size/2, fillColor: sym.color, fillOpacity: 1, color: '#000', weight: 0.6 });
+}
 
 function initMap() {
   mapInitialized = true;
 
   map = L.map('map', { center: COUNTY_CENTER, zoom: 10, zoomControl: true });
 
-  // Basemap
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
     subdomains: 'abcd', maxZoom: 20
@@ -909,159 +947,135 @@ function initMap() {
 
   map.fitBounds(COUNTY_BOUNDS);
 
-  // ── Define all layers (not added to map yet except boundary) ──
-
-  // ── Sage Grouse — Esri dynamic layer (handles CORS via JSONP/CORS properly) ──
+  // ── Sage Grouse ──
   layers.grouse = L.esri.dynamicMapLayer({
     url: 'https://gis.dnrc.mt.gov/arcgis/rest/services/MSGHCP/SageGrouseAdministrative/MapServer',
-    layers: [0],
-    opacity: 0.55,
-    attribution: 'MT DNRC'
+    layers: [0], opacity: 0.55, attribution: 'MT DNRC'
   });
 
-  // ── FEMA Floodplain — WMS with fallback to direct tile URL ──
-  layers.flood = L.tileLayer.wms(
-    'https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/WMSServer', {
-    layers: '28,14,12',
-    format: 'image/png',
-    transparent: true,
+  // ── FEMA Floodplain — ArcGIS Server item added to your AGOL org ──
+  // This item points to FEMA's server but AGOL proxies the tiles correctly
+  layers.flood = L.esri.dynamicMapLayer({
+    url: 'https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer',
+    layers: [28],
     opacity: 0.6,
-    version: '1.1.1',
-    attribution: 'FEMA NFHL'
-  });
-  // Fallback: if WMS tiles error, swap to AGOL-hosted NFHL tiled service
-  layers.flood.on('tileerror', function() {
-    if (layers._floodFallbackApplied) return;
-    layers._floodFallbackApplied = true;
-    if (map.hasLayer(layers.flood)) map.removeLayer(layers.flood);
-    layers.flood = L.esri.tiledMapLayer({
-      url: 'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/FEMA_NFHL_v20240201/MapServer',
-      opacity: 0.6, attribution: 'FEMA NFHL'
-    });
-    const floodBtn = document.querySelector('[data-layer="flood"]');
-    if (floodBtn && floodBtn.classList.contains('on')) map.addLayer(layers.flood);
+    attribution: 'FEMA NFHL',
+    useCors: false   // force JSONP to bypass CORS restriction
   });
 
-  // ── Montana Parcels — Esri dynamic layer ──
+  // ── Montana Parcels ──
   layers.parcels = L.esri.dynamicMapLayer({
     url: 'https://gisservicemt.gov/arcgis/rest/services/MSDI_Framework/Parcels/MapServer',
-    opacity: 0.75,
-    attribution: 'MT State Library'
+    opacity: 0.75, attribution: 'MT State Library'
   });
 
-  // ── Roads (RCL) — use service symbology ──
+  // ── Roads (RCL) with full renderer ──
   layers.roads = L.esri.featureLayer({
     url: 'https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/NG911_Core_Layers_View20251017/FeatureServer/15',
+    style: rclStyle,
     minZoom: 10,
-    attribution: 'Carbon County GIS'
-    // No style override — Esri Leaflet will use the service's own renderer
+    attribution: 'Carbon County GIS',
+    onEachFeature: (feature, layer) => {
+      const p = feature.properties;
+      const name = p.RoadName || p.FullName || p.St_Name || '';
+      const type = p.RoadSym  || p.RoadClass || '';
+      layer.bindPopup(`
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;min-width:180px;">
+          <div style="font-weight:800;font-size:14px;color:#002d33;margin-bottom:6px;">${name || 'Unnamed Road'}</div>
+          ${type ? `<div style="font-size:11px;color:#6b6560;margin-bottom:3px;"><b>Type:</b> ${type}</div>` : ''}
+          ${p.COUNTY ? `<div style="font-size:11px;color:#6b6560;"><b>County:</b> ${p.COUNTY}</div>` : ''}
+        </div>`, { maxWidth: 260 });
+    }
   });
 
-  // ── SSAP Address Points — separate featureLayer using service symbology ──
+  // ── SSAP Address Points with full renderer ──
   layers.ssap = L.esri.featureLayer({
     url: 'https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/NG911_Core_Layers_View20251017/FeatureServer/8',
-    minZoom: 13,             // only load at street level — too many points at county scale
-    attribution: 'Carbon County GIS'
+    pointToLayer: ssapMarker,
+    minZoom: 13,
+    attribution: 'Carbon County GIS',
+    onEachFeature: (feature, layer) => {
+      const p = feature.properties;
+      const addr   = p.AbbrvAdd  || '';
+      const comm   = p.Post_Comm || p.MSAGComm || '';
+      const zip    = p.Post_Code || p.ZIP || '';
+      const status = p.MT_PlcType === '2' ? 'Not Present' : 'Structure';
+      layer.bindPopup(`
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;min-width:180px;">
+          <div style="font-weight:800;font-size:14px;color:#002d33;margin-bottom:6px;">${addr || 'Address Point'}</div>
+          ${comm ? `<div style="font-size:11px;color:#6b6560;margin-bottom:3px;">${comm}${zip ? ', ' + zip : ''}</div>` : ''}
+          <div style="font-size:11px;color:#6b6560;margin-bottom:3px;"><b>Status:</b> ${status}</div>
+          ${p.AddNum ? `<div style="font-size:11px;color:#6b6560;"><b>AddNum:</b> ${p.AddNum}</div>` : ''}
+        </div>`, { maxWidth: 260 });
+    }
   });
 
+  // ── Zoom handling for parcels + ssap ──
   map.on('zoomend', () => {
     const z = map.getZoom();
     const notice = document.getElementById('zoom-notice');
     const parcelOn = document.querySelector('[data-layer="parcels"]')?.classList.contains('on');
     const ssapOn   = document.querySelector('[data-layer="ssap"]')?.classList.contains('on');
     if (parcelOn) {
-      if (z < 13) { notice.textContent = 'Zoom in further to see parcels'; notice.classList.add('visible'); if (map.hasLayer(layers.parcels)) map.removeLayer(layers.parcels); }
+      if (z < 13) { notice.textContent = 'Zoom in to see parcels'; notice.classList.add('visible'); if (map.hasLayer(layers.parcels)) map.removeLayer(layers.parcels); }
       else { notice.classList.remove('visible'); if (!map.hasLayer(layers.parcels)) map.addLayer(layers.parcels); }
     }
     if (ssapOn) {
-      if (z < 13) { notice.textContent = 'Zoom in further to see address points'; notice.classList.add('visible'); if (map.hasLayer(layers.ssap)) map.removeLayer(layers.ssap); }
+      if (z < 13) { notice.textContent = 'Zoom in to see address points'; notice.classList.add('visible'); if (map.hasLayer(layers.ssap)) map.removeLayer(layers.ssap); }
       else { notice.classList.remove('visible'); if (!map.hasLayer(layers.ssap)) map.addLayer(layers.ssap); }
     }
     if (!parcelOn && !ssapOn) notice.classList.remove('visible');
   });
 
-  // ── Map click — look up parcel + floodplain info ──
+  // ── Map click — FEMA flood query + parcel link-out ──
   map.on('click', async (e) => {
     const { lat, lng } = e.latlng;
     const panel = document.getElementById('map-panel');
     const body  = document.getElementById('panel-body');
     const title = document.getElementById('panel-title');
     panel.style.display = 'block';
-    title.textContent = 'Looking up location…';
+    title.textContent = 'Checking location…';
     body.innerHTML = '<div style="text-align:center;padding:20px 0"><div class="spinner-lg" style="margin:0 auto"></div></div>';
 
     let html = `<div style="font-size:11px;color:var(--gray-400);font-style:italic;margin-bottom:12px;">${lat.toFixed(5)}, ${lng.toFixed(5)}</div>`;
 
-    // Query FEMA flood zone at clicked point
+    // FEMA flood zone query
     try {
-      const femaParams = new URLSearchParams({
-        geometry: `${lng},${lat}`,
-        geometryType: 'esriGeometryPoint',
-        inSR: 4326,
-        spatialRel: 'esriSpatialRelIntersects',
-        outFields: 'FLD_ZONE,ZONE_SUBTY,SFHA_TF',
-        returnGeometry: false,
-        f: 'json'
+      const fp = new URLSearchParams({
+        geometry: `${lng},${lat}`, geometryType: 'esriGeometryPoint',
+        inSR: 4326, spatialRel: 'esriSpatialRelIntersects',
+        outFields: 'FLD_ZONE,ZONE_SUBTY,SFHA_TF', returnGeometry: false, f: 'json'
       });
-      const fd = await (await fetch(`${FEMA_URL}/28/query?${femaParams}`)).json();
+      const fd = await (await fetch(`${FEMA_URL}/28/query?${fp}`)).json();
       const ff = fd.features?.[0]?.attributes;
       if (ff) {
         const inFlood = ff.SFHA_TF === 'T' || (ff.FLD_ZONE||'').startsWith('A') || (ff.FLD_ZONE||'').startsWith('V');
-        const color   = inFlood ? '#dc2626' : '#16a34a';
-        const label   = inFlood ? '⚠️ In Special Flood Hazard Area' : '✓ Not in Special Flood Hazard Area';
         html += `<div style="background:${inFlood?'#fef2f2':'#f0fdf4'};border:1px solid ${inFlood?'#fca5a5':'#86efac'};border-radius:8px;padding:10px 12px;margin-bottom:10px;">
-          <div style="font-weight:700;color:${color};font-size:12px;margin-bottom:3px;">${label}</div>
-          <div style="font-size:11px;color:var(--gray-600);">FEMA Zone: <strong>${ff.FLD_ZONE||'X'}${ff.ZONE_SUBTY?' — '+ff.ZONE_SUBTY:''}</strong></div>
+          <div style="font-weight:700;color:${inFlood?'#dc2626':'#16a34a'};font-size:12px;margin-bottom:3px;">${inFlood?'⚠️ In Special Flood Hazard Area':'✓ Not in Special Flood Hazard Area'}</div>
+          <div style="font-size:11px;color:#6b6560;">FEMA Zone: <strong>${ff.FLD_ZONE||'X'}${ff.ZONE_SUBTY?' — '+ff.ZONE_SUBTY:''}</strong></div>
         </div>`;
       } else {
-        html += `<div style="background:#f8fafc;border:1px solid var(--gray-200);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--gray-400);">No FEMA flood zone data for this location.</div>`;
+        html += `<div style="background:#f8fafc;border:1px solid #dedad2;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#a09a8e;">No flood zone mapped at this location.</div>`;
       }
     } catch(e) {
-      html += `<div style="font-size:11px;color:var(--gray-400);margin-bottom:10px;">Flood zone data unavailable.</div>`;
+      html += `<div style="font-size:11px;color:#a09a8e;margin-bottom:10px;">Flood data unavailable — FEMA server may be unreachable.</div>`;
     }
 
-    // Montana Cadastral parcel query at clicked point
-    try {
-      const parcelParams = new URLSearchParams({
-        geometry: `${lng},${lat}`,
-        geometryType: 'esriGeometryPoint',
-        inSR: 4326,
-        spatialRel: 'esriSpatialRelIntersects',
-        where: "UPPER(COUNTY) = 'CARBON'",
-        outFields: 'GEOCODE,OWNERNME1,OWNERNME2,SITUSADD,LEGALDES,ACREAGE',
-        returnGeometry: false,
-        f: 'json'
-      });
-      const pd = await (await fetch(`${CADASTRAL_URL}/0/query?${parcelParams}`)).json();
-      const pf = pd.features?.[0]?.attributes;
-      if (pf) {
-        const owner  = [pf.OWNERNME1, pf.OWNERNME2].filter(Boolean).join(' / ') || 'Unknown';
-        const acres  = pf.ACREAGE ? parseFloat(pf.ACREAGE).toFixed(2) + ' ac' : '';
-        html += `<div style="background:#faf5ff;border:1px solid #d8b4fe;border-radius:8px;padding:10px 12px;margin-bottom:10px;">
-          <div style="font-weight:700;font-size:12px;color:#6b21a8;margin-bottom:6px;">Parcel Info</div>
-          <div style="font-size:12px;line-height:1.7;color:var(--gray-800);">
-            <div><span style="color:var(--gray-400);font-size:10px;text-transform:uppercase;letter-spacing:.08em;">Owner</span><br/><strong>${owner}</strong></div>
-            ${pf.SITUSADD ? `<div style="margin-top:6px;"><span style="color:var(--gray-400);font-size:10px;text-transform:uppercase;letter-spacing:.08em;">Address</span><br/>${pf.SITUSADD}</div>` : ''}
-            ${pf.GEOCODE  ? `<div style="margin-top:6px;"><span style="color:var(--gray-400);font-size:10px;text-transform:uppercase;letter-spacing:.08em;">Geocode</span><br/>${pf.GEOCODE}</div>` : ''}
-            ${acres ? `<div style="margin-top:6px;"><span style="color:var(--gray-400);font-size:10px;text-transform:uppercase;letter-spacing:.08em;">Acreage</span><br/>${acres}</div>` : ''}
-          </div>
-        </div>`;
-      } else {
-        html += `<div style="background:#f8fafc;border:1px solid var(--gray-200);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--gray-400);">No parcel record found at this location.</div>`;
-      }
-    } catch(e) {
-      html += `<div style="font-size:11px;color:var(--gray-400);margin-bottom:10px;">Parcel data unavailable.</div>`;
-    }
+    // Parcel info — link out to Montana Cadastral viewer (cross-origin query blocked)
+    const cadastralLink = `https://svc.mt.gov/msl/montanacadastral/?search=${encodeURIComponent(lat.toFixed(5)+','+lng.toFixed(5))}`;
+    html += `<div style="background:#faf5ff;border:1px solid #d8b4fe;border-radius:8px;padding:10px 12px;margin-bottom:10px;">
+      <div style="font-weight:700;font-size:12px;color:#6b21a8;margin-bottom:6px;">Parcel Info</div>
+      <div style="font-size:12px;color:#6b6560;margin-bottom:8px;">Click the button below to look up parcel ownership and details for this location on the Montana Cadastral viewer.</div>
+      <a href="${cadastralLink}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:white;background:#6d28d9;padding:6px 12px;border-radius:6px;text-decoration:none;">Open Parcel Info ↗</a>
+    </div>`;
 
-    const femaLink = `https://msc.fema.gov/portal/search?AddressQuery=${lat},${lng}`;
-    html += `<a href="${femaLink}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--teal);text-decoration:none;">View on FEMA Map Service ↗</a>`;
-    html += `<p style="font-size:10px;color:var(--gray-400);font-style:italic;margin-top:10px;">Click anywhere on the map to look up that location. Parcel data from Montana State Library.</p>`;
+    html += `<a href="https://msc.fema.gov/portal/search?AddressQuery=${lat},${lng}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:#00474f;text-decoration:none;">View on FEMA Map Service ↗</a>`;
+    html += `<p style="font-size:10px;color:#a09a8e;font-style:italic;margin-top:10px;">Click a road or address point directly to see its details.</p>`;
 
     title.textContent = 'Location Info';
     body.innerHTML = html;
   });
 
-  // Load boundary last so it renders on top
   fetchCountyBoundary();
 }
 
