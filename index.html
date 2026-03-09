@@ -3,293 +3,302 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Carbon County GIS — Open Data</title>
+  <title>Carbon County GIS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --teal:       #00474f;
-      --teal-dark:  #002d33;
-      --teal-mid:   #005f6a;
-      --sand:       #e0c88c;
-      --charcoal:   #494949;
-      --white:      #ffffff;
-      --off-white:  #f7f5f0;
-      --gray-100:   #f0ede8;
-      --gray-200:   #dedad2;
-      --gray-400:   #a09a8e;
-      --gray-600:   #6b6560;
-      --gray-800:   #2e2a25;
-      --font-head:  'Plus Jakarta Sans', sans-serif;
-      --font-body:  'Lora', serif;
-      --radius-sm:  6px;
-      --radius:     10px;
-      --radius-lg:  16px;
+      --teal:      #00474f;
+      --teal-dark: #002d33;
+      --teal-mid:  #005f6a;
+      --sand:      #e0c88c;
+      --charcoal:  #494949;
+      --white:     #ffffff;
+      --off-white: #f7f5f0;
+      --gray-100:  #f0ede8;
+      --gray-200:  #dedad2;
+      --gray-400:  #a09a8e;
+      --gray-600:  #6b6560;
+      --gray-800:  #2e2a25;
+      --forest:    #0e783b;
+      --ember:     #ee5d28;
+      --sky:       #1798d1;
+      --fhead: 'Plus Jakarta Sans', sans-serif;
+      --fbody: 'Lora', serif;
+      --r: 10px; --rlg: 16px; --rsm: 6px;
     }
-
     html { scroll-behavior: smooth; }
-    body { font-family: var(--font-body); background: var(--off-white); color: var(--gray-800); min-height: 100vh; }
+    body { font-family: var(--fbody); background: var(--off-white); color: var(--gray-800); min-height: 100vh; }
 
     /* ── TOP BAR ── */
-    .topbar {
-      background: var(--teal-dark);
-      padding: 6px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .topbar span {
-      font-family: var(--font-head);
-      font-size: 11px;
-      font-weight: 500;
-      color: rgba(255,255,255,0.38);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-    .topbar a {
-      font-family: var(--font-head);
-      font-size: 11px;
-      color: var(--sand);
-      text-decoration: none;
-      opacity: 0.75;
-      transition: opacity 0.2s;
-    }
+    .topbar { background: var(--teal-dark); padding: 5px 32px; display: flex; align-items: center; justify-content: space-between; }
+    .topbar span { font-family: var(--fhead); font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.35); letter-spacing: 0.08em; text-transform: uppercase; }
+    .topbar a { font-family: var(--fhead); font-size: 11px; color: var(--sand); text-decoration: none; opacity: 0.75; transition: opacity 0.2s; }
     .topbar a:hover { opacity: 1; }
 
     /* ── HEADER ── */
-    header {
-      background: var(--teal);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .header-inner {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 0 32px;
-      height: 70px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .logo-wrap {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      text-decoration: none;
-      flex-shrink: 0;
-    }
-    .logo-img {
-      height: 44px;
-      width: auto;
-      filter: brightness(0) invert(1);
-      opacity: 0.88;
-    }
-    .logo-divider { width: 1px; height: 32px; background: rgba(255,255,255,0.18); }
-    .logo-text h1 {
-      font-family: var(--font-head);
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--white);
-      line-height: 1.2;
-      letter-spacing: -0.01em;
-    }
-    .logo-text span {
-      font-family: var(--font-head);
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--sand);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      display: block;
-      margin-top: 2px;
-      opacity: 0.8;
-    }
+    header { background: var(--teal); position: sticky; top: 0; z-index: 200; }
+    .header-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; height: 68px; display: flex; align-items: center; gap: 16px; }
+    .logo-wrap { display: flex; align-items: center; gap: 13px; text-decoration: none; flex-shrink: 0; }
+    .logo-img { height: 42px; width: auto; filter: brightness(0) invert(1); opacity: 0.88; }
+    .logo-div { width: 1px; height: 30px; background: rgba(255,255,255,0.18); }
+    .logo-text h1 { font-family: var(--fhead); font-size: 15px; font-weight: 800; color: var(--white); line-height: 1.2; letter-spacing: -0.01em; }
+    .logo-text span { font-family: var(--fhead); font-size: 10px; font-weight: 600; color: var(--sand); letter-spacing: 0.12em; text-transform: uppercase; display: block; margin-top: 2px; opacity: 0.8; }
     .header-spacer { flex: 1; }
+    /* Always-visible contact in header */
+    .header-contact { display: flex; align-items: center; gap: 16px; }
+    .header-phone { font-family: var(--fhead); font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7); text-decoration: none; letter-spacing: 0.02em; transition: color 0.18s; }
+    .header-phone:hover { color: var(--sand); }
     .header-nav { display: flex; align-items: center; gap: 6px; }
-    .nav-link {
-      font-family: var(--font-head);
-      font-size: 12px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.62);
-      text-decoration: none;
-      padding: 6px 13px;
-      border-radius: var(--radius-sm);
-      transition: all 0.18s;
-      letter-spacing: 0.03em;
-      white-space: nowrap;
-    }
+    .nav-link { font-family: var(--fhead); font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.62); text-decoration: none; padding: 6px 13px; border-radius: var(--rsm); transition: all 0.18s; white-space: nowrap; }
     .nav-link:hover { background: rgba(255,255,255,0.1); color: var(--white); }
     .nav-link.cta { background: var(--sand); color: var(--teal-dark); font-weight: 700; }
     .nav-link.cta:hover { background: #edd9a3; }
 
-    /* ── PAGE NAV ── */
-    .page-nav { background: var(--teal-dark); border-bottom: 1px solid rgba(255,255,255,0.06); }
-    .page-nav-inner {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 0 32px;
-      display: flex;
-      gap: 0;
-    }
-    .page-tab {
-      font-family: var(--font-head);
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      color: rgba(255,255,255,0.45);
-      padding: 13px 18px;
-      cursor: pointer;
-      border: none;
-      background: none;
-      border-bottom: 3px solid transparent;
-      transition: all 0.18s;
-      white-space: nowrap;
-    }
-    .page-tab:hover { color: rgba(255,255,255,0.8); }
-    .page-tab.active { color: var(--white); border-bottom-color: var(--sand); }
+    /* ── PAGE TABS ── */
+    .page-nav { background: var(--teal-dark); }
+    .page-nav-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; display: flex; overflow-x: auto; scrollbar-width: none; }
+    .page-nav-inner::-webkit-scrollbar { display: none; }
+    .ptab { font-family: var(--fhead); font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.42); padding: 12px 18px; cursor: pointer; border: none; background: none; border-bottom: 3px solid transparent; transition: all 0.18s; white-space: nowrap; letter-spacing: 0.03em; flex-shrink: 0; }
+    .ptab:hover { color: rgba(255,255,255,0.78); }
+    .ptab.active { color: var(--white); border-bottom-color: var(--sand); }
 
-    /* ── HERO ── */
-    .hero {
+    /* ── SECTIONS ── */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ══════════════════════════════════
+       HOME SECTION
+    ══════════════════════════════════ */
+    .home-hero {
       background: var(--teal);
       position: relative;
       overflow: hidden;
       padding: 52px 32px 48px;
     }
-    .hero::before {
+    .home-hero::before {
       content: '';
-      position: absolute;
-      inset: 0;
-      opacity: 0.05;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Cellipse cx='250' cy='250' rx='220' ry='110' fill='none' stroke='%23e0c88c' stroke-width='1.5'/%3E%3Cellipse cx='250' cy='250' rx='185' ry='82' fill='none' stroke='%23e0c88c' stroke-width='1.5'/%3E%3Cellipse cx='250' cy='250' rx='150' ry='58' fill='none' stroke='%23e0c88c' stroke-width='1.5'/%3E%3Cellipse cx='250' cy='250' rx='115' ry='38' fill='none' stroke='%23e0c88c' stroke-width='1.5'/%3E%3Cellipse cx='250' cy='250' rx='80' ry='22' fill='none' stroke='%23e0c88c' stroke-width='1.5'/%3E%3C/svg%3E");
+      position: absolute; inset: 0; opacity: 0.05;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Cellipse cx='250' cy='250' rx='220' ry='110' fill='none' stroke='%23e0c88c' stroke-width='1.5'/%3E%3Cellipse cx='250' cy='250' rx='170' ry='75' fill='none' stroke='%23e0c88c' stroke-width='1.5'/%3E%3Cellipse cx='250' cy='250' rx='120' ry='45' fill='none' stroke='%23e0c88c' stroke-width='1.5'/%3E%3Cellipse cx='250' cy='250' rx='70' ry='20' fill='none' stroke='%23e0c88c' stroke-width='1.5'/%3E%3C/svg%3E");
       background-size: 500px 500px;
       background-position: right -60px top -80px;
       background-repeat: no-repeat;
     }
-    .hero-inner {
-      position: relative;
-      max-width: 1280px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 48px;
-      align-items: center;
+    .home-hero-inner { position: relative; max-width: 1280px; margin: 0 auto; }
+    .home-eyebrow { font-family: var(--fhead); font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sand); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+    .home-eyebrow::before { content: ''; display: block; width: 20px; height: 2px; background: var(--sand); border-radius: 2px; }
+    .home-title { font-family: var(--fhead); font-size: clamp(26px, 3.5vw, 42px); font-weight: 800; color: var(--white); line-height: 1.1; letter-spacing: -0.025em; margin-bottom: 12px; }
+    .home-desc { font-family: var(--fbody); font-size: 15px; line-height: 1.75; color: rgba(255,255,255,0.6); max-width: 520px; font-style: italic; margin-bottom: 36px; }
+
+    /* Action cards */
+    .action-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; max-width: 1280px; }
+    .action-card {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: var(--rlg);
+      padding: 22px 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-align: left;
     }
-    .hero-dept {
-      font-family: var(--font-head);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--sand);
-      margin-bottom: 14px;
+    .action-card:hover { background: rgba(255,255,255,0.13); border-color: rgba(224,200,140,0.4); transform: translateY(-2px); }
+    .action-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .action-icon svg { width: 20px; height: 20px; }
+    .action-title { font-family: var(--fhead); font-size: 14px; font-weight: 800; color: var(--white); letter-spacing: -0.01em; line-height: 1.2; }
+    .action-desc { font-family: var(--fbody); font-size: 12px; color: rgba(255,255,255,0.55); line-height: 1.55; font-style: italic; }
+    .action-arrow { font-family: var(--fhead); font-size: 11px; font-weight: 700; color: var(--sand); margin-top: auto; letter-spacing: 0.04em; }
+
+    /* Home info band */
+    .home-band { background: var(--white); border-top: 1px solid var(--gray-200); border-bottom: 1px solid var(--gray-200); padding: 28px 32px; }
+    .home-band-inner { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; align-items: start; }
+    .home-band-item h3 { font-family: var(--fhead); font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal); margin-bottom: 6px; }
+    .home-band-item p { font-family: var(--fbody); font-size: 13px; color: var(--gray-600); line-height: 1.7; font-style: italic; }
+    .home-band-item a { color: var(--teal); }
+    .home-band-contact { display: flex; flex-direction: column; gap: 4px; }
+    .home-band-contact a { font-family: var(--fhead); font-size: 13px; font-weight: 600; color: var(--teal); text-decoration: none; transition: color 0.18s; }
+    .home-band-contact a:hover { color: var(--teal-mid); }
+
+    /* ══════════════════════════════════
+       SHARED TOOL SECTION STYLES
+    ══════════════════════════════════ */
+    .tool-section { max-width: 900px; margin: 0 auto; padding: 44px 32px 80px; }
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h2 { font-family: var(--fhead); font-size: 22px; font-weight: 800; color: var(--teal-dark); letter-spacing: -0.02em; margin-bottom: 8px; }
+    .tool-header p { font-family: var(--fbody); font-size: 14px; color: var(--gray-600); line-height: 1.75; font-style: italic; max-width: 600px; }
+    .tool-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--rlg); padding: 28px 28px 24px; margin-bottom: 16px; }
+    .tool-label { font-family: var(--fhead); font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray-400); margin-bottom: 8px; }
+
+    /* Input rows */
+    .input-row { display: flex; gap: 10px; align-items: stretch; }
+    .input-wrap { position: relative; flex: 1; }
+    .input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--gray-400); width: 16px; height: 16px; pointer-events: none; }
+    .tool-input {
+      width: 100%; padding: 12px 14px 12px 38px;
+      border: 2px solid var(--gray-200); border-radius: var(--r);
+      font-family: var(--fhead); font-size: 14px; color: var(--gray-800);
+      background: var(--gray-100); outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .tool-input::placeholder { color: var(--gray-400); }
+    .tool-input:focus { border-color: var(--teal); background: var(--white); box-shadow: 0 0 0 3px rgba(0,71,79,0.08); }
+    .tool-input.no-icon { padding-left: 14px; }
+    .tool-input.error { border-color: #ef4444; }
+    .tool-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: var(--fhead); font-size: 13px; font-weight: 700;
+      color: var(--white); background: var(--teal);
+      border: none; padding: 12px 22px; border-radius: var(--r);
+      cursor: pointer; letter-spacing: 0.03em; transition: background 0.18s;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .tool-btn:hover { background: var(--teal-mid); }
+    .tool-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
+    .tool-btn svg { width: 14px; height: 14px; }
+    .spinner-sm { width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.65s linear infinite; display: none; }
+    .tool-btn.loading .btn-label { display: none; }
+    .tool-btn.loading .spinner-sm { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .tool-hint { font-family: var(--fbody); font-size: 12px; color: var(--gray-400); font-style: italic; margin-top: 9px; }
+
+    /* Result cards */
+    .tool-result { margin-top: 18px; display: none; }
+    .res-found { background: #f0fdf4; border: 1.5px solid #86efac; border-radius: var(--rlg); padding: 22px; }
+    .res-notfound { background: #fef9f0; border: 1.5px solid #fcd34d; border-radius: var(--rlg); padding: 22px; }
+    .res-error { background: #fef2f2; border: 1.5px solid #fca5a5; border-radius: var(--rlg); padding: 18px; font-family: var(--fhead); font-size: 13px; color: #991b1b; }
+    .res-header { display: flex; align-items: flex-start; gap: 13px; margin-bottom: 14px; }
+    .res-icon { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .res-icon svg { width: 17px; height: 17px; color: white; }
+    .res-icon.green { background: #22c55e; }
+    .res-icon.yellow { background: #f59e0b; }
+    .res-icon.red { background: #ef4444; }
+    .res-tag { font-family: var(--fhead); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px; }
+    .res-tag.green { color: #16a34a; }
+    .res-tag.yellow { color: #b45309; }
+    .res-title { font-family: var(--fhead); font-size: 17px; font-weight: 800; color: var(--gray-800); letter-spacing: -0.01em; line-height: 1.2; }
+    .res-subtitle { font-family: var(--fbody); font-size: 13px; color: var(--gray-600); line-height: 1.6; margin-top: 4px; font-style: italic; }
+    .res-attrs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; padding: 14px; background: white; border-radius: var(--r); border: 1px solid #dcfce7; margin-bottom: 14px; }
+    .res-attrs.yellow-bg { border-color: #fde68a; }
+    .attr-item { display: flex; flex-direction: column; gap: 2px; }
+    .attr-lbl { font-family: var(--fhead); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-400); }
+    .attr-val { font-family: var(--fhead); font-size: 13px; font-weight: 600; color: var(--gray-800); }
+    .res-actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 14px; }
+    .res-btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--fhead); font-size: 11px; font-weight: 700; text-decoration: none; padding: 7px 14px; border-radius: var(--rsm); letter-spacing: 0.04em; transition: all 0.18s; border: none; cursor: pointer; white-space: nowrap; }
+    .res-btn.teal { background: var(--teal); color: white; }
+    .res-btn.teal:hover { background: var(--teal-mid); }
+    .res-btn.amber { background: #b45309; color: white; }
+    .res-btn.amber:hover { background: #92400e; }
+    .res-btn.red { background: #dc2626; color: white; }
+    .res-btn.red:hover { background: #b91c1c; }
+    .res-btn svg { width: 10px; height: 10px; }
+    .res-note { font-family: var(--fbody); font-size: 12px; color: var(--gray-400); font-style: italic; margin-top: 10px; }
+    .res-note a { color: var(--teal); }
+
+    /* ══════════════════════════════════
+       MAP SECTION
+    ══════════════════════════════════ */
+    .map-section { padding: 0; }
+    .map-toolbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      padding: 12px 32px;
       display: flex;
       align-items: center;
       gap: 10px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 68px;
+      z-index: 150;
+      box-shadow: 0 2px 8px rgba(0,45,51,0.06);
     }
-    .hero-dept::before { content: ''; display: block; width: 20px; height: 2px; background: var(--sand); border-radius: 2px; }
-    .hero-title {
-      font-family: var(--font-head);
-      font-size: clamp(24px, 3.5vw, 40px);
-      font-weight: 800;
-      color: var(--white);
-      line-height: 1.15;
-      letter-spacing: -0.025em;
-      margin-bottom: 14px;
-    }
-    .hero-desc {
-      font-family: var(--font-body);
-      font-size: 15px;
-      line-height: 1.75;
-      color: rgba(255,255,255,0.62);
-      max-width: 560px;
-    }
-    .hero-stats {
-      display: flex;
-      flex-direction: column;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(224,200,140,0.16);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-    .hero-stat {
-      padding: 18px 28px;
-      text-align: center;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
-    }
-    .hero-stat:last-child { border-bottom: none; }
-    .stat-n {
-      font-family: var(--font-head);
-      font-size: 32px;
-      font-weight: 800;
-      color: var(--sand);
-      display: block;
-      line-height: 1;
-      letter-spacing: -0.03em;
-    }
-    .stat-l {
-      font-family: var(--font-head);
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.32);
-      display: block;
-      margin-top: 5px;
-    }
-
-    /* ── CATEGORY TABS ── */
-    .cat-band { background: var(--teal-dark); }
-    .cat-band-inner {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 0 32px;
-      display: flex;
-      overflow-x: auto;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.12) transparent;
-      gap: 4px;
-    }
-    .cat-band-inner::-webkit-scrollbar { height: 3px; }
-    .cat-band-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 2px; }
-    .cat-band-inner::-webkit-scrollbar-track { background: transparent; }
-    .cat-tab {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 14px 20px;
-      font-family: var(--font-head);
-      font-size: 12px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.42);
-      cursor: pointer;
-      border: none;
-      background: none;
-      border-bottom: 3px solid transparent;
-      transition: all 0.18s;
+    .map-toolbar-label { font-family: var(--fhead); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-400); margin-right: 4px; flex-shrink: 0; }
+    .layer-toggle {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: var(--fhead); font-size: 12px; font-weight: 600;
+      padding: 6px 13px; border-radius: 20px;
+      border: 1.5px solid var(--gray-200);
+      background: var(--white); color: var(--gray-600);
+      cursor: pointer; transition: all 0.18s; user-select: none;
       white-space: nowrap;
-      letter-spacing: 0.03em;
-      flex-shrink: 0;
     }
-    .cat-tab:hover { color: rgba(255,255,255,0.78); background: rgba(255,255,255,0.04); border-radius: 4px 4px 0 0; }
-    .cat-tab.active { color: var(--white); border-bottom-color: var(--sand); }
-    .cat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .cnt {
-      background: rgba(255,255,255,0.07);
-      border-radius: 10px;
-      padding: 2px 8px;
-      font-size: 10px;
-      font-weight: 700;
-      color: rgba(255,255,255,0.32);
-      transition: all 0.18s;
-      min-width: 24px;
-      text-align: center;
+    .layer-toggle:hover { border-color: var(--teal); color: var(--teal); }
+    .layer-toggle.on { border-color: transparent; color: white; }
+    .layer-toggle .tog-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    /* layer colors */
+    .tog-boundary.on  { background: #334155; }
+    .tog-roads.on     { background: #b45309; }
+    .tog-parcels.on   { background: #6d28d9; }
+    .tog-flood.on     { background: #0369a1; }
+    .tog-grouse.on    { background: #15803d; }
+
+    #map { width: 100%; height: calc(100vh - 68px - 57px); min-height: 500px; }
+    .map-zoom-notice {
+      position: absolute;
+      bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,45,51,0.82); backdrop-filter: blur(6px);
+      color: white; font-family: var(--fhead); font-size: 12px; font-weight: 600;
+      padding: 8px 18px; border-radius: 20px;
+      pointer-events: none; z-index: 500;
+      opacity: 0; transition: opacity 0.3s;
+      white-space: nowrap;
     }
-    .cat-tab.active .cnt { background: rgba(224,200,140,0.18); color: var(--sand); }
+    .map-zoom-notice.visible { opacity: 1; }
+
+    /* ══════════════════════════════════
+       PDF MAPS SECTION
+    ══════════════════════════════════ */
+    .maps-section { max-width: 1280px; margin: 0 auto; padding: 36px 32px 80px; }
+    .sec-header { margin-bottom: 26px; }
+    .sec-header h2 { font-family: var(--fhead); font-size: 22px; font-weight: 800; color: var(--teal-dark); letter-spacing: -0.02em; margin-bottom: 7px; }
+    .sec-header p { font-family: var(--fbody); font-size: 14px; color: var(--gray-600); line-height: 1.7; max-width: 600px; font-style: italic; }
+    .pdf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+    .pdf-card { background: var(--white); border-radius: var(--rlg); border: 1px solid var(--gray-200); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; animation: cardIn 0.36s ease both; }
+    .pdf-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,45,51,0.1); border-color: var(--gray-400); }
+    .pdf-thumb { width: 100%; height: 130px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .pdf-thumb::after { content: ''; position: absolute; inset: 0; opacity: 0.08; background-image: repeating-linear-gradient(-40deg, transparent, transparent 10px, rgba(255,255,255,0.6) 10px, rgba(255,255,255,0.6) 11px); }
+    .pdf-thumb.county { background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal-mid) 60%, var(--teal) 100%); }
+    .pdf-thumb.usfs   { background: linear-gradient(135deg, #14532d 0%, #166534 60%, #15803d 100%); }
+    .pdf-thumb.blm    { background: linear-gradient(135deg, #92650a 0%, #b07d12 60%, #d4a017 100%); }
+    .pdf-thumb-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 7px; }
+    .pdf-icon { color: rgba(255,255,255,0.25); width: 34px; height: 34px; }
+    .pdf-pub { font-family: var(--fhead); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+    .pdf-badge { position: absolute; bottom: 8px; right: 8px; z-index: 2; background: rgba(0,0,0,0.42); backdrop-filter: blur(4px); color: rgba(255,255,255,0.88); font-family: var(--fhead); font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 7px; border-radius: 4px; }
+    .pdf-body { padding: 14px 16px 10px; flex: 1; display: flex; flex-direction: column; gap: 7px; }
+    .pdf-chip { display: inline-flex; align-items: center; font-family: var(--fhead); font-size: 9px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; width: fit-content; }
+    .chip-county { background: #ccfbf1; color: #134e4a; }
+    .chip-usfs   { background: #dcfce7; color: #14532d; }
+    .chip-blm    { background: #fef9c3; color: #854d0e; }
+    .pdf-title { font-family: var(--fhead); font-size: 13px; font-weight: 700; color: var(--gray-800); line-height: 1.3; }
+    .pdf-desc { font-family: var(--fbody); font-size: 12px; color: var(--gray-600); line-height: 1.6; flex: 1; font-style: italic; }
+    .pdf-footer { padding: 9px 16px; border-top: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; }
+    .pdf-meta { font-family: var(--fhead); font-size: 10px; color: var(--gray-400); font-weight: 500; }
+    .pdf-btn { display: inline-flex; align-items: center; gap: 5px; font-family: var(--fhead); font-size: 11px; font-weight: 700; color: var(--teal); text-decoration: none; padding: 5px 11px; background: rgba(0,71,79,0.06); border-radius: var(--rsm); letter-spacing: 0.04em; transition: all 0.18s; }
+    .pdf-btn:hover { background: var(--teal); color: var(--white); }
+    .pdf-btn svg { width: 10px; height: 10px; }
+    .pdf-note { display: flex; align-items: flex-start; gap: 10px; background: #fdf8ee; border: 1px solid rgba(224,200,140,0.5); border-radius: var(--r); padding: 12px 15px; margin-top: 20px; }
+    .pdf-note svg { width: 14px; height: 14px; color: var(--charcoal); flex-shrink: 0; margin-top: 2px; }
+    .pdf-note p { font-family: var(--fbody); font-size: 12.5px; color: var(--gray-600); line-height: 1.6; font-style: italic; }
+    .pdf-note p a { color: var(--teal); }
+
+    /* ══════════════════════════════════
+       ALL DATA CATALOG
+    ══════════════════════════════════ */
+    .catalog-band { background: var(--teal-dark); }
+    .cat-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; display: flex; overflow-x: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.12) transparent; gap: 4px; }
+    .cat-inner::-webkit-scrollbar { height: 3px; }
+    .cat-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 2px; }
+    .ctab { display: inline-flex; align-items: center; gap: 8px; padding: 13px 18px; font-family: var(--fhead); font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.42); cursor: pointer; border: none; background: none; border-bottom: 3px solid transparent; transition: all 0.18s; white-space: nowrap; flex-shrink: 0; }
+    .ctab:hover { color: rgba(255,255,255,0.78); }
+    .ctab.active { color: var(--white); border-bottom-color: var(--sand); }
+    .cdot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .ccnt { background: rgba(255,255,255,0.07); border-radius: 10px; padding: 2px 8px; font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.3); min-width: 22px; text-align: center; transition: all 0.18s; }
+    .ctab.active .ccnt { background: rgba(224,200,140,0.18); color: var(--sand); }
     .dot-all        { background: var(--sand); }
     .dot-boundaries { background: #60a5fa; }
     .dot-roads      { background: #fbbf24; }
@@ -298,1291 +307,1086 @@
     .dot-flood      { background: #22d3ee; }
     .dot-parks      { background: #4ade80; }
 
-    /* ── SEARCH BAR ── */
-    .search-bar {
-      background: var(--white);
-      border-bottom: 1px solid var(--gray-200);
-      padding: 12px 32px;
-      position: sticky;
-      top: 70px;
-      z-index: 90;
-      box-shadow: 0 2px 8px rgba(0,45,51,0.07);
-    }
-    .search-bar-inner {
-      max-width: 1280px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .search-wrap { position: relative; flex: 1; max-width: 440px; }
-    .search-icon {
-      position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
-      color: var(--gray-400); width: 15px; height: 15px; pointer-events: none;
-    }
-    #search {
-      width: 100%;
-      padding: 9px 14px 9px 36px;
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius);
-      font-family: var(--font-head);
-      font-size: 13px;
-      color: var(--gray-800);
-      background: var(--gray-100);
-      outline: none;
-      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-    }
-    #search::placeholder { color: var(--gray-400); }
-    #search:focus { border-color: var(--teal); background: var(--white); box-shadow: 0 0 0 3px rgba(0,71,79,0.08); }
-    .results-summary {
-      font-family: var(--font-head);
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--gray-400);
-      margin-left: auto;
-    }
-    .results-summary strong { color: var(--teal); font-weight: 700; }
+    .catalog-search { background: var(--white); border-bottom: 1px solid var(--gray-200); padding: 11px 32px; position: sticky; top: 68px; z-index: 90; box-shadow: 0 2px 8px rgba(0,45,51,0.06); }
+    .cs-inner { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; gap: 14px; }
+    .cs-wrap { position: relative; flex: 1; max-width: 420px; }
+    .cs-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--gray-400); width: 14px; height: 14px; pointer-events: none; }
+    #cat-search { width: 100%; padding: 8px 13px 8px 34px; border: 1.5px solid var(--gray-200); border-radius: var(--r); font-family: var(--fhead); font-size: 13px; color: var(--gray-800); background: var(--gray-100); outline: none; transition: border-color 0.2s, background 0.2s; }
+    #cat-search::placeholder { color: var(--gray-400); }
+    #cat-search:focus { border-color: var(--teal); background: var(--white); }
+    .cs-summary { font-family: var(--fhead); font-size: 12px; font-weight: 500; color: var(--gray-400); margin-left: auto; }
+    .cs-summary strong { color: var(--teal); font-weight: 700; }
 
-    /* ── SECTIONS ── */
-    .section { display: none; }
-    .section.active { display: block; }
+    .catalog-main { max-width: 1280px; margin: 0 auto; padding: 28px 32px 80px; }
+    #data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; }
+    .dcard { background: var(--white); border-radius: var(--rlg); border: 1px solid var(--gray-200); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; animation: cardIn 0.36s ease both; }
+    .dcard:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,45,51,0.1); border-color: var(--gray-400); }
+    @keyframes cardIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .dcard-thumb { width: 100%; height: 136px; position: relative; overflow: hidden; background: var(--gray-100); flex-shrink: 0; }
+    .dcard-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; transition: transform 0.4s; }
+    .dcard:hover .dcard-thumb img { transform: scale(1.05); }
+    .dthumb-ph { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; position: relative; overflow: hidden; }
+    .dthumb-ph::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal-mid) 55%, var(--teal) 100%); }
+    .dthumb-ph::after { content: ''; position: absolute; inset: 0; opacity: 0.09; background-image: repeating-linear-gradient(-40deg, transparent, transparent 10px, rgba(224,200,140,0.7) 10px, rgba(224,200,140,0.7) 11px); }
+    .dthumb-icon { position: relative; z-index: 1; color: rgba(255,255,255,0.2); width: 30px; height: 30px; }
+    .dthumb-lbl { position: relative; z-index: 1; font-family: var(--fhead); font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.25); }
+    .dcard-stripe { position: absolute; top: 0; left: 0; width: 4px; height: 100%; z-index: 2; }
+    .dcard-badge { position: absolute; bottom: 7px; right: 7px; background: rgba(0,0,0,0.44); backdrop-filter: blur(4px); color: rgba(255,255,255,0.88); font-family: var(--fhead); font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; z-index: 2; }
+    .dcard-body { padding: 14px 16px 10px; flex: 1; display: flex; flex-direction: column; gap: 7px; }
+    .dcat-chip { display: inline-flex; align-items: center; gap: 5px; font-family: var(--fhead); font-size: 9px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; padding: 2px 8px 2px 6px; border-radius: 4px; width: fit-content; }
+    .cchip-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .chip-boundaries { background: #dbeafe; color: #1d4ed8; } .chip-roads { background: #fef9c3; color: #854d0e; } .chip-parcels { background: #f3e8ff; color: #6b21a8; } .chip-emergency { background: #fee2e2; color: #991b1b; } .chip-flood { background: #cffafe; color: #155e75; } .chip-parks { background: #dcfce7; color: #14532d; }
+    .cdot-boundaries { background: #3b82f6; } .cdot-roads { background: #eab308; } .cdot-parcels { background: #a855f7; } .cdot-emergency { background: #ef4444; } .cdot-flood { background: #06b6d4; } .cdot-parks { background: #22c55e; }
+    .stripe-boundaries { background: #3b82f6; } .stripe-roads { background: #eab308; } .stripe-parcels { background: #a855f7; } .stripe-emergency { background: #ef4444; } .stripe-flood { background: #06b6d4; } .stripe-parks { background: #22c55e; } .stripe-default { background: var(--gray-400); }
+    .dcard-title { font-family: var(--fhead); font-size: 13px; font-weight: 700; color: var(--gray-800); line-height: 1.35; letter-spacing: -0.01em; }
+    .dcard-desc { font-family: var(--fbody); font-size: 12px; color: var(--gray-600); line-height: 1.6; flex: 1; font-style: italic; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .dcard-footer { padding: 9px 16px; border-top: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; }
+    .dcard-meta { font-family: var(--fhead); font-size: 10px; color: var(--gray-400); font-weight: 500; }
+    .dcard-btn { display: inline-flex; align-items: center; gap: 5px; font-family: var(--fhead); font-size: 11px; font-weight: 700; color: var(--teal); text-decoration: none; padding: 4px 11px; background: rgba(0,71,79,0.06); border-radius: var(--rsm); letter-spacing: 0.04em; transition: all 0.18s; }
+    .dcard-btn:hover { background: var(--teal); color: var(--white); }
+    .dcard-btn svg { width: 10px; height: 10px; }
 
-    /* ── MAIN / GRID ── */
-    .main { max-width: 1280px; margin: 0 auto; padding: 32px 32px 80px; }
-    #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    /* ══════════════════════════════════
+       ABOUT SECTION
+    ══════════════════════════════════ */
+    .about-wrap { max-width: 1280px; margin: 0 auto; padding: 40px 32px 80px; }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 26px; }
+    .acard { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--rlg); padding: 24px; }
+    .acard h3 { font-family: var(--fhead); font-size: 14px; font-weight: 700; color: var(--teal-dark); margin-bottom: 11px; }
+    .acard p { font-family: var(--fbody); font-size: 13.5px; color: var(--gray-600); line-height: 1.75; }
+    .acard p + p { margin-top: 9px; }
+    .acard a { color: var(--teal); }
+    .contact-block { display: flex; flex-direction: column; gap: 6px; }
+    .contact-block strong { font-family: var(--fhead); font-size: 14px; font-weight: 800; color: var(--gray-800); display: block; margin-bottom: 2px; }
+    .contact-block a { font-family: var(--fhead); font-size: 13px; font-weight: 600; color: var(--teal); text-decoration: none; transition: color 0.18s; }
+    .contact-block a:hover { color: var(--teal-mid); }
+    /* Contact form */
+    .cform { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
+    .cform-group { display: flex; flex-direction: column; gap: 4px; }
+    .cform-group.full { grid-column: 1 / -1; }
+    .cform label { font-family: var(--fhead); font-size: 10px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--gray-600); }
+    .cform input, .cform textarea { padding: 9px 11px; border: 1.5px solid var(--gray-200); border-radius: var(--rsm); font-family: var(--fhead); font-size: 13px; color: var(--gray-800); background: var(--gray-100); outline: none; transition: border-color 0.2s; }
+    .cform input:focus, .cform textarea:focus { border-color: var(--teal); background: white; }
+    .cform textarea { resize: vertical; font-family: var(--fbody); font-size: 13px; }
+    .cform-actions { grid-column: 1/-1; display: flex; align-items: center; gap: 12px; }
+    .cform-status { font-family: var(--fhead); font-size: 12px; font-weight: 500; }
 
-    /* ── DATA CARD ── */
-    .card {
-      background: var(--white);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--gray-200);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.22s cubic-bezier(.22,.68,0,1.15), box-shadow 0.22s, border-color 0.22s;
-      animation: cardIn 0.36s ease both;
-    }
-    .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 30px rgba(0,45,51,0.11), 0 4px 10px rgba(0,45,51,0.07);
-      border-color: var(--gray-400);
-    }
-    @keyframes cardIn {
-      from { opacity: 0; transform: translateY(14px) scale(0.98); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .card-thumb {
-      width: 100%; height: 148px;
-      position: relative; overflow: hidden;
-      background: var(--gray-100); flex-shrink: 0;
-    }
-    .card-thumb img {
-      width: 100%; height: 100%;
-      object-fit: cover; object-position: center top;
-      display: block; transition: transform 0.4s ease;
-    }
-    .card:hover .card-thumb img { transform: scale(1.05); }
-    .thumb-placeholder {
-      width: 100%; height: 100%;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center; gap: 8px;
-      position: relative; overflow: hidden;
-    }
-    .thumb-placeholder::before {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal-mid) 55%, var(--teal) 100%);
-    }
-    .thumb-placeholder::after {
-      content: ''; position: absolute; inset: 0; opacity: 0.09;
-      background-image: repeating-linear-gradient(-40deg, transparent, transparent 10px, rgba(224,200,140,0.7) 10px, rgba(224,200,140,0.7) 11px);
-    }
-    .thumb-icon { position: relative; z-index: 1; color: rgba(255,255,255,0.2); width: 34px; height: 34px; }
-    .thumb-lbl { position: relative; z-index: 1; font-family: var(--font-head); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.28); }
-    .card-stripe { position: absolute; top: 0; left: 0; width: 4px; height: 100%; z-index: 2; }
-    .stripe-boundaries { background: #3b82f6; }
-    .stripe-roads      { background: #eab308; }
-    .stripe-parcels    { background: #a855f7; }
-    .stripe-emergency  { background: #ef4444; }
-    .stripe-flood      { background: #06b6d4; }
-    .stripe-parks      { background: #22c55e; }
-    .stripe-default    { background: var(--gray-400); }
-    .card-type-badge {
-      position: absolute; bottom: 8px; right: 8px;
-      background: rgba(0,0,0,0.46); backdrop-filter: blur(5px);
-      color: rgba(255,255,255,0.88);
-      font-family: var(--font-head); font-size: 9px; font-weight: 700;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      padding: 3px 8px; border-radius: 4px; z-index: 2;
-    }
-    .card-body { padding: 16px 18px 12px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
-    .card-cat-chip {
-      display: inline-flex; align-items: center; gap: 5px;
-      font-family: var(--font-head); font-size: 9px; font-weight: 700;
-      letter-spacing: 0.09em; text-transform: uppercase;
-      padding: 3px 9px 3px 6px; border-radius: 4px; width: fit-content;
-    }
-    .chip-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-    .chip-boundaries { background: #dbeafe; color: #1d4ed8; }
-    .chip-roads      { background: #fef9c3; color: #854d0e; }
-    .chip-parcels    { background: #f3e8ff; color: #6b21a8; }
-    .chip-emergency  { background: #fee2e2; color: #991b1b; }
-    .chip-flood      { background: #cffafe; color: #155e75; }
-    .chip-parks      { background: #dcfce7; color: #14532d; }
-    .chip-dot-boundaries { background: #3b82f6; }
-    .chip-dot-roads      { background: #eab308; }
-    .chip-dot-parcels    { background: #a855f7; }
-    .chip-dot-emergency  { background: #ef4444; }
-    .chip-dot-flood      { background: #06b6d4; }
-    .chip-dot-parks      { background: #22c55e; }
-    .card-title { font-family: var(--font-head); font-size: 14px; font-weight: 700; color: var(--gray-800); line-height: 1.35; letter-spacing: -0.01em; }
-    .card-desc { font-family: var(--font-body); font-size: 12.5px; color: var(--gray-600); line-height: 1.65; flex: 1; font-style: italic; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    .card-footer { padding: 10px 18px; border-top: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-    .card-meta { font-family: var(--font-head); font-size: 10px; color: var(--gray-400); font-weight: 500; }
-    .card-btn {
-      display: inline-flex; align-items: center; gap: 5px;
-      font-family: var(--font-head); font-size: 11px; font-weight: 700;
-      color: var(--teal); text-decoration: none;
-      padding: 5px 12px; background: rgba(0,71,79,0.06);
-      border-radius: var(--radius-sm); letter-spacing: 0.04em;
-      transition: all 0.18s; white-space: nowrap;
-    }
-    .card-btn:hover { background: var(--teal); color: var(--white); }
-    .card-btn svg { width: 10px; height: 10px; }
+    /* ══════════════════════════════════
+       FOOTER
+    ══════════════════════════════════ */
+    footer { background: var(--teal-dark); padding: 40px 32px 0; }
+    .footer-inner { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 36px; padding-bottom: 32px; align-items: start; }
+    .footer-brand img { height: 38px; filter: brightness(0) invert(1); opacity: 0.5; margin-bottom: 12px; display: block; }
+    .footer-brand-name { font-family: var(--fhead); font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.55); margin-bottom: 8px; }
+    .footer-addr { font-family: var(--fbody); font-size: 12.5px; color: rgba(255,255,255,0.34); font-style: normal; line-height: 1.8; }
+    .footer-addr a { color: rgba(255,255,255,0.34); text-decoration: none; transition: color 0.18s; }
+    .footer-addr a:hover { color: var(--sand); }
+    .fcol h4 { font-family: var(--fhead); font-size: 9px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.26); margin-bottom: 10px; }
+    .fcol a { display: block; font-family: var(--fhead); font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.44); text-decoration: none; margin-bottom: 7px; transition: color 0.18s; cursor: pointer; }
+    .fcol a:hover { color: var(--sand); }
+    .footer-bottom { max-width: 1280px; margin: 0 auto; border-top: 1px solid rgba(255,255,255,0.06); padding: 15px 0 18px; text-align: center; }
+    .footer-bottom p { font-family: var(--fhead); font-size: 10px; color: rgba(255,255,255,0.15); letter-spacing: 0.07em; }
 
-    /* ── PDF MAPS ── */
-    .maps-section { max-width: 1280px; margin: 0 auto; padding: 36px 32px 80px; }
-    .section-header { margin-bottom: 28px; }
-    .section-header h2 { font-family: var(--font-head); font-size: 22px; font-weight: 800; color: var(--teal-dark); letter-spacing: -0.02em; margin-bottom: 8px; }
-    .section-header p { font-family: var(--font-body); font-size: 14px; color: var(--gray-600); line-height: 1.7; max-width: 640px; font-style: italic; }
-    .pdf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-    .pdf-card {
-      background: var(--white); border-radius: var(--radius-lg);
-      border: 1px solid var(--gray-200); overflow: hidden;
-      display: flex; flex-direction: column;
-      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-      animation: cardIn 0.36s ease both;
-    }
-    .pdf-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,45,51,0.1), 0 3px 8px rgba(0,45,51,0.07); border-color: var(--gray-400); }
-    .pdf-thumb {
-      width: 100%; height: 148px;
-      position: relative; overflow: hidden;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .pdf-thumb.usfs   { background: linear-gradient(135deg, #14532d 0%, #166534 60%, #15803d 100%); }
-    .pdf-thumb.blm    { background: linear-gradient(135deg, #92650a 0%, #b07d12 60%, #d4a017 100%); }
-    .pdf-thumb.county { background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal-mid) 60%, var(--teal) 100%); }
-    .pdf-thumb::after { content: ''; position: absolute; inset: 0; opacity: 0.08; background-image: repeating-linear-gradient(-40deg, transparent, transparent 10px, rgba(255,255,255,0.6) 10px, rgba(255,255,255,0.6) 11px); }
-    .pdf-thumb-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .pdf-icon { color: rgba(255,255,255,0.28); width: 38px; height: 38px; }
-    .pdf-publisher-badge { font-family: var(--font-head); font-size: 9px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
-    .pdf-format-badge { position: absolute; top: 10px; right: 10px; z-index: 2; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); color: rgba(255,255,255,0.85); font-family: var(--font-head); font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; }
-    .pdf-body { padding: 16px 18px 12px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
-    .pdf-source-chip { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-head); font-size: 9px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; padding: 3px 9px; border-radius: 4px; width: fit-content; }
-    .chip-usfs   { background: #dcfce7; color: #14532d; }
-    .chip-blm    { background: #ffedd5; color: #9a3412; }
-    .chip-county { background: #ccfbf1; color: #134e4a; }
-    .pdf-title { font-family: var(--font-head); font-size: 14px; font-weight: 700; color: var(--gray-800); line-height: 1.35; letter-spacing: -0.01em; }
-    .pdf-desc { font-family: var(--font-body); font-size: 12.5px; color: var(--gray-600); line-height: 1.65; flex: 1; font-style: italic; }
-    .pdf-footer { padding: 10px 18px; border-top: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-    .pdf-meta { font-family: var(--font-head); font-size: 10px; color: var(--gray-400); font-weight: 500; }
-    .pdf-btn { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-head); font-size: 11px; font-weight: 700; color: var(--teal); text-decoration: none; padding: 5px 12px; background: rgba(0,71,79,0.06); border-radius: var(--radius-sm); letter-spacing: 0.04em; transition: all 0.18s; white-space: nowrap; }
-    .pdf-btn:hover { background: var(--teal); color: var(--white); }
-    .pdf-btn svg { width: 10px; height: 10px; }
-    .pdf-external-note { display: flex; align-items: flex-start; gap: 10px; background: #fdf8ee; border: 1px solid rgba(224,200,140,0.5); border-radius: var(--radius); padding: 12px 16px; margin-top: 24px; }
-    .pdf-external-note svg { width: 15px; height: 15px; color: var(--charcoal); flex-shrink: 0; margin-top: 2px; }
-    .pdf-external-note p { font-family: var(--font-body); font-size: 12.5px; color: var(--gray-600); line-height: 1.6; font-style: italic; }
-    .pdf-external-note p a { color: var(--teal); }
-
-    /* ── ADDRESS LOOKUP ── */
-    .lookup-section { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
-    .lookup-intro { margin-bottom: 36px; }
-    .lookup-intro h2 { font-family: var(--font-head); font-size: 22px; font-weight: 800; color: var(--teal-dark); letter-spacing: -0.02em; margin-bottom: 10px; }
-    .lookup-intro p { font-family: var(--font-body); font-size: 14px; color: var(--gray-600); line-height: 1.75; font-style: italic; max-width: 580px; }
-
-    .lookup-box {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius-lg);
-      padding: 32px;
-      margin-bottom: 24px;
-    }
-    .lookup-input-row {
-      display: flex;
-      gap: 10px;
-      align-items: stretch;
-    }
-    .lookup-wrap { position: relative; flex: 1; }
-    .lookup-icon {
-      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
-      color: var(--gray-400); width: 17px; height: 17px; pointer-events: none;
-    }
-    #addr-input {
-      width: 100%;
-      padding: 13px 16px 13px 42px;
-      border: 2px solid var(--gray-200);
-      border-radius: var(--radius);
-      font-family: var(--font-head);
-      font-size: 15px;
-      color: var(--gray-800);
-      background: var(--gray-100);
-      outline: none;
-      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-    }
-    #addr-input::placeholder { color: var(--gray-400); }
-    #addr-input:focus { border-color: var(--teal); background: var(--white); box-shadow: 0 0 0 3px rgba(0,71,79,0.08); }
-    #addr-input.has-error { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.08); }
-
-    .lookup-btn {
-      display: inline-flex; align-items: center; gap: 7px;
-      font-family: var(--font-head); font-size: 14px; font-weight: 700;
-      color: var(--white); background: var(--teal);
-      border: none; padding: 13px 24px;
-      border-radius: var(--radius); cursor: pointer;
-      letter-spacing: 0.03em; transition: background 0.18s;
-      white-space: nowrap; flex-shrink: 0;
-    }
-    .lookup-btn:hover { background: var(--teal-mid); }
-    .lookup-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
-    .lookup-btn svg { width: 15px; height: 15px; }
-    .lookup-btn .spinner-sm {
-      width: 14px; height: 14px;
-      border: 2px solid rgba(255,255,255,0.35);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.65s linear infinite;
-      display: none;
-    }
-    .lookup-btn.loading .btn-label { display: none; }
-    .lookup-btn.loading .spinner-sm { display: block; }
-
-    .lookup-hint {
-      font-family: var(--font-body);
-      font-size: 12px;
-      color: var(--gray-400);
-      font-style: italic;
-      margin-top: 10px;
-    }
-
-    /* Result states */
-    #lookup-result { margin-top: 20px; display: none; }
-
-    .result-found {
-      background: #f0fdf4;
-      border: 1.5px solid #86efac;
-      border-radius: var(--radius-lg);
-      padding: 24px;
-    }
-    .result-found-header {
-      display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px;
-    }
-    .result-found-icon {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: #22c55e; display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .result-found-icon svg { width: 18px; height: 18px; color: white; }
-    .result-found-title { font-family: var(--font-head); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #16a34a; margin-bottom: 4px; }
-    .result-found-address { font-family: var(--font-head); font-size: 18px; font-weight: 800; color: var(--gray-800); letter-spacing: -0.01em; }
-    .result-attrs {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 12px;
-      padding: 16px;
-      background: white;
-      border-radius: var(--radius);
-      border: 1px solid #dcfce7;
-      margin-bottom: 16px;
-    }
-    .attr-item { display: flex; flex-direction: column; gap: 3px; }
-    .attr-label { font-family: var(--font-head); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-400); }
-    .attr-val { font-family: var(--font-head); font-size: 13px; font-weight: 600; color: var(--gray-800); }
-    .result-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-    .result-action-btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-family: var(--font-head); font-size: 12px; font-weight: 700;
-      text-decoration: none; padding: 8px 16px;
-      border-radius: var(--radius-sm); letter-spacing: 0.04em;
-      transition: all 0.18s; border: none; cursor: pointer;
-    }
-    .btn-view { background: var(--teal); color: white; }
-    .btn-view:hover { background: var(--teal-mid); }
-    .btn-view svg { width: 11px; height: 11px; }
-
-    .result-not-found {
-      background: #fef9f0;
-      border: 1.5px solid #fcd34d;
-      border-radius: var(--radius-lg);
-      padding: 24px;
-    }
-    .result-not-found-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
-    .result-not-found-icon {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: #f59e0b; display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .result-not-found-icon svg { width: 18px; height: 18px; color: white; }
-    .result-not-found-title { font-family: var(--font-head); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #b45309; margin-bottom: 4px; }
-    .result-not-found-msg { font-family: var(--font-body); font-size: 14px; color: var(--gray-600); line-height: 1.65; font-style: italic; }
-    .not-found-actions { margin-top: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .btn-report {
-      display: inline-flex; align-items: center; gap: 7px;
-      font-family: var(--font-head); font-size: 12px; font-weight: 700;
-      color: white; background: #b45309;
-      border: none; padding: 9px 18px;
-      border-radius: var(--radius-sm); cursor: pointer;
-      letter-spacing: 0.04em; transition: background 0.18s; text-decoration: none;
-    }
-    .btn-report:hover { background: #92400e; }
-    .btn-report svg { width: 11px; height: 11px; }
-    .not-found-alt { font-family: var(--font-body); font-size: 12px; color: var(--gray-400); font-style: italic; }
-    .not-found-alt a { color: var(--teal); }
-
-    .result-error {
-      background: #fef2f2; border: 1.5px solid #fca5a5;
-      border-radius: var(--radius-lg); padding: 20px;
-      font-family: var(--font-head); font-size: 13px; color: #991b1b;
-    }
-
-    /* ── ABOUT ── */
-    .about-section { max-width: 1280px; margin: 0 auto; padding: 40px 32px 80px; }
-    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 28px; }
-    .about-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: 26px; }
-    .about-card h3 { font-family: var(--font-head); font-size: 15px; font-weight: 700; color: var(--teal-dark); margin-bottom: 12px; letter-spacing: -0.01em; }
-    .about-card p { font-family: var(--font-body); font-size: 14px; color: var(--gray-600); line-height: 1.75; }
-    .about-card p + p { margin-top: 10px; }
-    .about-card a { color: var(--teal); }
-
-    /* ── DEBUG PANEL (hidden by default, shown via ?debug in URL) ── */
-    #debug-panel {
-      display: none;
-      background: #1e1e1e;
-      color: #d4d4d4;
-      font-family: monospace;
-      font-size: 11px;
-      padding: 16px 24px;
-      max-height: 240px;
-      overflow-y: auto;
-      border-top: 2px solid var(--ember, #ee5d28);
-    }
-    #debug-panel h4 { color: #ffd700; margin-bottom: 8px; font-size: 12px; }
-    #debug-panel code { display: block; margin-bottom: 3px; line-height: 1.5; }
-
-    /* ── STATES ── */
-    .state-wrap { grid-column: 1/-1; text-align: center; padding: 72px 24px; }
-    .spinner { width: 36px; height: 36px; border: 3px solid var(--gray-200); border-top-color: var(--teal); border-radius: 50%; animation: spin 0.72s linear infinite; margin: 0 auto 16px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .state-wrap h3 { font-family: var(--font-head); font-size: 15px; font-weight: 700; color: var(--charcoal); margin-bottom: 6px; }
-    .state-wrap p { font-family: var(--font-body); font-size: 13px; color: var(--gray-400); font-style: italic; }
-
-    /* ── FOOTER ── */
-    footer { background: var(--teal-dark); padding: 44px 32px 0; }
-    .footer-inner {
-      max-width: 1280px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1.6fr 1fr 1fr;
-      gap: 40px;
-      padding-bottom: 36px;
-      align-items: start;
-    }
-    .footer-brand img { height: 40px; filter: brightness(0) invert(1); opacity: 0.5; margin-bottom: 14px; display: block; }
-    .footer-brand-name {
-      font-family: var(--font-head);
-      font-size: 13px;
-      font-weight: 700;
-      color: rgba(255,255,255,0.6);
-      margin-bottom: 10px;
-    }
-    .footer-address {
-      font-family: var(--font-body);
-      font-size: 13px;
-      color: rgba(255,255,255,0.36);
-      font-style: normal;
-      line-height: 1.8;
-    }
-    .footer-address a {
-      color: rgba(255,255,255,0.36);
-      text-decoration: none;
-      transition: color 0.18s;
-    }
-    .footer-address a:hover { color: var(--sand); }
-    .footer-col h4 { font-family: var(--font-head); font-size: 9px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.28); margin-bottom: 12px; }
-    .footer-col a { display: block; font-family: var(--font-head); font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.46); text-decoration: none; margin-bottom: 8px; transition: color 0.18s; }
-    .footer-col a:hover { color: var(--sand); }
-    .footer-bottom { max-width: 1280px; margin: 0 auto; border-top: 1px solid rgba(255,255,255,0.06); padding: 16px 0 20px; text-align: center; }
-    .footer-bottom p { font-family: var(--font-head); font-size: 10px; color: rgba(255,255,255,0.16); letter-spacing: 0.07em; }
+    /* ── SHARED STATES ── */
+    .state-wrap { grid-column: 1/-1; text-align: center; padding: 64px 24px; }
+    .spinner-lg { width: 34px; height: 34px; border: 3px solid var(--gray-200); border-top-color: var(--teal); border-radius: 50%; animation: spin 0.72s linear infinite; margin: 0 auto 14px; }
+    .state-wrap h3 { font-family: var(--fhead); font-size: 15px; font-weight: 700; color: var(--charcoal); margin-bottom: 6px; }
+    .state-wrap p { font-family: var(--fbody); font-size: 13px; color: var(--gray-400); font-style: italic; }
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 900px) {
-      .footer-inner { grid-template-columns: 1fr 1fr; }
-      .footer-brand { grid-column: 1 / -1; }
-    }
+    @media (max-width: 900px) { .footer-inner { grid-template-columns: 1fr 1fr; } .footer-brand { grid-column: 1/-1; } }
     @media (max-width: 768px) {
-      .topbar, .header-inner, .cat-band-inner, .search-bar, .main, .maps-section, .about-section { padding-left: 20px; padding-right: 20px; }
-      .hero { padding: 40px 20px 36px; }
-      .hero-inner { grid-template-columns: 1fr; }
-      .hero-stats { display: none; }
-      .header-nav { display: none; }
-      #grid, .pdf-grid { grid-template-columns: 1fr; }
-      .about-grid { grid-template-columns: 1fr; }
-      .footer-inner { grid-template-columns: 1fr; padding: 0 0 28px; }
-      footer { padding: 32px 20px 0; }
+      .topbar, .header-inner, .page-nav-inner, .home-hero, .tool-section, .maps-section, .catalog-main, .about-wrap { padding-left: 20px; padding-right: 20px; }
+      .home-hero { padding-top: 36px; padding-bottom: 32px; }
+      .action-grid { grid-template-columns: 1fr 1fr; }
+      .home-band-inner { grid-template-columns: 1fr; gap: 20px; }
+      .about-grid, .cform { grid-template-columns: 1fr; }
+      .cform-group.full { grid-column: 1; }
+      .header-contact { display: none; }
+      #map { height: 60vh; }
+      footer { padding: 28px 20px 0; }
+      .footer-inner { grid-template-columns: 1fr; }
+      #data-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-  <!-- TOP BAR -->
-  <div class="topbar">
-    <span>Carbon County, Montana — GIS &amp; Addressing Department</span>
-    <a href="https://carbonmt.gov" target="_blank" rel="noopener">carbonmt.gov ↗</a>
+<!-- TOP BAR -->
+<div class="topbar">
+  <span>Carbon County, Montana — GIS &amp; Addressing Department</span>
+  <a href="https://carbonmt.gov" target="_blank" rel="noopener">carbonmt.gov ↗</a>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <a class="logo-wrap" href="#">
+      <img class="logo-img" src="https://carbonmt.gov/wp-content/uploads/2024/07/Carbon-County-Logo-Medium.webp" alt="Carbon County Montana" onerror="this.style.display='none'" />
+      <div class="logo-div"></div>
+      <div class="logo-text">
+        <h1>Carbon County GIS</h1>
+        <span>Red Lodge, Montana</span>
+      </div>
+    </a>
+    <div class="header-spacer"></div>
+    <!-- Always-visible contact — rural users need this without hunting -->
+    <div class="header-contact">
+      <a class="header-phone" href="tel:4064457271">📞 406-445-7271</a>
+    </div>
+    <nav class="header-nav">
+      <a class="nav-link" href="https://carbonmt.gov" target="_blank" rel="noopener">County Website</a>
+      <a class="nav-link cta" href="#" onclick="goTab('about');return false;">Contact Us</a>
+    </nav>
   </div>
+</header>
 
-  <!-- HEADER -->
-  <header>
-    <div class="header-inner">
-      <a class="logo-wrap" href="/">
-        <img class="logo-img"
-          src="https://carbonmt.gov/wp-content/uploads/2024/07/Carbon-County-Logo-Medium.webp"
-          alt="Carbon County Montana"
-          onerror="this.style.display='none'" />
-        <div class="logo-divider"></div>
-        <div class="logo-text">
-          <h1>GIS Open Data</h1>
-          <span>Carbon County, MT</span>
-        </div>
-      </a>
-      <div class="header-spacer"></div>
-      <nav class="header-nav">
-        <a class="nav-link" href="https://carbonmt.gov" target="_blank" rel="noopener">County Website</a>
-        <a class="nav-link cta" href="#" onclick="switchSection('about');return false;">Contact Us</a>
-      </nav>
-    </div>
-  </header>
-
-  <!-- PAGE NAV -->
-  <div class="page-nav">
-    <div class="page-nav-inner">
-      <button class="page-tab" data-section="lookup">Address Lookup</button>
-      <button class="page-tab active" data-section="data">GIS Data Catalog</button>
-      <button class="page-tab" data-section="maps">Downloadable Maps</button>
-      <button class="page-tab" data-section="about">About &amp; Contact</button>
-    </div>
+<!-- PAGE TABS -->
+<div class="page-nav">
+  <div class="page-nav-inner">
+    <button class="ptab active" data-tab="home">Home</button>
+    <button class="ptab" data-tab="address">Address Lookup</button>
+    <button class="ptab" data-tab="map">Explore the Map</button>
+    <button class="ptab" data-tab="parcel">Property &amp; Parcel</button>
+    <button class="ptab" data-tab="flood">Floodplain Check</button>
+    <button class="ptab" data-tab="maps">Downloadable Maps</button>
+    <button class="ptab" data-tab="data">All GIS Data</button>
+    <button class="ptab" data-tab="about">About &amp; Contact</button>
   </div>
+</div>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-inner">
-      <div class="hero-copy">
-        <div class="hero-dept">GIS &amp; Addressing Department</div>
-        <h2 class="hero-title">Carbon County<br/>Geographic Data</h2>
-        <p class="hero-desc">Spatial datasets, maps, and geographic resources published by Carbon County GIS. All data is freely available for download.</p>
-      </div>
-      <div class="hero-stats">
-        <div class="hero-stat">
-          <span class="stat-n" id="stat-total">—</span>
-          <span class="stat-l">Datasets</span>
-        </div>
-        <div class="hero-stat">
-          <span class="stat-n">6</span>
-          <span class="stat-l">Categories</span>
-        </div>
-        <div class="hero-stat">
-          <span class="stat-n">Free</span>
-          <span class="stat-l">To Download</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══════════════════════════════════════
-       SECTION: ADDRESS LOOKUP
-  ═══════════════════════════════════════ -->
-  <div class="section" id="section-lookup">
-    <div class="lookup-section">
-
-      <div class="lookup-intro">
-        <h2>Address Lookup</h2>
-        <p>Search the Carbon County 9-1-1 address database to verify whether a physical address is on record. Enter a street address below to check. This database is maintained by the GIS &amp; Addressing Department for emergency services purposes.</p>
-      </div>
-
-      <div class="lookup-box">
-        <div class="lookup-input-row">
-          <div class="lookup-wrap">
-            <svg class="lookup-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
-            <input type="text" id="addr-input" placeholder="e.g. 123 Main St" autocomplete="off"
-              onkeydown="if(event.key==='Enter')runLookup()" />
+<!-- ══════════════════════════════════
+     HOME
+═══════════════════════════════════ -->
+<div class="section active" id="tab-home">
+  <div class="home-hero">
+    <div class="home-hero-inner">
+      <div class="home-eyebrow">GIS &amp; Addressing Department</div>
+      <h2 class="home-title">What can we help<br/>you find today?</h2>
+      <p class="home-desc">Geographic tools and data for Carbon County residents, landowners, and planners.</p>
+      <div class="action-grid">
+        <div class="action-card" onclick="goTab('address')">
+          <div class="action-icon" style="background:rgba(23,152,209,0.2)">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#1798d1" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
           </div>
-          <div class="lookup-wrap" style="max-width:200px;">
-            <input type="text" id="comm-input" placeholder="e.g. Red Lodge" autocomplete="off"
-              style="padding:13px 14px;border:2px solid var(--gray-200);border-radius:var(--radius);font-family:var(--font-head);font-size:14px;color:var(--gray-800);background:var(--gray-100);outline:none;width:100%;transition:border-color 0.2s,background 0.2s;"
-              onfocus="this.style.borderColor='var(--teal)';this.style.background='white'"
-              onblur="this.style.borderColor='var(--gray-200)';this.style.background=''"
-              onkeydown="if(event.key==='Enter')runLookup()" />
+          <div class="action-title">Verify My 9-1-1 Address</div>
+          <div class="action-desc">Check if your address is in the official emergency services database.</div>
+          <div class="action-arrow">Look up address →</div>
+        </div>
+        <div class="action-card" onclick="goTab('map')">
+          <div class="action-icon" style="background:rgba(14,120,59,0.2)">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#0e783b" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503-9.498 4.875-2.437a.75.75 0 011.068.68v11.25a.75.75 0 01-.37.648l-5.25 3a.75.75 0 01-.734 0L9.375 16.5l-5.25 3A.75.75 0 013 18.846V7.596a.75.75 0 01.37-.648l5.25-3a.75.75 0 01.734 0l5.626 3.22z"/></svg>
           </div>
-          <button class="lookup-btn" id="lookup-btn" onclick="runLookup()">
-            <span class="btn-label">Search</span>
-            <div class="spinner-sm"></div>
-          </button>
+          <div class="action-title">Explore the Map</div>
+          <div class="action-desc">View parcels, roads, floodplains, and sage grouse habitat on an interactive map.</div>
+          <div class="action-arrow">Open map →</div>
         </div>
-        <p class="lookup-hint">Enter your street address. Add a community name to narrow results — e.g. "Red Lodge", "Bridger", "Joliet".</p>
-        <div id="lookup-result"></div>
-      </div>
-
-      <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:20px 24px;">
-        <p style="font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-400);margin-bottom:8px;">About This Database</p>
-        <p style="font-family:var(--font-body);font-size:13px;color:var(--gray-600);line-height:1.7;font-style:italic;">This tool queries the official Carbon County NG911 site address point (SSAP) database. Not all rural or newly constructed addresses may appear. If your address is not found, use the report button to notify the GIS &amp; Addressing Department. To apply for a new address, use the <a href="https://carboncomt.forms.govos.com/ng/fa/CCDevelopmentPackage" target="_blank" rel="noopener" style="color:var(--teal);">County Development Permit Package Application</a>.</p>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ══════════════════════════════════════
-       SECTION: GIS DATA CATALOG
-  ═══════════════════════════════════════ -->
-  <div class="section active" id="section-data">
-
-    <div class="cat-band">
-      <div class="cat-band-inner">
-        <button class="cat-tab active" data-tag="all"><span class="cat-dot dot-all"></span>All<span class="cnt" id="cnt-all">—</span></button>
-        <button class="cat-tab" data-tag="boundaries"><span class="cat-dot dot-boundaries"></span>Boundaries &amp; Administration<span class="cnt" id="cnt-boundaries">—</span></button>
-        <button class="cat-tab" data-tag="roads"><span class="cat-dot dot-roads"></span>Roads &amp; Transportation<span class="cnt" id="cnt-roads">—</span></button>
-        <button class="cat-tab" data-tag="parcels"><span class="cat-dot dot-parcels"></span>Parcels, Zoning &amp; Land Use<span class="cnt" id="cnt-parcels">—</span></button>
-        <button class="cat-tab" data-tag="emergency"><span class="cat-dot dot-emergency"></span>Emergency Management<span class="cnt" id="cnt-emergency">—</span></button>
-        <button class="cat-tab" data-tag="flood"><span class="cat-dot dot-flood"></span>Flood &amp; Water<span class="cnt" id="cnt-flood">—</span></button>
-        <button class="cat-tab" data-tag="parks"><span class="cat-dot dot-parks"></span>Parks &amp; Environment<span class="cnt" id="cnt-parks">—</span></button>
-      </div>
-    </div>
-
-    <div class="search-bar">
-      <div class="search-bar-inner">
-        <div class="search-wrap">
-          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="search" placeholder="Search datasets…" autocomplete="off" />
+        <div class="action-card" onclick="goTab('parcel')">
+          <div class="action-icon" style="background:rgba(109,40,217,0.15)">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#7c3aed" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/></svg>
+          </div>
+          <div class="action-title">Look Up a Property</div>
+          <div class="action-desc">Find parcel information and ownership records for any property in Carbon County.</div>
+          <div class="action-arrow">Search parcels →</div>
         </div>
-        <span class="results-summary" id="results-summary">&nbsp;</span>
-      </div>
-    </div>
-
-    <!-- Debug panel — add ?debug to URL to see raw tags from AGOL -->
-    <div id="debug-panel">
-      <h4>🔍 Tag Debug — unique tags found across all items in this group</h4>
-      <div id="debug-content"></div>
-    </div>
-
-    <div class="main">
-      <div id="grid">
-        <div class="state-wrap">
-          <div class="spinner"></div>
-          <h3>Loading datasets…</h3>
-          <p>Fetching from ArcGIS Online</p>
+        <div class="action-card" onclick="goTab('flood')">
+          <div class="action-icon" style="background:rgba(3,105,161,0.15)">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#0369a1" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"/></svg>
+          </div>
+          <div class="action-title">Check for Flood Risk</div>
+          <div class="action-desc">See if a property or address falls within a FEMA designated flood hazard area.</div>
+          <div class="action-arrow">Check floodplain →</div>
+        </div>
+        <div class="action-card" onclick="goTab('maps')">
+          <div class="action-icon" style="background:rgba(180,83,9,0.15)">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#b45309" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+          </div>
+          <div class="action-title">Download a Map</div>
+          <div class="action-desc">Free printable PDF maps including the county road map, USFS, and BLM maps.</div>
+          <div class="action-arrow">View maps →</div>
+        </div>
+        <div class="action-card" onclick="goTab('about')">
+          <div class="action-icon" style="background:rgba(224,200,140,0.2)">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#b07d12" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/></svg>
+          </div>
+          <div class="action-title">Contact the GIS Office</div>
+          <div class="action-desc">Questions about your address, a dataset, or a mapping project? Get in touch.</div>
+          <div class="action-arrow">Contact us →</div>
         </div>
       </div>
-    </div>
-
-  </div>
-
-  <!-- ══════════════════════════════════════
-       SECTION: DOWNLOADABLE MAPS
-  ═══════════════════════════════════════ -->
-  <div class="section" id="section-maps">
-    <div class="maps-section">
-
-      <div class="section-header">
-        <h2>Downloadable Maps</h2>
-        <p>Geo-referenced PDF maps available for download at no cost. Printed copies of county-produced maps are available through the GIS &amp; Addressing Department at a cost-recovery price.</p>
-      </div>
-
-      <div class="pdf-grid">
-
-        <!-- County Road Map -->
-        <div class="pdf-card">
-          <div class="pdf-thumb county">
-            <div class="pdf-thumb-inner">
-              <svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503-9.498 4.875-2.437a.75.75 0 011.068.68v11.25a.75.75 0 01-.37.648l-5.25 3a.75.75 0 01-.734 0L9.375 16.5l-5.25 3A.75.75 0 013 18.846V7.596a.75.75 0 01.37-.648l5.25-3a.75.75 0 01.734 0l5.626 3.22z"/></svg>
-              <span class="pdf-publisher-badge">Carbon County GIS</span>
-            </div>
-            <span class="pdf-format-badge">PDF</span>
-          </div>
-          <div class="pdf-body">
-            <span class="pdf-source-chip chip-county">Carbon County</span>
-            <div class="pdf-title">Carbon County Road Map</div>
-            <p class="pdf-desc">County road map including road names, route numbers, and road maintenance jurisdiction. 44" × 24" format.</p>
-          </div>
-          <div class="pdf-footer">
-            <span class="pdf-meta">Carbon County GIS</span>
-            <a class="pdf-btn" href="maps/CountyRoad_44x24_Field_Front_v1-5.pdf" download>
-              Download PDF
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
-            </a>
-          </div>
-        </div>
-
-        <!-- Beartooth Ranger District West (USFS) -->
-        <div class="pdf-card">
-          <div class="pdf-thumb usfs">
-            <div class="pdf-thumb-inner">
-              <svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V18.375m0 0c0-.621.504-1.125 1.125-1.125H6m0 0V6.375m0 0A1.125 1.125 0 017.125 5.25h9.75A1.125 1.125 0 0118 6.375v12m0 0v.125c0 .621-.504 1.125-1.125 1.125H18m0-12.75v12.75"/></svg>
-              <span class="pdf-publisher-badge">U.S. Forest Service</span>
-            </div>
-            <span class="pdf-format-badge">PDF</span>
-          </div>
-          <div class="pdf-body">
-            <span class="pdf-source-chip chip-usfs">U.S. Forest Service</span>
-            <div class="pdf-title">Beartooth Ranger District — West</div>
-            <p class="pdf-desc">Official U.S. Forest Service map for the western portion of the Beartooth Ranger District, Custer Gallatin National Forest.</p>
-          </div>
-          <div class="pdf-footer">
-            <span class="pdf-meta">USFS — Hosted externally</span>
-            <a class="pdf-btn" href="https://data.fs.usda.gov/geodata/rastergateway/data3/Ranger%20District/Beartooth%20Ranger%20District%20-%20West.pdf" target="_blank" rel="noopener">
-              Open PDF
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
-            </a>
-          </div>
-        </div>
-
-        <!-- BLM: Meeteetse Spires -->
-        <div class="pdf-card">
-          <div class="pdf-thumb blm">
-            <div class="pdf-thumb-inner">
-              <svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V18.375m0 0c0-.621.504-1.125 1.125-1.125H6m0 0V6.375m0 0A1.125 1.125 0 017.125 5.25h9.75A1.125 1.125 0 0118 6.375v12m0 0v.125c0 .621-.504 1.125-1.125 1.125H18m0-12.75v12.75"/></svg>
-              <span class="pdf-publisher-badge">Bureau of Land Management</span>
-            </div>
-            <span class="pdf-format-badge">PDF</span>
-          </div>
-          <div class="pdf-body">
-            <span class="pdf-source-chip chip-blm">BLM</span>
-            <div class="pdf-title">Meeteetse Spires</div>
-            <p class="pdf-desc">Geo-referenced BLM map of the Meeteetse Spires area. 2019.</p>
-          </div>
-          <div class="pdf-footer">
-            <span class="pdf-meta">BLM — Hosted externally</span>
-            <a class="pdf-btn" href="https://www.blm.gov/sites/blm.gov/files/MeeteetseSpires_GeoRef_2019.pdf" target="_blank" rel="noopener">
-              Open PDF
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
-            </a>
-          </div>
-        </div>
-
-        <!-- BLM: Pryor Mountain -->
-        <div class="pdf-card">
-          <div class="pdf-thumb blm">
-            <div class="pdf-thumb-inner">
-              <svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V18.375m0 0c0-.621.504-1.125 1.125-1.125H6m0 0V6.375m0 0A1.125 1.125 0 017.125 5.25h9.75A1.125 1.125 0 0118 6.375v12m0 0v.125c0 .621-.504 1.125-1.125 1.125H18m0-12.75v12.75"/></svg>
-              <span class="pdf-publisher-badge">Bureau of Land Management</span>
-            </div>
-            <span class="pdf-format-badge">PDF</span>
-          </div>
-          <div class="pdf-body">
-            <span class="pdf-source-chip chip-blm">BLM</span>
-            <div class="pdf-title">Pryor Mountain</div>
-            <p class="pdf-desc">Geo-referenced BLM map of the Pryor Mountain area. 2021.</p>
-          </div>
-          <div class="pdf-footer">
-            <span class="pdf-meta">BLM — Hosted externally</span>
-            <a class="pdf-btn" href="https://www.blm.gov/sites/default/files/docs/2021-09/Pryor%20Mountain%20Georeferenced%20Map.pdf" target="_blank" rel="noopener">
-              Open PDF
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
-            </a>
-          </div>
-        </div>
-
-        <!-- BLM: Cottonwood TMP -->
-        <div class="pdf-card">
-          <div class="pdf-thumb blm">
-            <div class="pdf-thumb-inner">
-              <svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V18.375m0 0c0-.621.504-1.125 1.125-1.125H6m0 0V6.375m0 0A1.125 1.125 0 017.125 5.25h9.75A1.125 1.125 0 0118 6.375v12m0 0v.125c0 .621-.504 1.125-1.125 1.125H18m0-12.75v12.75"/></svg>
-              <span class="pdf-publisher-badge">Bureau of Land Management</span>
-            </div>
-            <span class="pdf-format-badge">PDF</span>
-          </div>
-          <div class="pdf-body">
-            <span class="pdf-source-chip chip-blm">BLM</span>
-            <div class="pdf-title">Cottonwood Travel Management Plan</div>
-            <p class="pdf-desc">Geo-referenced BLM travel management plan map for the Cottonwood area. 2019.</p>
-          </div>
-          <div class="pdf-footer">
-            <span class="pdf-meta">BLM — Hosted externally</span>
-            <a class="pdf-btn" href="https://www.blm.gov/sites/blm.gov/files/Cottonwood_TMP_GeoRef_2019.pdf" target="_blank" rel="noopener">
-              Open PDF
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
-            </a>
-          </div>
-        </div>
-
-        <!-- BLM: Grove Creek -->
-        <div class="pdf-card">
-          <div class="pdf-thumb blm">
-            <div class="pdf-thumb-inner">
-              <svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V18.375m0 0c0-.621.504-1.125 1.125-1.125H6m0 0V6.375m0 0A1.125 1.125 0 017.125 5.25h9.75A1.125 1.125 0 0118 6.375v12m0 0v.125c0 .621-.504 1.125-1.125 1.125H18m0-12.75v12.75"/></svg>
-              <span class="pdf-publisher-badge">Bureau of Land Management</span>
-            </div>
-            <span class="pdf-format-badge">PDF</span>
-          </div>
-          <div class="pdf-body">
-            <span class="pdf-source-chip chip-blm">BLM</span>
-            <div class="pdf-title">Grove Creek</div>
-            <p class="pdf-desc">Geo-referenced BLM map of the Grove Creek area. 2019.</p>
-          </div>
-          <div class="pdf-footer">
-            <span class="pdf-meta">BLM — Hosted externally</span>
-            <a class="pdf-btn" href="https://www.blm.gov/sites/blm.gov/files/GroveCreek_GeoRef_2019.pdf" target="_blank" rel="noopener">
-              Open PDF
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
-            </a>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="pdf-external-note">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
-        <p>Federal agency maps link to files hosted by the USFS and BLM directly. For the most current versions visit <a href="https://data.fs.usda.gov" target="_blank" rel="noopener">data.fs.usda.gov</a> or <a href="https://www.blm.gov/maps" target="_blank" rel="noopener">blm.gov/maps</a>. For printed copies of county-produced maps, contact the GIS &amp; Addressing Department.</p>
-      </div>
-
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════
-       SECTION: ABOUT & CONTACT
-  ═══════════════════════════════════════ -->
-  <div class="section" id="section-about">
-    <div class="about-section">
-
-      <div class="section-header">
-        <h2>About &amp; Contact</h2>
-        <p>GIS &amp; Addressing Department — Carbon County, Montana</p>
+  <!-- Info band -->
+  <div class="home-band">
+    <div class="home-band-inner">
+      <div class="home-band-item">
+        <h3>GIS &amp; Addressing Department</h3>
+        <p>We maintain official geographic data and 9-1-1 address records for Carbon County. All data on this site is freely available to the public.</p>
       </div>
-
-      <div class="about-grid">
-        <div class="about-card">
-          <h3>Addressing Authority</h3>
-          <p>The GIS &amp; Addressing Department serves as the addressing authority for Carbon County. We maintain the official database of road names and physical addresses for all structures within the County, primarily in support of 9-1-1 and emergency services.</p>
-          <p>To apply for a new physical address, use the online <a href="https://carboncomt.forms.govos.com/ng/fa/CCDevelopmentPackage" target="_blank" rel="noopener">County Development Permit Package Application</a>.</p>
-        </div>
-        <div class="about-card">
-          <h3>Contact Information</h3>
-          <p>
-            <strong>Patrick Benson</strong><br/>
-            GIS Coordinator<br/><br/>
-            10 Oakes Ave S, Suite F<br/>
-            Red Lodge, MT 59068<br/><br/>
-            <a href="tel:4064457271">406-445-7271</a><br/>
-            <a id="contact-email-link" href="#"></a>
-          </p>
-        </div>
-        <div class="about-card" style="grid-column: 1 / -1;">
-          <h3>Send a Message</h3>
-          <p style="margin-bottom:18px;">Use the form below to send a message directly to the GIS &amp; Addressing Department.</p>
-          <form id="contact-form" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-            <div style="display:flex;flex-direction:column;gap:5px;">
-              <label style="font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-600);">Name</label>
-              <input type="text" id="cf-name" placeholder="Your name" style="padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-family:var(--font-head);font-size:13px;color:var(--gray-800);background:var(--gray-100);outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--gray-200)'" />
-            </div>
-            <div style="display:flex;flex-direction:column;gap:5px;">
-              <label style="font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-600);">Your Email</label>
-              <input type="email" id="cf-email" placeholder="your@email.com" style="padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-family:var(--font-head);font-size:13px;color:var(--gray-800);background:var(--gray-100);outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--gray-200)'" />
-            </div>
-            <div style="display:flex;flex-direction:column;gap:5px;grid-column:1/-1;">
-              <label style="font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-600);">Message</label>
-              <textarea id="cf-message" rows="4" placeholder="Your question or message…" style="padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;color:var(--gray-800);background:var(--gray-100);outline:none;resize:vertical;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--gray-200)'"></textarea>
-            </div>
-            <div style="grid-column:1/-1;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-              <button type="button" onclick="submitContactForm()" style="display:inline-flex;align-items:center;gap:7px;font-family:var(--font-head);font-size:13px;font-weight:700;color:var(--white);background:var(--teal);border:none;padding:10px 22px;border-radius:var(--radius-sm);cursor:pointer;letter-spacing:0.04em;transition:background 0.18s;" onmouseover="this.style.background='var(--teal-mid)'" onmouseout="this.style.background='var(--teal)'">
-                Send Message
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0121.485 12 59.768 59.768 0 013.27 20.875L5.999 12zm0 0h7.5"/></svg>
-              </button>
-              <span id="cf-status" style="font-family:var(--font-head);font-size:12px;font-weight:500;color:var(--gray-400);"></span>
-            </div>
-          </form>
-        </div>
-        <div class="about-card">
-          <h3>GIS Data &amp; Maps</h3>
-          <p>This site provides access to publicly available geographic datasets maintained by Carbon County GIS. Data is published through ArcGIS Online and updated on a rolling basis. All datasets listed here are freely available for download.</p>
-        </div>
-        <div class="about-card">
-          <h3>Data Disclaimer</h3>
-          <p>Geographic data published here represents the best available information at the time of publication. Carbon County makes no warranties regarding the accuracy or completeness of this data for any particular purpose. Users assume all responsibility for decisions made using this information.</p>
+      <div class="home-band-item">
+        <h3>Need a New Address?</h3>
+        <p>Apply online through the <a href="https://carboncomt.forms.govos.com/ng/fa/CCDevelopmentPackage" target="_blank" rel="noopener">County Development Permit Application</a>, or call our office and we can walk you through it.</p>
+      </div>
+      <div class="home-band-item">
+        <h3>Reach Us Directly</h3>
+        <div class="home-band-contact">
+          <span style="font-family:var(--fhead);font-size:13px;font-weight:700;color:var(--gray-800);">Patrick Benson, GIS Coordinator</span>
+          <a href="tel:4064457271">406-445-7271</a>
+          <a id="home-email" href="#">GIS@carbonmt.gov</a>
+          <span style="font-family:var(--fbody);font-size:12px;color:var(--gray-400);font-style:italic;">10 Oakes Ave S, Suite F · Red Lodge, MT</span>
         </div>
       </div>
-
     </div>
   </div>
+</div>
 
-  <!-- FOOTER -->
-  <footer>
-    <div class="footer-inner">
-      <div class="footer-brand">
-        <img src="https://carbonmt.gov/wp-content/uploads/2024/07/Carbon-County-Logo-Medium.webp" alt="Carbon County Montana" onerror="this.style.display='none'" />
-        <div class="footer-brand-name">GIS &amp; Addressing Department</div>
-        <address class="footer-address">
-          10 Oakes Ave S, Suite F<br/>
-          Red Lodge, MT 59068<br/><br/>
-          Patrick Benson, GIS Coordinator<br/>
-          <a href="tel:4064457271">406-445-7271</a><br/>
-          <a id="footer-email-link" href="#"></a>
-        </address>
+<!-- ══════════════════════════════════
+     ADDRESS LOOKUP
+═══════════════════════════════════ -->
+<div class="section" id="tab-address">
+  <div class="tool-section">
+    <div class="tool-header">
+      <h2>9-1-1 Address Lookup</h2>
+      <p>Check whether a physical address is on record in the Carbon County 9-1-1 database. This database is maintained by the GIS &amp; Addressing Department and is used by emergency services.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-label">Street Address</div>
+      <div class="input-row">
+        <div class="input-wrap">
+          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+          <input type="text" id="addr-input" class="tool-input" placeholder="e.g. 123 Main St" autocomplete="off" onkeydown="if(event.key==='Enter')runAddrLookup()" />
+        </div>
+        <div class="input-wrap" style="max-width:190px;">
+          <input type="text" id="comm-input" class="tool-input no-icon" placeholder="e.g. Red Lodge" autocomplete="off" onkeydown="if(event.key==='Enter')runAddrLookup()" />
+        </div>
+        <button class="tool-btn" id="addr-btn" onclick="runAddrLookup()">
+          <span class="btn-label">Search</span><div class="spinner-sm"></div>
+        </button>
       </div>
-      <div class="footer-col">
-        <h4>Data Categories</h4>
-        <a href="#" onclick="switchSection('data');setTag('boundaries');return false;">Boundaries &amp; Administration</a>
-        <a href="#" onclick="switchSection('data');setTag('roads');return false;">Roads &amp; Transportation</a>
-        <a href="#" onclick="switchSection('data');setTag('parcels');return false;">Parcels, Zoning &amp; Land Use</a>
-        <a href="#" onclick="switchSection('data');setTag('emergency');return false;">Emergency Management</a>
-        <a href="#" onclick="switchSection('data');setTag('flood');return false;">Flood &amp; Water</a>
-        <a href="#" onclick="switchSection('data');setTag('parks');return false;">Parks &amp; Environment</a>
+      <p class="tool-hint">Enter a street address. Optionally add a community name to narrow results.</p>
+      <div class="tool-result" id="addr-result"></div>
+    </div>
+    <div class="tool-card" style="background:var(--gray-100);border-color:var(--gray-200);">
+      <p style="font-family:var(--fhead);font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-400);margin-bottom:7px;">About This Database</p>
+      <p style="font-family:var(--fbody);font-size:13px;color:var(--gray-600);line-height:1.7;font-style:italic;">This tool searches the official Carbon County NG911 site address point (SSAP) database. Not all rural or newly constructed addresses may appear. If your address is missing, use the report button to notify our office. To apply for a new address, use the <a href="https://carboncomt.forms.govos.com/ng/fa/CCDevelopmentPackage" target="_blank" rel="noopener" style="color:var(--teal);">County Development Permit Package Application</a>.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     INTERACTIVE MAP
+═══════════════════════════════════ -->
+<div class="section" id="tab-map">
+  <div class="map-section">
+    <div class="map-toolbar">
+      <span class="map-toolbar-label">Layers</span>
+      <button class="layer-toggle tog-boundary on" data-layer="boundary" onclick="toggleLayer(this)">
+        <span class="tog-dot" style="background:#64748b"></span> County Boundary
+      </button>
+      <button class="layer-toggle tog-roads" data-layer="roads" onclick="toggleLayer(this)">
+        <span class="tog-dot" style="background:#b45309"></span> Roads &amp; Addresses
+      </button>
+      <button class="layer-toggle tog-parcels" data-layer="parcels" onclick="toggleLayer(this)">
+        <span class="tog-dot" style="background:#7c3aed"></span> Parcels
+      </button>
+      <button class="layer-toggle tog-flood" data-layer="flood" onclick="toggleLayer(this)">
+        <span class="tog-dot" style="background:#0369a1"></span> Floodplain
+      </button>
+      <button class="layer-toggle tog-grouse" data-layer="grouse" onclick="toggleLayer(this)">
+        <span class="tog-dot" style="background:#15803d"></span> Sage Grouse Habitat
+      </button>
+    </div>
+    <div style="position:relative;">
+      <div id="map"></div>
+      <div class="map-zoom-notice" id="zoom-notice">Zoom in further to see parcels</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     PROPERTY & PARCEL
+═══════════════════════════════════ -->
+<div class="section" id="tab-parcel">
+  <div class="tool-section">
+    <div class="tool-header">
+      <h2>Property &amp; Parcel Lookup</h2>
+      <p>Search Montana Cadastral records for parcel information in Carbon County. You can search by owner name, geocode (parcel number), or street address.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-label">Search By</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <button class="layer-toggle tog-boundary on" id="psearch-owner" onclick="setParcelMode('owner',this)" style="border-radius:6px;">Owner Name</button>
+        <button class="layer-toggle" id="psearch-geo" onclick="setParcelMode('geocode',this)" style="border-radius:6px;">Geocode / Parcel #</button>
+        <button class="layer-toggle" id="psearch-addr" onclick="setParcelMode('address',this)" style="border-radius:6px;">Street Address</button>
       </div>
-      <div class="footer-col">
-        <h4>Resources</h4>
-        <a href="https://carbonmt.gov" target="_blank" rel="noopener">County Website</a>
-        <a href="https://data.fs.usda.gov" target="_blank" rel="noopener">USFS Data</a>
-        <a href="https://www.blm.gov/maps" target="_blank" rel="noopener">BLM Maps</a>
-        <a href="https://www.fema.gov/flood-maps" target="_blank" rel="noopener">FEMA Flood Maps</a>
+      <div class="input-row">
+        <div class="input-wrap">
+          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="parcel-input" class="tool-input" placeholder="Enter owner last name…" autocomplete="off" onkeydown="if(event.key==='Enter')runParcelLookup()" />
+        </div>
+        <button class="tool-btn" id="parcel-btn" onclick="runParcelLookup()">
+          <span class="btn-label">Search</span><div class="spinner-sm"></div>
+        </button>
+      </div>
+      <p class="tool-hint" id="parcel-hint">Enter a last name or full name. Example: "Smith" or "Smith John"</p>
+      <div class="tool-result" id="parcel-result"></div>
+    </div>
+    <div class="tool-card" style="background:var(--gray-100);border-color:var(--gray-200);">
+      <p style="font-family:var(--fhead);font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-400);margin-bottom:7px;">Data Source</p>
+      <p style="font-family:var(--fbody);font-size:13px;color:var(--gray-600);line-height:1.7;font-style:italic;">Parcel data is sourced from the Montana State Library Cadastral database and may not reflect the most recent county records. For official parcel information contact the <a href="https://carbonmt.gov" target="_blank" rel="noopener" style="color:var(--teal);">Carbon County Clerk &amp; Recorder</a>.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     FLOODPLAIN CHECK
+═══════════════════════════════════ -->
+<div class="section" id="tab-flood">
+  <div class="tool-section">
+    <div class="tool-header">
+      <h2>Floodplain Check</h2>
+      <p>Find out if a property or address falls within a FEMA designated Special Flood Hazard Area (SFHA). This is commonly required for building permits, mortgages, and flood insurance determinations.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-label">Street Address</div>
+      <div class="input-row">
+        <div class="input-wrap">
+          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+          <input type="text" id="flood-input" class="tool-input" placeholder="e.g. 123 Main St, Red Lodge, MT" autocomplete="off" onkeydown="if(event.key==='Enter')runFloodCheck()" />
+        </div>
+        <button class="tool-btn" id="flood-btn" onclick="runFloodCheck()">
+          <span class="btn-label">Check</span><div class="spinner-sm"></div>
+        </button>
+      </div>
+      <p class="tool-hint">Include city and state for best results. Example: "456 Broadway Ave, Red Lodge, MT"</p>
+      <div class="tool-result" id="flood-result"></div>
+    </div>
+    <div class="tool-card" style="background:var(--gray-100);">
+      <p style="font-family:var(--fhead);font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-400);margin-bottom:7px;">Important Notice</p>
+      <p style="font-family:var(--fbody);font-size:13px;color:var(--gray-600);line-height:1.7;font-style:italic;">This tool provides a general indication based on FEMA's National Flood Hazard Layer. It is not a formal flood zone determination. For official determinations required by lenders or permits, request a <a href="https://msc.fema.gov/portal/home" target="_blank" rel="noopener" style="color:var(--teal);">FEMA Elevation Certificate</a> or contact our office.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     DOWNLOADABLE MAPS
+═══════════════════════════════════ -->
+<div class="section" id="tab-maps">
+  <div class="maps-section">
+    <div class="sec-header">
+      <h2>Downloadable Maps</h2>
+      <p>Geo-referenced PDF maps available at no cost. Printed copies of county-produced maps are available through the GIS &amp; Addressing Department at a cost-recovery price.</p>
+    </div>
+    <div class="pdf-grid">
+
+      <div class="pdf-card">
+        <div class="pdf-thumb county"><div class="pdf-thumb-inner"><svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503-9.498 4.875-2.437a.75.75 0 011.068.68v11.25a.75.75 0 01-.37.648l-5.25 3a.75.75 0 01-.734 0L9.375 16.5l-5.25 3A.75.75 0 013 18.846V7.596a.75.75 0 01.37-.648l5.25-3a.75.75 0 01.734 0l5.626 3.22z"/></svg><span class="pdf-pub">Carbon County GIS</span></div><span class="pdf-badge">PDF</span></div>
+        <div class="pdf-body"><span class="pdf-chip chip-county">Carbon County</span><div class="pdf-title">Carbon County Road Map</div><p class="pdf-desc">County road map with road names, route numbers, and maintenance jurisdiction. 44" × 24".</p></div>
+        <div class="pdf-footer"><span class="pdf-meta">Carbon County GIS</span><a class="pdf-btn" href="maps/CountyRoad_44x24_Field_Front_v1-5.pdf" download>Download <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg></a></div>
+      </div>
+
+      <div class="pdf-card">
+        <div class="pdf-thumb usfs"><div class="pdf-thumb-inner"><svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V18.375m0 0c0-.621.504-1.125 1.125-1.125H6m0 0V6.375m0 0A1.125 1.125 0 017.125 5.25h9.75A1.125 1.125 0 0118 6.375v12m0 0v.125c0 .621-.504 1.125-1.125 1.125H18m0-12.75v12.75"/></svg><span class="pdf-pub">U.S. Forest Service</span></div><span class="pdf-badge">PDF</span></div>
+        <div class="pdf-body"><span class="pdf-chip chip-usfs">U.S. Forest Service</span><div class="pdf-title">Beartooth Ranger District — West</div><p class="pdf-desc">Official USFS map for the western Beartooth Ranger District, Custer Gallatin National Forest.</p></div>
+        <div class="pdf-footer"><span class="pdf-meta">USFS — External</span><a class="pdf-btn" href="https://data.fs.usda.gov/geodata/rastergateway/data3/Ranger%20District/Beartooth%20Ranger%20District%20-%20West.pdf" target="_blank" rel="noopener">Open <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg></a></div>
+      </div>
+
+      <div class="pdf-card">
+        <div class="pdf-thumb blm"><div class="pdf-thumb-inner"><svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V18.375m0 0c0-.621.504-1.125 1.125-1.125H6m0 0V6.375m0 0A1.125 1.125 0 017.125 5.25h9.75A1.125 1.125 0 0118 6.375v12m0 0v.125c0 .621-.504 1.125-1.125 1.125H18m0-12.75v12.75"/></svg><span class="pdf-pub">Bureau of Land Management</span></div><span class="pdf-badge">PDF</span></div>
+        <div class="pdf-body"><span class="pdf-chip chip-blm">BLM</span><div class="pdf-title">Meeteetse Spires</div><p class="pdf-desc">Geo-referenced BLM map of the Meeteetse Spires area. 2019.</p></div>
+        <div class="pdf-footer"><span class="pdf-meta">BLM — External</span><a class="pdf-btn" href="https://www.blm.gov/sites/blm.gov/files/MeeteetseSpires_GeoRef_2019.pdf" target="_blank" rel="noopener">Open <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg></a></div>
+      </div>
+
+      <div class="pdf-card">
+        <div class="pdf-thumb blm"><div class="pdf-thumb-inner"><svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V18.375m0 0c0-.621.504-1.125 1.125-1.125H6m0 0V6.375m0 0A1.125 1.125 0 017.125 5.25h9.75A1.125 1.125 0 0118 6.375v12m0 0v.125c0 .621-.504 1.125-1.125 1.125H18m0-12.75v12.75"/></svg><span class="pdf-pub">Bureau of Land Management</span></div><span class="pdf-badge">PDF</span></div>
+        <div class="pdf-body"><span class="pdf-chip chip-blm">BLM</span><div class="pdf-title">Pryor Mountain</div><p class="pdf-desc">Geo-referenced BLM map of the Pryor Mountain area. 2021.</p></div>
+        <div class="pdf-footer"><span class="pdf-meta">BLM — External</span><a class="pdf-btn" href="https://www.blm.gov/sites/default/files/docs/2021-09/Pryor%20Mountain%20Georeferenced%20Map.pdf" target="_blank" rel="noopener">Open <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg></a></div>
+      </div>
+
+      <div class="pdf-card">
+        <div class="pdf-thumb blm"><div class="pdf-thumb-inner"><svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V18.375m0 0c0-.621.504-1.125 1.125-1.125H6m0 0V6.375m0 0A1.125 1.125 0 017.125 5.25h9.75A1.125 1.125 0 0118 6.375v12m0 0v.125c0 .621-.504 1.125-1.125 1.125H18m0-12.75v12.75"/></svg><span class="pdf-pub">Bureau of Land Management</span></div><span class="pdf-badge">PDF</span></div>
+        <div class="pdf-body"><span class="pdf-chip chip-blm">BLM</span><div class="pdf-title">Cottonwood Travel Management Plan</div><p class="pdf-desc">Geo-referenced BLM travel management plan map for the Cottonwood area. 2019.</p></div>
+        <div class="pdf-footer"><span class="pdf-meta">BLM — External</span><a class="pdf-btn" href="https://www.blm.gov/sites/blm.gov/files/Cottonwood_TMP_GeoRef_2019.pdf" target="_blank" rel="noopener">Open <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg></a></div>
+      </div>
+
+      <div class="pdf-card">
+        <div class="pdf-thumb blm"><div class="pdf-thumb-inner"><svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V18.375m0 0c0-.621.504-1.125 1.125-1.125H6m0 0V6.375m0 0A1.125 1.125 0 017.125 5.25h9.75A1.125 1.125 0 0118 6.375v12m0 0v.125c0 .621-.504 1.125-1.125 1.125H18m0-12.75v12.75"/></svg><span class="pdf-pub">Bureau of Land Management</span></div><span class="pdf-badge">PDF</span></div>
+        <div class="pdf-body"><span class="pdf-chip chip-blm">BLM</span><div class="pdf-title">Grove Creek</div><p class="pdf-desc">Geo-referenced BLM map of the Grove Creek area. 2019.</p></div>
+        <div class="pdf-footer"><span class="pdf-meta">BLM — External</span><a class="pdf-btn" href="https://www.blm.gov/sites/blm.gov/files/GroveCreek_GeoRef_2019.pdf" target="_blank" rel="noopener">Open <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg></a></div>
+      </div>
+
+    </div>
+    <div class="pdf-note">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+      <p>Federal maps link to files hosted by the USFS and BLM. For printed copies of county maps contact the GIS &amp; Addressing Department at <a href="tel:4064457271">406-445-7271</a>.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     ALL GIS DATA
+═══════════════════════════════════ -->
+<div class="section" id="tab-data">
+  <div class="catalog-band">
+    <div class="cat-inner">
+      <button class="ctab active" data-tag="all"><span class="cdot dot-all"></span>All<span class="ccnt" id="cnt-all">—</span></button>
+      <button class="ctab" data-tag="boundaries"><span class="cdot dot-boundaries"></span>Boundaries &amp; Admin<span class="ccnt" id="cnt-boundaries">—</span></button>
+      <button class="ctab" data-tag="roads"><span class="cdot dot-roads"></span>Roads &amp; Transportation<span class="ccnt" id="cnt-roads">—</span></button>
+      <button class="ctab" data-tag="parcels"><span class="cdot dot-parcels"></span>Parcels &amp; Zoning<span class="ccnt" id="cnt-parcels">—</span></button>
+      <button class="ctab" data-tag="emergency"><span class="cdot dot-emergency"></span>Emergency Management<span class="ccnt" id="cnt-emergency">—</span></button>
+      <button class="ctab" data-tag="flood"><span class="cdot dot-flood"></span>Flood &amp; Water<span class="ccnt" id="cnt-flood">—</span></button>
+      <button class="ctab" data-tag="parks"><span class="cdot dot-parks"></span>Parks &amp; Environment<span class="ccnt" id="cnt-parks">—</span></button>
+    </div>
+  </div>
+  <div class="catalog-search">
+    <div class="cs-inner">
+      <div class="cs-wrap">
+        <svg class="cs-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="cat-search" placeholder="Search datasets…" autocomplete="off" />
+      </div>
+      <span class="cs-summary" id="cs-summary">&nbsp;</span>
+    </div>
+  </div>
+  <div class="catalog-main">
+    <div id="data-grid">
+      <div class="state-wrap"><div class="spinner-lg"></div><h3>Loading datasets…</h3><p>Fetching from ArcGIS Online</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     ABOUT & CONTACT
+═══════════════════════════════════ -->
+<div class="section" id="tab-about">
+  <div class="about-wrap">
+    <div class="sec-header">
+      <h2>About &amp; Contact</h2>
+      <p>GIS &amp; Addressing Department — Carbon County, Montana</p>
+    </div>
+    <div class="about-grid">
+      <div class="acard">
+        <h3>Contact Information</h3>
+        <div class="contact-block">
+          <strong>Patrick Benson, GIS Coordinator</strong>
+          <span style="font-family:var(--fbody);font-size:13px;color:var(--gray-600);font-style:italic;">10 Oakes Ave S, Suite F<br/>Red Lodge, MT 59068</span>
+          <a href="tel:4064457271">406-445-7271</a>
+          <a id="about-email" href="#">GIS@carbonmt.gov</a>
+        </div>
+      </div>
+      <div class="acard">
+        <h3>Addressing Authority</h3>
+        <p>The GIS &amp; Addressing Department serves as the addressing authority for Carbon County, maintaining the official database of road names and physical addresses for all structures, primarily in support of 9-1-1 and emergency services.</p>
+        <p style="margin-top:10px;">To apply for a new address, use the <a href="https://carboncomt.forms.govos.com/ng/fa/CCDevelopmentPackage" target="_blank" rel="noopener">County Development Permit Package Application</a>.</p>
+      </div>
+      <div class="acard" style="grid-column:1/-1;">
+        <h3>Send a Message</h3>
+        <p style="margin-bottom:16px;font-style:italic;">Use the form below to send a message directly to the GIS &amp; Addressing Department.</p>
+        <div class="cform">
+          <div class="cform-group"><label>Name</label><input type="text" id="cf-name" placeholder="Your name" /></div>
+          <div class="cform-group"><label>Your Email</label><input type="email" id="cf-replyemail" placeholder="your@email.com" /></div>
+          <div class="cform-group full"><label>Message</label><textarea id="cf-message" rows="4" placeholder="Your question or message…"></textarea></div>
+          <div class="cform-actions">
+            <button class="tool-btn" onclick="submitContactForm()">Send Message
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0121.485 12 59.768 59.768 0 013.27 20.875L5.999 12zm0 0h7.5"/></svg>
+            </button>
+            <span id="cf-status" class="cform-status"></span>
+          </div>
+        </div>
+      </div>
+      <div class="acard">
+        <h3>Data Disclaimer</h3>
+        <p>Geographic data published here represents the best available information at the time of publication. Carbon County makes no warranties regarding accuracy or completeness for any particular purpose. Users assume all responsibility for decisions made using this information.</p>
+      </div>
+      <div class="acard">
+        <h3>Printed Maps</h3>
+        <p>Printed versions of county-produced maps are available at a cost-recovery price. Map costs are determined by size, paper type, and finishing options such as lamination. Contact the department for current pricing.</p>
       </div>
     </div>
-    <div class="footer-bottom">
-      <p>Carbon County GIS Open Data &bull; Red Lodge, Montana &bull; <span id="footer-year"></span></p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="https://carbonmt.gov/wp-content/uploads/2024/07/Carbon-County-Logo-Medium.webp" alt="Carbon County" onerror="this.style.display='none'" />
+      <div class="footer-brand-name">GIS &amp; Addressing Department</div>
+      <address class="footer-addr">
+        10 Oakes Ave S, Suite F<br/>Red Lodge, MT 59068<br/><br/>
+        Patrick Benson, GIS Coordinator<br/>
+        <a href="tel:4064457271">406-445-7271</a><br/>
+        <a id="footer-email" href="#">GIS@carbonmt.gov</a>
+      </address>
     </div>
-  </footer>
+    <div class="fcol">
+      <h4>Tools</h4>
+      <a onclick="goTab('address')">9-1-1 Address Lookup</a>
+      <a onclick="goTab('map')">Explore the Map</a>
+      <a onclick="goTab('parcel')">Property &amp; Parcel</a>
+      <a onclick="goTab('flood')">Floodplain Check</a>
+      <a onclick="goTab('maps')">Downloadable Maps</a>
+    </div>
+    <div class="fcol">
+      <h4>Resources</h4>
+      <a href="https://carbonmt.gov" target="_blank" rel="noopener">County Website</a>
+      <a href="https://carboncomt.forms.govos.com/ng/fa/CCDevelopmentPackage" target="_blank" rel="noopener">Address Application</a>
+      <a href="https://msc.fema.gov/portal/home" target="_blank" rel="noopener">FEMA Map Service</a>
+      <a href="https://data.fs.usda.gov" target="_blank" rel="noopener">USFS Data</a>
+      <a href="https://www.blm.gov/maps" target="_blank" rel="noopener">BLM Maps</a>
+    </div>
+  </div>
+  <div class="footer-bottom"><p>Carbon County GIS &bull; Red Lodge, Montana &bull; <span id="footer-year"></span></p></div>
+</footer>
 
-  <script>
-    // ── CONFIG ────────────────────────────────────────────────────────────
-    const GROUP_ID  = '65a714d0ab784949a82002332d91748f';
-    const AGOL_BASE = 'https://carbonmt.maps.arcgis.com';
+<script>
+// ══════════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════════
+const AGOL_GROUP  = '65a714d0ab784949a82002332d91748f';
+const AGOL_BASE   = 'https://carbonmt.maps.arcgis.com';
+const SSAP_URL    = 'https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/NG911_Core_Layers_View20251017/FeatureServer/8';
+const BOUNDARY_URL= 'https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/CountyBoundary/FeatureServer/0';
+const CADASTRAL_URL='https://gisservicemt.gov/arcgis/rest/services/MSDI_Framework/Cadastral/MapServer';
+const FEMA_URL    = 'https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer';
+const CENSUS_GEOCODE = 'https://geocoding.geo.census.gov/geocoder/locations/onelineaddress';
 
-    // Category definitions.
-    // tagMatches: array of lowercase strings — if ANY of an item's tags
-    // contain one of these strings, it matches this category.
-    // This is intentionally fuzzy to handle casing and spacing variations.
-    const CATEGORIES = [
-      {
-        key: 'boundaries',
-        label: 'Boundaries & Administration',
-        tagMatches: ['boundaries and administration', 'boundaries & administration'],
-        cls: 'boundaries', cntId: 'cnt-boundaries'
-      },
-      {
-        key: 'roads',
-        label: 'Roads & Transportation',
-        tagMatches: ['roads and transportation', 'roads & transportation'],
-        cls: 'roads', cntId: 'cnt-roads'
-      },
-      {
-        key: 'parcels',
-        label: 'Parcels, Zoning & Land Use',
-        tagMatches: ['parcels zoning and land use', 'parcels, zoning and land use', 'parcels zoning & land use', 'parcels, zoning & land use'],
-        cls: 'parcels', cntId: 'cnt-parcels'
-      },
-      {
-        key: 'emergency',
-        label: 'Emergency Management & Public Safety',
-        tagMatches: ['emergency management and public safety', 'emergency management & public safety'],
-        cls: 'emergency', cntId: 'cnt-emergency'
-      },
-      {
-        key: 'flood',
-        label: 'Flood & Water',
-        tagMatches: ['flood and water', 'flood & water'],
-        cls: 'flood', cntId: 'cnt-flood'
-      },
-      {
-        key: 'parks',
-        label: 'Parks, Environment & Natural Resources',
-        tagMatches: ['parks environment and natural resources', 'parks, environment and natural resources', 'parks environment & natural resources', 'parks, environment & natural resources'],
-        cls: 'parks', cntId: 'cnt-parks'
-      },
-    ];
+// Carbon County approximate bounds (lat/lon)
+const COUNTY_BOUNDS = [[44.97, -109.43], [45.56, -108.42]];
+const COUNTY_CENTER = [45.17, -108.95];
 
-    let allItems  = [];
-    let activeTag = 'all';
-    let searchQ   = '';
-    const DEBUG   = window.location.search.includes('debug');
+// ══════════════════════════════════════════════════════════════
+// TAB NAVIGATION
+// ══════════════════════════════════════════════════════════════
+let mapInitialized = false;
 
-    // ── SECTION SWITCHING ─────────────────────────────────────────────────
-    function switchSection(name) {
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.getElementById('section-' + name).classList.add('active');
-      document.querySelectorAll('.page-tab').forEach(t => t.classList.toggle('active', t.dataset.section === name));
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    document.querySelectorAll('.page-tab').forEach(btn => {
-      btn.addEventListener('click', () => switchSection(btn.dataset.section));
-    });
+function goTab(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.ptab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (name === 'map' && !mapInitialized) initMap();
+  if (name === 'data' && allItems.length === 0) fetchCatalog();
+}
 
-    // ── AGOL FETCH ────────────────────────────────────────────────────────
-    async function fetchAll() {
-      let items = [], start = 1;
-      while (true) {
-        const url = `${AGOL_BASE}/sharing/rest/search?q=group:${GROUP_ID}&f=json&num=100&start=${start}&sortField=title&sortOrder=asc`;
-        const r = await fetch(url);
-        const d = await r.json();
-        if (d.results) items = items.concat(d.results);
-        if (!d.nextStart || d.nextStart === -1) break;
-        start = d.nextStart;
+document.querySelectorAll('.ptab').forEach(btn => {
+  btn.addEventListener('click', () => goTab(btn.dataset.tab));
+});
+
+// ══════════════════════════════════════════════════════════════
+// EMAIL INJECTION (Cloudflare bypass)
+// ══════════════════════════════════════════════════════════════
+function injectEmails() {
+  const e = ['GIS', 'carbonmt.gov'].join('@');
+  ['home-email','about-email','footer-email'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.href = 'mailto:' + e; el.textContent = e; }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// LEAFLET MAP
+// ══════════════════════════════════════════════════════════════
+let map, layers = {}, parcelsVisible = false;
+
+function initMap() {
+  mapInitialized = true;
+
+  map = L.map('map', {
+    center: COUNTY_CENTER,
+    zoom: 10,
+    zoomControl: true
+  });
+
+  // Basemap — CartoDB Positron (clean, readable for non-technical users)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd', maxZoom: 20
+  }).addTo(map);
+
+  // Fit to county bounds
+  map.fitBounds(COUNTY_BOUNDS);
+
+  // ── County Boundary ──
+  fetchCountyBoundary();
+
+  // ── Sage Grouse (MapServer tile overlay) ──
+  layers.grouse = L.tileLayer.wms('https://gis.dnrc.mt.gov/arcgis/rest/services/MSGHCP/SageGrouseAdministrative/MapServer/export', {
+    layers: 'show:0',
+    format: 'png32',
+    transparent: true,
+    opacity: 0.5,
+    attribution: 'MT DNRC'
+  });
+  // Use AGOL REST export format for MapServer
+  layers.grouse = L.tileLayer(
+    'https://gis.dnrc.mt.gov/arcgis/rest/services/MSGHCP/SageGrouseAdministrative/MapServer/tile/{z}/{y}/{x}',
+    { maxZoom: 18, opacity: 0.5, attribution: 'MT DNRC' }
+  );
+
+  // ── FEMA Floodplain (MapServer) ──
+  layers.flood = L.tileLayer(
+    'https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/tile/{z}/{y}/{x}',
+    { maxZoom: 20, opacity: 0.55, attribution: 'FEMA NFHL' }
+  );
+
+  // ── Montana Parcels (MapServer) — zoom restricted ──
+  layers.parcels = L.tileLayer(
+    'https://gisservicemt.gov/arcgis/rest/services/MSDI_Framework/Parcels/MapServer/tile/{z}/{y}/{x}',
+    { maxZoom: 20, opacity: 0.7, attribution: 'MT State Library' }
+  );
+
+  // ── Roads & Addresses (AGOL FeatureServer — rendered as tile) ──
+  // Use dynamic tile endpoint for FeatureServer
+  layers.roads = L.tileLayer(
+    `https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/NG911_Core_Layers_View20251017/FeatureServer/tile/{z}/{y}/{x}`,
+    { maxZoom: 20, opacity: 0.8, attribution: 'Carbon County GIS' }
+  );
+
+  // Zoom notice for parcels
+  map.on('zoomend', () => {
+    const z = map.getZoom();
+    const notice = document.getElementById('zoom-notice');
+    const parcelBtn = document.querySelector('[data-layer="parcels"]');
+    if (parcelBtn && parcelBtn.classList.contains('on')) {
+      if (z < 13) {
+        notice.classList.add('visible');
+        if (map.hasLayer(layers.parcels)) map.removeLayer(layers.parcels);
+      } else {
+        notice.classList.remove('visible');
+        if (!map.hasLayer(layers.parcels)) map.addLayer(layers.parcels);
       }
-      return items;
+    } else {
+      notice.classList.remove('visible');
     }
+  });
+}
 
-    // ── CATEGORY MATCHING (case-insensitive, fuzzy) ───────────────────────
-    function getCat(item) {
-      if (!item.tags || item.tags.length === 0) return null;
-      // Normalize all item tags to lowercase trimmed strings
-      const itemTagsLower = item.tags.map(t => t.trim().toLowerCase());
-      // Find first category where any tagMatch appears in item's tags
-      return CATEGORIES.find(cat =>
-        cat.tagMatches.some(match =>
-          itemTagsLower.some(it => it === match)
-        )
-      ) || null;
+async function fetchCountyBoundary() {
+  try {
+    const params = new URLSearchParams({ where: '1=1', outFields: '*', f: 'geojson', outSR: 4326 });
+    const r = await fetch(`${BOUNDARY_URL}/query?${params}`);
+    const geojson = await r.json();
+    if (geojson.features && geojson.features.length > 0) {
+      layers.boundary = L.geoJSON(geojson, {
+        style: {
+          color: '#002d33',
+          weight: 2.5,
+          fillColor: 'transparent',
+          fillOpacity: 0,
+          dashArray: '6,4'
+        }
+      }).addTo(map);
+      // Fit map to actual boundary
+      map.fitBounds(layers.boundary.getBounds(), { padding: [20, 20] });
     }
+  } catch(e) {
+    // Fallback to hardcoded bounds — boundary still works visually
+    map.fitBounds(COUNTY_BOUNDS);
+  }
+}
 
-    // ── DEBUG: collect all unique tags ───────────────────────────────────
-    function showDebug() {
-      if (!DEBUG) return;
-      document.getElementById('debug-panel').style.display = 'block';
-      const allTags = new Set();
-      allItems.forEach(item => {
-        (item.tags || []).forEach(t => allTags.add(t.trim()));
-      });
-      const sorted = [...allTags].sort((a, b) => a.localeCompare(b));
-      const matched = new Set();
-      allItems.forEach(item => { const c = getCat(item); if (c) matched.add(c.key); });
-      document.getElementById('debug-content').innerHTML =
-        `<code style="color:#98c379">Categories matched: [${[...matched].join(', ')}]</code>` +
-        `<code style="color:#61afef;margin-top:8px;display:block">All unique tags (${sorted.length}):</code>` +
-        sorted.map(t => `<code>${t}</code>`).join('');
-    }
+function toggleLayer(btn) {
+  const name = btn.dataset.layer;
+  const isOn = btn.classList.contains('on');
 
-    // ── HELPERS ───────────────────────────────────────────────────────────
-    function thumbUrl(item) {
-      return item.thumbnail ? `${AGOL_BASE}/sharing/rest/content/items/${item.id}/info/${item.thumbnail}` : null;
+  if (name === 'boundary') {
+    btn.classList.toggle('on');
+    if (layers.boundary) {
+      isOn ? map.removeLayer(layers.boundary) : map.addLayer(layers.boundary);
     }
-    function itemUrl(item) { return `${AGOL_BASE}/home/item.html?id=${item.id}`; }
-    function fmtDate(ts) {
-      if (!ts) return '';
-      return new Date(ts).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    }
-    function typeLabel(item) {
-      const t = (item.type || '').toLowerCase();
-      if (t.includes('feature')) return 'Feature Layer';
-      if (t.includes('map image')) return 'Map Service';
-      if (t.includes('web map')) return 'Web Map';
-      if (t.includes('tile')) return 'Tile Layer';
-      return item.type || 'Dataset';
-    }
+    return;
+  }
 
-    const MAP_SVG = `<svg class="thumb-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503-9.498 4.875-2.437a.75.75 0 011.068.68v11.25a.75.75 0 01-.37.648l-5.25 3a.75.75 0 01-.734 0L9.375 16.5l-5.25 3A.75.75 0 013 18.846V7.596a.75.75 0 01.37-.648l5.25-3a.75.75 0 01.734 0l5.626 3.22z"/></svg>`;
-    const EXT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>`;
+  if (!map) return;
 
-    // ── BUILD CARD ────────────────────────────────────────────────────────
-    function buildCard(item, delay) {
-      const cat   = getCat(item);
-      const cls   = cat ? cat.cls : 'default';
-      const thumb = thumbUrl(item);
-      const desc  = (item.snippet || item.description || '').replace(/<[^>]*>/g, '').trim();
-      const url   = itemUrl(item);
-      const placeholder = `<div class="thumb-placeholder">${MAP_SVG}<span class="thumb-lbl">${typeLabel(item)}</span></div>`;
-      const thumbHTML = thumb
-        ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=${JSON.stringify(placeholder)}" />`
-        : placeholder;
-      const chipHTML = cat
-        ? `<span class="card-cat-chip chip-${cls}"><span class="chip-dot chip-dot-${cls}"></span>${cat.label}</span>`
-        : '';
-      return `
-        <div class="card" style="animation-delay:${delay}ms">
-          <div class="card-thumb">
-            <div class="card-stripe stripe-${cls}"></div>
-            ${thumbHTML}
-            <span class="card-type-badge">${typeLabel(item)}</span>
-          </div>
-          <div class="card-body">
-            ${chipHTML}
-            <div class="card-title">${item.title || 'Untitled Dataset'}</div>
-            <p class="card-desc">${desc || 'No description provided.'}</p>
-          </div>
-          <div class="card-footer">
-            <span class="card-meta">${fmtDate(item.modified) ? 'Updated ' + fmtDate(item.modified) : ''}</span>
-            <a class="card-btn" href="${url}" target="_blank" rel="noopener">View &amp; Download ${EXT_SVG}</a>
+  if (isOn) {
+    btn.classList.remove('on');
+    if (layers[name] && map.hasLayer(layers[name])) map.removeLayer(layers[name]);
+    if (name === 'parcels') document.getElementById('zoom-notice').classList.remove('visible');
+  } else {
+    btn.classList.add('on');
+    if (name === 'parcels') {
+      if (map.getZoom() >= 13) {
+        map.addLayer(layers[name]);
+      } else {
+        document.getElementById('zoom-notice').classList.add('visible');
+        setTimeout(() => document.getElementById('zoom-notice').classList.remove('visible'), 3000);
+      }
+    } else {
+      if (layers[name]) map.addLayer(layers[name]);
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// ADDRESS LOOKUP
+// ══════════════════════════════════════════════════════════════
+async function runAddrLookup() {
+  const input  = document.getElementById('addr-input');
+  const comm   = document.getElementById('comm-input');
+  const btn    = document.getElementById('addr-btn');
+  const result = document.getElementById('addr-result');
+  const term   = input.value.trim();
+  const commTerm = comm ? comm.value.trim() : '';
+  if (!term) { input.classList.add('error'); setTimeout(() => input.classList.remove('error'), 1500); return; }
+  setLoading(btn, true); result.style.display = 'none';
+  try {
+    let where = `UPPER(AbbrvAdd) LIKE UPPER('${esc(term)}%')`;
+    if (commTerm) where += ` AND UPPER(Post_Comm) LIKE UPPER('%${esc(commTerm)}%')`;
+    const params = new URLSearchParams({ where, outFields: '*', returnGeometry: true, outSR: 4326, resultRecordCount: 10, orderByFields: 'AbbrvAdd', f: 'json' });
+    let data = await (await fetch(`${SSAP_URL}/query?${params}`)).json();
+    // Retry with MSAGComm if Post_Comm failed
+    if (data.error && commTerm) {
+      let w2 = `UPPER(AbbrvAdd) LIKE UPPER('${esc(term)}%') AND UPPER(MSAGComm) LIKE UPPER('%${esc(commTerm)}%')`;
+      const p2 = new URLSearchParams({ where: w2, outFields: '*', returnGeometry: true, outSR: 4326, resultRecordCount: 10, orderByFields: 'AbbrvAdd', f: 'json' });
+      const d2 = await (await fetch(`${SSAP_URL}/query?${p2}`)).json();
+      if (!d2.error) data = d2;
+      else {
+        const p3 = new URLSearchParams({ where: `UPPER(AbbrvAdd) LIKE UPPER('${esc(term)}%')`, outFields: '*', returnGeometry: true, outSR: 4326, resultRecordCount: 10, orderByFields: 'AbbrvAdd', f: 'json' });
+        data = await (await fetch(`${SSAP_URL}/query?${p3}`)).json();
+      }
+    }
+    if (data.error) { result.innerHTML = errBox(data.error.message); result.style.display = 'block'; return; }
+    const features = data.features || [];
+    const full = commTerm ? `${term}, ${commTerm}` : term;
+    if (features.length > 0) {
+      const sorted = features.sort((a,b) => (a.attributes.AbbrvAdd||'').length - (b.attributes.AbbrvAdd||'').length);
+      const f = sorted[0].attributes, g = sorted[0].geometry;
+      const addr = f.AbbrvAdd || term;
+      const city = f.Post_Comm || f.MSAGComm || '';
+      const zip  = f.Post_Code || f.ZIP || '';
+      const state= f.State_Alpha || 'MT';
+      let mapLink = `https://carbonmt.maps.arcgis.com/apps/mapviewer/index.html?layers=a4d565d459f64c33925acb1f3d12579f`;
+      if (g) mapLink += `&center=${g.x},${g.y}&level=18`;
+      const multi = features.length > 1 ? `<p style="font-size:11px;font-family:var(--fhead);color:#16a34a;margin-top:4px;">${features.length} records found — showing closest match.</p>` : '';
+      result.innerHTML = `<div class="res-found">
+        <div class="res-header"><div class="res-icon green"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg></div>
+        <div><div class="res-tag green">Address Found</div><div class="res-title">${addr}</div>${multi}</div></div>
+        <div class="res-attrs">${attr('Address',addr)}${city?attr('Community',city):''}${state?attr('State',state):''}${zip?attr('ZIP',zip):''}</div>
+        <div class="res-actions"><a class="res-btn teal" href="${mapLink}" target="_blank" rel="noopener">View on Map <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg></a></div>
+      </div>`;
+    } else {
+      const _e = ['GIS','carbonmt.gov'].join('@');
+      const subj = encodeURIComponent('Address Not Found — Carbon County GIS Lookup');
+      const body = encodeURIComponent(`Hello,\n\nI searched for "${full}" using the Carbon County GIS Address Lookup and it was not found.\n\nCould you please look into this?\n\nThank you.`);
+      result.innerHTML = `<div class="res-notfound">
+        <div class="res-header"><div class="res-icon yellow"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg></div>
+        <div><div class="res-tag yellow">Not Found</div><div class="res-title">"${full}"</div><div class="res-subtitle">No record found in the 9-1-1 database. Try searching with just the house number and street name, or check spelling.</div></div></div>
+        <div class="res-actions"><a class="res-btn amber" href="mailto:${_e}?subject=${subj}&body=${body}">Report Missing Address <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0121.485 12 59.768 59.768 0 013.27 20.875L5.999 12zm0 0h7.5"/></svg></a></div>
+        <p class="res-note">Need a new address? Use the <a href="https://carboncomt.forms.govos.com/ng/fa/CCDevelopmentPackage" target="_blank" rel="noopener">Development Permit Application</a>.</p>
+      </div>`;
+    }
+    result.style.display = 'block';
+  } catch(e) { result.innerHTML = errBox(e.message); result.style.display = 'block'; }
+  finally { setLoading(btn, false); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// PARCEL LOOKUP
+// ══════════════════════════════════════════════════════════════
+let parcelMode = 'owner';
+
+function setParcelMode(mode, btn) {
+  parcelMode = mode;
+  document.querySelectorAll('#psearch-owner,#psearch-geo,#psearch-addr').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  const input = document.getElementById('parcel-input');
+  const hint  = document.getElementById('parcel-hint');
+  const placeholders = {
+    owner:   ['Enter owner last name…', 'Enter a last name or full name. Example: "Smith" or "Smith John"'],
+    geocode: ['Enter geocode or parcel #…', 'Enter a parcel geocode or number. Example: "08-1234-01-1-01-000"'],
+    address: ['Enter street address…', 'Enter a street address. Example: "123 Main St"']
+  };
+  input.placeholder = placeholders[mode][0];
+  hint.textContent  = placeholders[mode][1];
+  document.getElementById('parcel-result').style.display = 'none';
+}
+
+async function runParcelLookup() {
+  const input  = document.getElementById('parcel-input');
+  const btn    = document.getElementById('parcel-btn');
+  const result = document.getElementById('parcel-result');
+  const term   = input.value.trim();
+  if (!term) { input.classList.add('error'); setTimeout(() => input.classList.remove('error'), 1500); return; }
+  setLoading(btn, true); result.style.display = 'none';
+
+  try {
+    // Montana Cadastral — layer 0 is parcels
+    // Filter to Carbon County (COUNTY field) and search by mode
+    let whereClause = `UPPER(COUNTY) = 'CARBON'`;
+    if (parcelMode === 'owner')   whereClause += ` AND UPPER(OWNERNME1) LIKE UPPER('%${esc(term)}%')`;
+    if (parcelMode === 'geocode') whereClause += ` AND UPPER(GEOCODE) LIKE UPPER('%${esc(term)}%')`;
+    if (parcelMode === 'address') whereClause += ` AND UPPER(SITUSADD) LIKE UPPER('%${esc(term)}%')`;
+
+    const params = new URLSearchParams({
+      where: whereClause,
+      outFields: 'GEOCODE,OWNERNME1,OWNERNME2,SITUSADD,SITUSCITY,LEGALDES,ACREAGE,COUNTY',
+      returnGeometry: false,
+      resultRecordCount: 8,
+      f: 'json'
+    });
+    const data = await (await fetch(`${CADASTRAL_URL}/0/query?${params}`)).json();
+
+    if (data.error) { result.innerHTML = errBox(data.error.message); result.style.display = 'block'; return; }
+    const features = data.features || [];
+
+    if (features.length > 0) {
+      const cards = features.map(feat => {
+        const f = feat.attributes;
+        const owner = [f.OWNERNME1, f.OWNERNME2].filter(Boolean).join(' / ');
+        const address = [f.SITUSADD, f.SITUSCITY].filter(Boolean).join(', ');
+        const acres = f.ACREAGE ? parseFloat(f.ACREAGE).toFixed(2) + ' ac' : '';
+        return `<div style="background:white;border:1px solid #dedad2;border-radius:10px;padding:16px;margin-bottom:10px;">
+          <div style="font-family:var(--fhead);font-size:14px;font-weight:800;color:var(--gray-800);margin-bottom:10px;">${owner || 'Unknown Owner'}</div>
+          <div class="res-attrs" style="border:1px solid #f0ede8;margin-bottom:10px;">
+            ${address ? attr('Address', address) : ''}
+            ${f.GEOCODE ? attr('Geocode', f.GEOCODE) : ''}
+            ${acres ? attr('Acreage', acres) : ''}
+            ${f.LEGALDES ? attr('Legal Desc.', f.LEGALDES.substring(0,40) + (f.LEGALDES.length>40?'…':'')) : ''}
           </div>
         </div>`;
+      }).join('');
+      const note = features.length === 8 ? `<p class="res-note">Showing first 8 results. Narrow your search for more specific results.</p>` : '';
+      result.innerHTML = `<div class="res-found"><div class="res-header"><div class="res-icon green"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg></div><div><div class="res-tag green">${features.length} Record${features.length>1?'s':''} Found</div></div></div>${cards}${note}</div>`;
+    } else {
+      result.innerHTML = `<div class="res-notfound"><div class="res-header"><div class="res-icon yellow"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg></div><div><div class="res-tag yellow">No Records Found</div><div class="res-title">No parcels matched "${term}"</div><div class="res-subtitle">Try a shorter search term or a different search type. For official records contact the <a href="https://carbonmt.gov" target="_blank">Carbon County Clerk &amp; Recorder</a>.</div></div></div></div>`;
+    }
+    result.style.display = 'block';
+  } catch(e) { result.innerHTML = errBox(e.message); result.style.display = 'block'; }
+  finally { setLoading(btn, false); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// FLOODPLAIN CHECK
+// ══════════════════════════════════════════════════════════════
+async function runFloodCheck() {
+  const input  = document.getElementById('flood-input');
+  const btn    = document.getElementById('flood-btn');
+  const result = document.getElementById('flood-result');
+  const term   = input.value.trim();
+  if (!term) { input.classList.add('error'); setTimeout(() => input.classList.remove('error'), 1500); return; }
+  setLoading(btn, true); result.style.display = 'none';
+
+  try {
+    // Step 1: Geocode address using Census geocoder
+    const geoParams = new URLSearchParams({ address: term, benchmark: 'Public_AR_Current', format: 'json' });
+    const geoResp = await fetch(`${CENSUS_GEOCODE}?${geoParams}`);
+    const geoData = await geoResp.json();
+    const matches = geoData?.result?.addressMatches;
+
+    if (!matches || matches.length === 0) {
+      result.innerHTML = `<div class="res-notfound"><div class="res-header"><div class="res-icon yellow"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg></div>
+      <div><div class="res-tag yellow">Address Not Found</div><div class="res-title">Could not locate "${term}"</div>
+      <div class="res-subtitle">Try including the city and state. Example: "123 Main St, Red Lodge, MT"</div></div></div></div>`;
+      result.style.display = 'block'; return;
     }
 
-    // ── RENDER ────────────────────────────────────────────────────────────
-    function render() {
-      const q = searchQ.toLowerCase();
-      const filtered = allItems.filter(item => {
-        const cat = getCat(item);
-        const matchTag = activeTag === 'all' || (cat && cat.key === activeTag);
-        const matchSearch = !q
-          || (item.title || '').toLowerCase().includes(q)
-          || (item.snippet || '').toLowerCase().includes(q)
-          || (item.tags || []).join(' ').toLowerCase().includes(q);
-        return matchTag && matchSearch;
-      });
-      document.getElementById('results-summary').innerHTML =
-        `Showing <strong>${filtered.length}</strong> of ${allItems.length} datasets`;
-      const grid = document.getElementById('grid');
-      if (filtered.length === 0) {
-        grid.innerHTML = `<div class="state-wrap"><h3>No datasets found</h3><p>Try adjusting your search or category filter.</p></div>`;
-        return;
-      }
-      grid.innerHTML = filtered.map((item, i) => buildCard(item, Math.min(i * 20, 260))).join('');
-    }
+    const match = matches[0];
+    const lon = match.coordinates.x;
+    const lat = match.coordinates.y;
+    const matchedAddr = match.matchedAddress;
 
-    // ── SET TAG ───────────────────────────────────────────────────────────
-    function setTag(key) {
-      activeTag = key;
-      document.querySelectorAll('.cat-tab').forEach(b => b.classList.toggle('active', b.dataset.tag === key));
-      render();
-    }
+    // Step 2: Query FEMA NFHL for flood zone at that point
+    // Layer 28 = SFHA (Special Flood Hazard Areas), Layer 12 = Flood Hazard Zone
+    const point = { x: lon, y: lat, spatialReference: { wkid: 4326 } };
+    const femaParams = new URLSearchParams({
+      geometry: JSON.stringify(point),
+      geometryType: 'esriGeometryPoint',
+      inSR: 4326,
+      layers: 'all:28',
+      tolerance: 1,
+      mapExtent: `${lon-0.01},${lat-0.01},${lon+0.01},${lat+0.01}`,
+      imageDisplay: '400,400,96',
+      returnGeometry: false,
+      f: 'json'
+    });
+    const femaResp = await fetch(`${FEMA_URL}/identify?${femaParams}`);
+    const femaData = await femaResp.json();
+    const femaResults = femaData?.results || [];
 
-    // ── UPDATE COUNTS ─────────────────────────────────────────────────────
-    function updateCounts() {
-      document.getElementById('cnt-all').textContent = allItems.length;
-      document.getElementById('stat-total').textContent = allItems.length;
-      CATEGORIES.forEach(cat => {
-        const n = allItems.filter(item => { const c = getCat(item); return c && c.key === cat.key; }).length;
-        const el = document.getElementById(cat.cntId);
-        if (el) el.textContent = n;
-      });
-    }
-
-    // ── ADDRESS LOOKUP ────────────────────────────────────────────────────
-    const SSAP_URL   = 'https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/NG911_Core_Layers_View20251017/FeatureServer';
-    const SSAP_LAYER = 8; // SSAP is layer index 8 in this service
-
-    async function querySSAP(addressTerm, communityTerm) {
-      // Anchor search to START of AbbrvAdd so "4 Rodeo" never matches "94 Rodeo"
-      let where = `UPPER(AbbrvAdd) LIKE UPPER('${addressTerm.replace(/'/g, "''")}%')`;
-      // Add community filter if provided — try Post_Comm only (simpler, avoids OR syntax issues)
-      if (communityTerm) {
-        const c = communityTerm.replace(/'/g, "''");
-        where += ` AND UPPER(Post_Comm) LIKE UPPER('%${c}%')`;
-      }
-      const params = new URLSearchParams({
-        where,
-        outFields: '*',
-        returnGeometry: true,
-        outSR: 4326,
-        resultRecordCount: 10,
-        orderByFields: 'AbbrvAdd',
+    // Also try a spatial query on layer 28 directly as backup
+    let floodFeatures = femaResults;
+    if (floodFeatures.length === 0) {
+      const qParams = new URLSearchParams({
+        geometry: `${lon},${lat}`,
+        geometryType: 'esriGeometryPoint',
+        inSR: 4326,
+        spatialRel: 'esriSpatialRelIntersects',
+        outFields: 'FLD_ZONE,ZONE_SUBTY,SFHA_TF,STUDY_TYP',
+        returnGeometry: false,
         f: 'json'
       });
-      const url = `${SSAP_URL}/${SSAP_LAYER}/query?${params}`;
-      const r   = await fetch(url);
-      const d   = await r.json();
-
-      // If Post_Comm filter fails, retry with MSAGComm instead
-      if (d.error && communityTerm) {
-        const c2 = communityTerm.replace(/'/g, "''");
-        const fallbackWhere = `UPPER(AbbrvAdd) LIKE UPPER('${addressTerm.replace(/'/g, "''")}%') AND UPPER(MSAGComm) LIKE UPPER('%${c2}%')`;
-        const params2 = new URLSearchParams({
-          where: fallbackWhere,
-          outFields: '*',
-          returnGeometry: true,
-          outSR: 4326,
-          resultRecordCount: 10,
-          orderByFields: 'AbbrvAdd',
-          f: 'json'
-        });
-        const r2 = await fetch(`${SSAP_URL}/${SSAP_LAYER}/query?${params2}`);
-        const d2 = await r2.json();
-        if (!d2.error) return d2;
-        // Both community fields failed — fall back to address-only search
-        const params3 = new URLSearchParams({
-          where: `UPPER(AbbrvAdd) LIKE UPPER('${addressTerm.replace(/'/g, "''")}%')`,
-          outFields: '*',
-          returnGeometry: true,
-          outSR: 4326,
-          resultRecordCount: 10,
-          orderByFields: 'AbbrvAdd',
-          f: 'json'
-        });
-        const r3 = await fetch(`${SSAP_URL}/${SSAP_LAYER}/query?${params3}`);
-        return await r3.json();
-      }
-      return d;
+      const qResp = await fetch(`${FEMA_URL}/28/query?${qParams}`);
+      const qData = await qResp.json();
+      floodFeatures = qData?.features || [];
     }
 
-    async function runLookup() {
-      const addrInput = document.getElementById('addr-input');
-      const commInput = document.getElementById('comm-input');
-      const btn       = document.getElementById('lookup-btn');
-      const result    = document.getElementById('lookup-result');
-      const term      = addrInput.value.trim();
-      const commTerm  = commInput ? commInput.value.trim() : '';
+    const femaLink = `https://msc.fema.gov/portal/search?AddressQuery=${encodeURIComponent(term)}`;
 
-      if (!term) {
-        addrInput.classList.add('has-error');
-        addrInput.focus();
-        setTimeout(() => addrInput.classList.remove('has-error'), 1500);
-        return;
+    if (floodFeatures.length > 0) {
+      const f = floodFeatures[0].attributes || floodFeatures[0];
+      const zone = f.FLD_ZONE || f.fld_zone || 'A';
+      const subtype = f.ZONE_SUBTY || f.zone_subty || '';
+      const sfha = f.SFHA_TF || f.sfha_tf || 'T';
+      const inFlood = sfha === 'T' || zone.startsWith('A') || zone.startsWith('V');
+
+      if (inFlood) {
+        result.innerHTML = `<div class="res-found" style="background:#fef2f2;border-color:#fca5a5;">
+          <div class="res-header"><div class="res-icon red"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg></div>
+          <div><div class="res-tag" style="color:#991b1b;">In Special Flood Hazard Area</div><div class="res-title">${matchedAddr}</div></div></div>
+          <div class="res-attrs" style="border-color:#fecaca;">
+            ${attr('Flood Zone', zone)}
+            ${subtype ? attr('Zone Subtype', subtype) : ''}
+            ${attr('SFHA', 'Yes — flood insurance may be required')}
+          </div>
+          <div class="res-actions"><a class="res-btn teal" href="${femaLink}" target="_blank" rel="noopener">View FEMA Map <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg></a></div>
+          <p class="res-note">This is not an official flood zone determination. Contact our office or request a <a href="https://msc.fema.gov/portal/home" target="_blank" rel="noopener">FEMA Elevation Certificate</a> for official determinations.</p>
+        </div>`;
+      } else {
+        result.innerHTML = `<div class="res-found">
+          <div class="res-header"><div class="res-icon green"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg></div>
+          <div><div class="res-tag green">Not in Special Flood Hazard Area</div><div class="res-title">${matchedAddr}</div></div></div>
+          <div class="res-attrs">${attr('Flood Zone', zone || 'X')}${attr('SFHA', 'No')}</div>
+          <div class="res-actions"><a class="res-btn teal" href="${femaLink}" target="_blank" rel="noopener">View FEMA Map <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg></a></div>
+          <p class="res-note">This is not an official flood zone determination. Contact our office for official determinations.</p>
+        </div>`;
       }
-
-      btn.disabled = true;
-      btn.classList.add('loading');
-      result.style.display = 'none';
-
-      try {
-        const data = await querySSAP(term, commTerm);
-
-        if (data.error) {
-          result.innerHTML = `<div class="result-error">⚠️ Could not reach the address database. Check that the feature layer is publicly accessible.<br/><small style="opacity:.6;font-size:10px;">${data.error.message}</small></div>`;
-          result.style.display = 'block';
-          return;
-        }
-
-        const features = data.features || [];
-
-        if (features.length > 0) {
-          // ── FOUND ──
-          // If multiple results, try to find the closest match (shortest address = most specific)
-          const sorted = features.sort((a, b) => {
-            const aLen = (a.attributes.AbbrvAdd || '').length;
-            const bLen = (b.attributes.AbbrvAdd || '').length;
-            return aLen - bLen;
-          });
-          const f    = sorted[0].attributes;
-          const geom = sorted[0].geometry;
-
-          const displayAddr = f['AbbrvAdd'] || term;
-          const city        = f['Post_Comm'] || f['MSAGComm'] || f['Inc_Muni'] || '';
-          const state       = f['State_Alpha'] || f['State'] || 'MT';
-          const zip         = f['Post_Code'] || f['ZIP'] || f['Zip'] || '';
-
-          // Build AGOL map link
-          let mapLink = `https://carbonmt.maps.arcgis.com/apps/mapviewer/index.html?layers=a4d565d459f64c33925acb1f3d12579f`;
-          if (geom) mapLink += `&center=${geom.x},${geom.y}&level=18`;
-
-          const multiNote = features.length > 1
-            ? `<p style="font-family:var(--font-head);font-size:11px;color:#16a34a;margin-top:5px;">${features.length} matching records — showing closest match.</p>`
-            : '';
-
-          result.innerHTML = `
-            <div class="result-found">
-              <div class="result-found-header">
-                <div class="result-found-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-                </div>
-                <div>
-                  <div class="result-found-title">Address Found in Database</div>
-                  <div class="result-found-address">${displayAddr}</div>
-                  ${multiNote}
-                </div>
-              </div>
-              <div class="result-attrs">
-                ${displayAddr ? `<div class="attr-item"><span class="attr-label">Address</span><span class="attr-val">${displayAddr}</span></div>` : ''}
-                ${city  ? `<div class="attr-item"><span class="attr-label">Community</span><span class="attr-val">${city}</span></div>` : ''}
-                ${state ? `<div class="attr-item"><span class="attr-label">State</span><span class="attr-val">${state}</span></div>` : ''}
-                ${zip   ? `<div class="attr-item"><span class="attr-label">ZIP</span><span class="attr-val">${zip}</span></div>` : ''}
-              </div>
-              <div class="result-actions">
-                <a class="result-action-btn btn-view" href="${mapLink}" target="_blank" rel="noopener">
-                  View on Map
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
-                </a>
-              </div>
-            </div>`;
-
-        } else {
-          // ── NOT FOUND ──
-          const fullSearch = commTerm ? `${term}, ${commTerm}` : term;
-          const subject  = encodeURIComponent('Address Not Found — Carbon County GIS Lookup');
-          const body     = encodeURIComponent(`Hello,\n\nI searched for the following address using the Carbon County GIS Address Lookup tool and it was not found:\n\n"${fullSearch}"\n\nCould you please look into this?\n\nThank you.`);
-          const _e       = ['GIS', 'carbonmt.gov'].join('@');
-          const mailLink = `mailto:${_e}?subject=${subject}&body=${body}`;
-
-          result.innerHTML = `
-            <div class="result-not-found">
-              <div class="result-not-found-header">
-                <div class="result-not-found-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
-                </div>
-                <div>
-                  <div class="result-not-found-title">Address Not Found</div>
-                  <div class="result-not-found-msg">No record matching <strong>"${fullSearch}"</strong> was found in the Carbon County 9-1-1 address database.</div>
-                </div>
-              </div>
-              <div class="not-found-actions">
-                <a class="btn-report" href="${mailLink}">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0121.485 12 59.768 59.768 0 013.27 20.875L5.999 12zm0 0h7.5"/></svg>
-                  Report Missing Address
-                </a>
-                <span class="not-found-alt">Or apply via the <a href="https://carboncomt.forms.govos.com/ng/fa/CCDevelopmentPackage" target="_blank" rel="noopener">Development Permit Application</a>.</span>
-              </div>
-            </div>`;
-        }
-
-        result.style.display = 'block';
-
-      } catch (err) {
-        result.innerHTML = `<div class="result-error">⚠️ An error occurred while searching. Please try again.<br/><small style="opacity:.6;font-size:10px;">${err.message}</small></div>`;
-        result.style.display = 'block';
-      } finally {
-        btn.disabled = false;
-        btn.classList.remove('loading');
-      }
+    } else {
+      // Address found but no FEMA flood zone data — likely unmapped area
+      result.innerHTML = `<div class="res-found" style="background:#fefce8;border-color:#fde68a;">
+        <div class="res-header"><div class="res-icon" style="background:#ca8a04"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg></div>
+        <div><div class="res-tag" style="color:#92400e;">No Flood Zone Data</div><div class="res-title">${matchedAddr}</div>
+        <div class="res-subtitle">This area may not have been mapped by FEMA, or may be in an unmapped flood zone. This does not mean there is no flood risk.</div></div></div>
+        <div class="res-actions"><a class="res-btn teal" href="${femaLink}" target="_blank" rel="noopener">Check FEMA Map Service <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg></a></div>
+      </div>`;
     }
+    result.style.display = 'block';
+  } catch(e) { result.innerHTML = errBox(e.message); result.style.display = 'block'; }
+  finally { setLoading(btn, false); }
+}
 
-    // ── INIT ──────────────────────────────────────────────────────────────
-    async function init() {
-      document.getElementById('footer-year').textContent = new Date().getFullYear();
+// ══════════════════════════════════════════════════════════════
+// GIS DATA CATALOG
+// ══════════════════════════════════════════════════════════════
+const DATA_CATS = [
+  { key:'boundaries', label:'Boundaries & Administration', tagMatches:['boundaries and administration','boundaries & administration'], cls:'boundaries', cntId:'cnt-boundaries' },
+  { key:'roads',      label:'Roads & Transportation',      tagMatches:['roads and transportation','roads & transportation'],           cls:'roads',      cntId:'cnt-roads'      },
+  { key:'parcels',    label:'Parcels, Zoning & Land Use',  tagMatches:['parcels zoning and land use','parcels, zoning and land use','parcels zoning & land use'], cls:'parcels', cntId:'cnt-parcels' },
+  { key:'emergency',  label:'Emergency Management',        tagMatches:['emergency management and public safety','emergency management & public safety'], cls:'emergency', cntId:'cnt-emergency' },
+  { key:'flood',      label:'Flood & Water',               tagMatches:['flood and water','flood & water'],                             cls:'flood',      cntId:'cnt-flood'      },
+  { key:'parks',      label:'Parks & Environment',         tagMatches:['parks environment and natural resources','parks, environment and natural resources','parks environment & natural resources'], cls:'parks', cntId:'cnt-parks' },
+];
+let allItems = [], activeCatTag = 'all', catSearch = '';
 
-      // Assemble email at runtime to prevent Cloudflare scraping
-      const _e = ['GIS', 'carbonmt.gov'].join('@');
-      document.querySelectorAll('#contact-email-link, #footer-email-link').forEach(el => {
-        el.href = 'mailto:' + _e;
-        el.textContent = _e;
-      });
-      try {
-        allItems = await fetchAll();
-        updateCounts();
-        showDebug();
-        render();
-      } catch (err) {
-        document.getElementById('grid').innerHTML = `
-          <div class="state-wrap">
-            <h3>Could not load datasets</h3>
-            <p>Confirm the ArcGIS Online group is shared publicly.<br/>
-            <small style="font-size:10px;opacity:.45;display:block;margin-top:5px">${err.message}</small></p>
-          </div>`;
-      }
+async function fetchCatalog() {
+  let items = [], start = 1;
+  try {
+    while (true) {
+      const url = `${AGOL_BASE}/sharing/rest/search?q=group:${AGOL_GROUP}&f=json&num=100&start=${start}&sortField=title&sortOrder=asc`;
+      const d = await (await fetch(url)).json();
+      if (d.results) items = items.concat(d.results);
+      if (!d.nextStart || d.nextStart === -1) break;
+      start = d.nextStart;
     }
+    allItems = items;
+    updateCounts();
+    renderCatalog();
+  } catch(e) {
+    document.getElementById('data-grid').innerHTML = `<div class="state-wrap"><h3>Could not load datasets</h3><p>${e.message}</p></div>`;
+  }
+}
 
-    // ── EVENTS ────────────────────────────────────────────────────────────
-    document.getElementById('search').addEventListener('input', e => { searchQ = e.target.value; render(); });
-    document.querySelectorAll('.cat-tab').forEach(btn => btn.addEventListener('click', () => setTag(btn.dataset.tag)));
+function getItemCat(item) {
+  if (!item.tags) return null;
+  const t = item.tags.map(x => x.trim().toLowerCase());
+  return DATA_CATS.find(c => c.tagMatches.some(m => t.some(it => it === m))) || null;
+}
 
-    init();
+function updateCounts() {
+  document.getElementById('cnt-all').textContent = allItems.length;
+  DATA_CATS.forEach(c => {
+    const n = allItems.filter(i => { const cat = getItemCat(i); return cat && cat.key === c.key; }).length;
+    const el = document.getElementById(c.cntId);
+    if (el) el.textContent = n;
+  });
+}
 
-    // ── CONTACT FORM ──────────────────────────────────────────────────────
-    function submitContactForm() {
-      const name    = document.getElementById('cf-name').value.trim();
-      const email   = document.getElementById('cf-email').value.trim();
-      const message = document.getElementById('cf-message').value.trim();
-      const status  = document.getElementById('cf-status');
+function renderCatalog() {
+  const q = catSearch.toLowerCase();
+  const filtered = allItems.filter(item => {
+    const cat = getItemCat(item);
+    const matchTag = activeCatTag === 'all' || (cat && cat.key === activeCatTag);
+    const matchSearch = !q || (item.title||'').toLowerCase().includes(q) || (item.snippet||'').toLowerCase().includes(q) || (item.tags||[]).join(' ').toLowerCase().includes(q);
+    return matchTag && matchSearch;
+  });
+  document.getElementById('cs-summary').innerHTML = `Showing <strong>${filtered.length}</strong> of ${allItems.length} datasets`;
+  const grid = document.getElementById('data-grid');
+  if (filtered.length === 0) { grid.innerHTML = `<div class="state-wrap"><h3>No datasets found</h3><p>Try adjusting your search or category.</p></div>`; return; }
 
-      if (!name || !email || !message) {
-        status.textContent = 'Please fill in all fields.';
-        status.style.color = '#991b1b';
-        return;
-      }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        status.textContent = 'Please enter a valid email address.';
-        status.style.color = '#991b1b';
-        return;
-      }
+  const MAP_SVG = `<svg class="dthumb-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503-9.498 4.875-2.437a.75.75 0 011.068.68v11.25a.75.75 0 01-.37.648l-5.25 3a.75.75 0 01-.734 0L9.375 16.5l-5.25 3A.75.75 0 013 18.846V7.596a.75.75 0 01.37-.648l5.25-3a.75.75 0 01.734 0l5.626 3.22z"/></svg>`;
+  const EXT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>`;
 
-      // Build mailto link and open it — works without a server
-      const subject = encodeURIComponent(`GIS Open Data Inquiry from ${name}`);
-      const body    = encodeURIComponent(
-        `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`
-      );
-      window.location.href = `mailto:GIS@carbonmt.gov?subject=${subject}&body=${body}`;
+  grid.innerHTML = filtered.map((item, i) => {
+    const cat  = getItemCat(item);
+    const cls  = cat ? cat.cls : 'default';
+    const thumb = item.thumbnail ? `${AGOL_BASE}/sharing/rest/content/items/${item.id}/info/${item.thumbnail}` : null;
+    const desc  = (item.snippet||item.description||'').replace(/<[^>]*>/g,'').trim();
+    const date  = item.modified ? new Date(item.modified).toLocaleDateString('en-US',{month:'short',year:'numeric'}) : '';
+    const url   = `${AGOL_BASE}/home/item.html?id=${item.id}`;
+    const type  = (() => { const t=(item.type||'').toLowerCase(); if(t.includes('feature'))return'Feature Layer'; if(t.includes('map image'))return'Map Service'; if(t.includes('web map'))return'Web Map'; return item.type||'Dataset'; })();
+    const ph    = `<div class="dthumb-ph">${MAP_SVG}<span class="dthumb-lbl">${type}</span></div>`;
+    const thumbHTML = thumb ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=${JSON.stringify(ph)}" />` : ph;
+    const chipHTML  = cat ? `<span class="dcat-chip chip-${cls}"><span class="cchip-dot cdot-${cls}"></span>${cat.label}</span>` : '';
+    return `<div class="dcard" style="animation-delay:${Math.min(i*18,220)}ms">
+      <div class="dcard-thumb"><div class="dcard-stripe stripe-${cls}"></div>${thumbHTML}<span class="dcard-badge">${type}</span></div>
+      <div class="dcard-body">${chipHTML}<div class="dcard-title">${item.title||'Untitled'}</div><p class="dcard-desc">${desc||'No description provided.'}</p></div>
+      <div class="dcard-footer"><span class="dcard-meta">${date?'Updated '+date:''}</span><a class="dcard-btn" href="${url}" target="_blank" rel="noopener">View &amp; Download ${EXT_SVG}</a></div>
+    </div>`;
+  }).join('');
+}
 
-      status.textContent = 'Opening your email client…';
-      status.style.color = 'var(--teal)';
-    }
-  </script>
+document.querySelectorAll('.ctab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeCatTag = btn.dataset.tag;
+    document.querySelectorAll('.ctab').forEach(b => b.classList.toggle('active', b.dataset.tag === activeCatTag));
+    renderCatalog();
+  });
+});
+document.getElementById('cat-search').addEventListener('input', e => { catSearch = e.target.value; renderCatalog(); });
+
+// ══════════════════════════════════════════════════════════════
+// CONTACT FORM
+// ══════════════════════════════════════════════════════════════
+function submitContactForm() {
+  const name = document.getElementById('cf-name').value.trim();
+  const email = document.getElementById('cf-replyemail').value.trim();
+  const msg  = document.getElementById('cf-message').value.trim();
+  const status = document.getElementById('cf-status');
+  if (!name || !email || !msg) { status.textContent = 'Please fill in all fields.'; status.style.color = '#991b1b'; return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { status.textContent = 'Please enter a valid email.'; status.style.color = '#991b1b'; return; }
+  const _e = ['GIS','carbonmt.gov'].join('@');
+  const subj = encodeURIComponent(`GIS Inquiry from ${name}`);
+  const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${msg}`);
+  window.location.href = `mailto:${_e}?subject=${subj}&body=${body}`;
+  status.textContent = 'Opening your email client…';
+  status.style.color = 'var(--teal)';
+  setTimeout(() => { document.getElementById('cf-name').value=''; document.getElementById('cf-replyemail').value=''; document.getElementById('cf-message').value=''; status.textContent=''; }, 3000);
+}
+
+// ══════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════
+function esc(s) { return s.replace(/'/g, "''"); }
+function attr(label, val) { return `<div class="attr-item"><span class="attr-lbl">${label}</span><span class="attr-val">${val}</span></div>`; }
+function errBox(msg) { return `<div class="res-error">⚠️ An error occurred. Please try again.<br/><small style="opacity:.5;font-size:10px;">${msg||''}</small></div>`; }
+function setLoading(btn, on) { btn.disabled = on; btn.classList.toggle('loading', on); }
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+document.getElementById('footer-year').textContent = new Date().getFullYear();
+injectEmails();
+</script>
 </body>
 </html>
