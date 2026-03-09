@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/esri-leaflet@3.0.12/dist/esri-leaflet.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -317,13 +318,13 @@
     .cs-summary { font-family: var(--fhead); font-size: 12px; font-weight: 500; color: var(--gray-400); margin-left: auto; }
     .cs-summary strong { color: var(--teal); font-weight: 700; }
 
-    .catalog-main { max-width: 1280px; margin: 0 auto; padding: 28px 32px 80px; }
-    #data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; align-items: start; }
-    .dcard { background: var(--white); border-radius: var(--rlg); border: 1px solid var(--gray-200); overflow: hidden; display: flex; flex-direction: column; min-width: 0; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; animation: cardIn 0.36s ease both; }
+    .catalog-main { max-width: 1280px; margin: 0 auto; padding: 28px 32px 80px; overflow: hidden; }
+    #data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; align-items: start; width: 100%; }
+    .dcard { background: var(--white); border-radius: var(--rlg); border: 1px solid var(--gray-200); overflow: hidden; display: flex; flex-direction: column; min-width: 0; width: 100%; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; animation: cardIn 0.36s ease both; }
     .dcard:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,45,51,0.1); border-color: var(--gray-400); }
     @keyframes cardIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
     .dcard-thumb { width: 100%; height: 136px; position: relative; overflow: hidden; background: var(--gray-100); flex-shrink: 0; }
-    .dcard-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; transition: transform 0.4s; }
+    .dcard-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; transition: transform 0.4s; max-width: 100%; }
     .dcard:hover .dcard-thumb img { transform: scale(1.05); }
     .dthumb-ph { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; position: relative; overflow: hidden; }
     .dthumb-ph::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal-mid) 55%, var(--teal) 100%); }
@@ -910,31 +911,34 @@ function initMap() {
 
   // ── Define all layers (not added to map yet except boundary) ──
 
-  // Sage Grouse — DNRC MapServer dynamic export via L.imageOverlay approach won't work;
-  // use ArcGIS tile cache instead
-  layers.grouse = L.tileLayer(
-    'https://gis.dnrc.mt.gov/arcgis/rest/services/MSGHCP/SageGrouseAdministrative/MapServer/tile/{z}/{y}/{x}',
-    { maxZoom: 18, opacity: 0.55, attribution: 'MT DNRC', crossOrigin: true }
-  );
+  // ── Sage Grouse — Esri dynamic layer (handles CORS via JSONP/CORS properly) ──
+  layers.grouse = L.esri.dynamicMapLayer({
+    url: 'https://gis.dnrc.mt.gov/arcgis/rest/services/MSGHCP/SageGrouseAdministrative/MapServer',
+    layers: [0],
+    opacity: 0.55,
+    attribution: 'MT DNRC'
+  });
 
-  // FEMA Floodplain — use dynamic map export (avoids CORS on tile endpoint)
+  // ── FEMA Floodplain — WMS (FEMA publishes a proper WMS endpoint) ──
   layers.flood = L.tileLayer.wms(
     'https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/WMSServer',
     { layers: '28', format: 'image/png', transparent: true, opacity: 0.55, attribution: 'FEMA NFHL', version: '1.3.0' }
   );
 
-  // Montana Parcels — using the Parcels MapServer (not Cadastral)
-  layers.parcels = L.tileLayer(
-    'https://gisservicemt.gov/arcgis/rest/services/MSDI_Framework/Parcels/MapServer/tile/{z}/{y}/{x}',
-    { maxZoom: 20, opacity: 0.7, attribution: 'MT State Library', crossOrigin: true }
-  );
+  // ── Montana Parcels — Esri dynamic layer ──
+  layers.parcels = L.esri.dynamicMapLayer({
+    url: 'https://gisservicemt.gov/arcgis/rest/services/MSDI_Framework/Parcels/MapServer',
+    opacity: 0.75,
+    attribution: 'MT State Library'
+  });
 
-  // Roads — use AGOL dynamic map export for FeatureServer (tile endpoint needs token)
-  // Use the public hosted feature service via dynamic tile
-  layers.roads = L.tileLayer(
-    'https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/NG911_Core_Layers_View20251017/FeatureServer/tile/{z}/{y}/{x}',
-    { maxZoom: 20, opacity: 0.85, attribution: 'Carbon County GIS', crossOrigin: true }
-  );
+  // ── Roads & Addresses — Esri dynamic layer from your FeatureServer ──
+  layers.roads = L.esri.dynamicMapLayer({
+    url: 'https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/NG911_Core_Layers_View20251017/FeatureServer',
+    layers: [15, 8],
+    opacity: 0.85,
+    attribution: 'Carbon County GIS'
+  });
 
   // Zoom notice for parcels
   map.on('zoomend', () => {
@@ -1409,7 +1413,9 @@ function renderCatalog() {
     const url   = `${AGOL_BASE}/home/item.html?id=${item.id}`;
     const type  = (() => { const t=(item.type||'').toLowerCase(); if(t.includes('feature'))return'Feature Layer'; if(t.includes('map image'))return'Map Service'; if(t.includes('web map'))return'Web Map'; return item.type||'Dataset'; })();
     const ph    = `<div class="dthumb-ph">${MAP_SVG}<span class="dthumb-lbl">${type}</span></div>`;
-    const thumbHTML = thumb ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=${JSON.stringify(ph)}" />` : ph;
+    const thumbHTML = thumb
+      ? `<img src="${thumb}" alt="" loading="lazy" onerror="thumbFallback(this,'${type}')" />`
+      : ph;
     const chipHTML  = cat ? `<span class="dcat-chip chip-${cls}"><span class="cchip-dot cdot-${cls}"></span>${cat.label}</span>` : '';
     return `<div class="dcard" style="animation-delay:${Math.min(i*18,220)}ms">
       <div class="dcard-thumb"><div class="dcard-stripe stripe-${cls}"></div>${thumbHTML}<span class="dcard-badge">${type}</span></div>
@@ -1450,6 +1456,11 @@ function submitContactForm() {
 // ══════════════════════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════════════════════
+function thumbFallback(img, type) {
+  const MAP_SVG = `<svg class="dthumb-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503-9.498 4.875-2.437a.75.75 0 011.068.68v11.25a.75.75 0 01-.37.648l-5.25 3a.75.75 0 01-.734 0L9.375 16.5l-5.25 3A.75.75 0 013 18.846V7.596a.75.75 0 01.37-.648l5.25-3a.75.75 0 01.734 0l5.626 3.22z"/></svg>`;
+  img.parentElement.innerHTML = `<div class="dthumb-ph">${MAP_SVG}<span class="dthumb-lbl">${type}</span></div>`;
+}
+
 function esc(s) { return s.replace(/'/g, "''"); }
 function attr(label, val) { return `<div class="attr-item"><span class="attr-lbl">${label}</span><span class="attr-val">${val}</span></div>`; }
 function errBox(msg) { return `<div class="res-error">⚠️ An error occurred. Please try again.<br/><small style="opacity:.5;font-size:10px;">${msg||''}</small></div>`; }
