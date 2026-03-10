@@ -205,60 +205,104 @@
     /* ══════════════════════════════════
        MAP SECTION
     ══════════════════════════════════ */
-    .map-section { padding: 0; }
-    .map-toolbar {
-      background: var(--white);
-      border-bottom: 1px solid var(--gray-200);
-      padding: 12px 32px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      position: sticky;
-      top: 68px;
-      z-index: 150;
-      box-shadow: 0 2px 8px rgba(0,45,51,0.06);
-    }
-    .map-toolbar-label { font-family: var(--fhead); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-400); margin-right: 4px; flex-shrink: 0; }
-    .layer-toggle {
-      display: inline-flex; align-items: center; gap: 7px;
-      font-family: var(--fhead); font-size: 12px; font-weight: 600;
-      padding: 6px 13px; border-radius: 20px;
-      border: 1.5px solid var(--gray-200);
-      background: var(--white); color: var(--gray-600);
-      cursor: pointer; transition: all 0.18s; user-select: none;
-      white-space: nowrap;
-    }
-    .layer-toggle:hover { border-color: var(--teal); color: var(--teal); }
-    .layer-toggle.on { border-color: transparent; color: white; }
-    .layer-toggle .tog-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    /* layer colors */
-    .tog-boundary.on  { background: #334155; }
-    .tog-roads.on     { background: #b45309; }
-    .tog-parcels.on   { background: #6d28d9; }
-    .tog-flood.on     { background: #0369a1; }
-    .tog-grouse.on    { background: #15803d; }
-    [data-layer="ssap"].on { background: #1798d1; color: white; border-color: transparent; }
+    /* ── MAP SECTION with sidebar ── */
+    .map-section { padding: 0; display: flex; height: calc(100vh - 68px - 44px); overflow: hidden; }
 
-    #map { width: 100%; height: calc(100vh - 68px - 57px); min-height: 500px; }
+    /* Search + layers sidebar */
+    #map-search-panel {
+      width: 280px; min-width: 280px; background: var(--white);
+      border-right: 1px solid var(--gray-200);
+      overflow-y: auto; display: flex; flex-direction: column;
+      box-shadow: 2px 0 12px rgba(0,45,51,0.08);
+      z-index: 10; flex-shrink: 0;
+    }
+    #msp-header {
+      background: var(--teal); padding: 14px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 5;
+    }
+    #msp-title { font-family: var(--fhead); font-size: 12px; font-weight: 800; color: white; letter-spacing: 0.06em; text-transform: uppercase; }
+    #msp-collapse { background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; font-size: 18px; font-weight: 700; line-height: 1; padding: 2px 4px; transition: color 0.2s; }
+    #msp-collapse:hover { color: white; }
+    .msp-section { padding: 14px 16px; border-bottom: 1px solid var(--gray-100); }
+    .msp-label { font-family: var(--fhead); font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-400); margin-bottom: 10px; }
+    .msp-input-row { display: flex; gap: 6px; }
+    .msp-input-row input {
+      flex: 1; font-family: var(--fhead); font-size: 12px; font-weight: 500;
+      padding: 8px 11px; border: 1.5px solid var(--gray-200); border-radius: var(--rsm);
+      background: var(--off-white); color: var(--gray-800); outline: none; transition: border-color 0.18s;
+    }
+    .msp-input-row input:focus { border-color: var(--teal); background: white; }
+    #map-search-btn {
+      background: var(--teal); color: white; border: none; border-radius: var(--rsm);
+      padding: 8px 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.18s; flex-shrink: 0;
+    }
+    #map-search-btn:hover { background: var(--teal-mid); }
+    #map-search-result { margin-top: 10px; font-family: var(--fhead); font-size: 12px; }
+    .msr-found { background: #f0fdf4; border: 1px solid #86efac; border-radius: var(--rsm); padding: 10px 12px; color: #15803d; }
+    .msr-notfound { background: #fefce8; border: 1px solid #fde047; border-radius: var(--rsm); padding: 10px 12px; color: #92400e; }
+    .msr-error { background: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--rsm); padding: 10px 12px; color: #dc2626; }
+    .msr-title { font-weight: 800; margin-bottom: 3px; }
+    .msr-detail { font-size: 11px; color: var(--gray-600); line-height: 1.6; }
+    .msr-link { display: inline-block; margin-top: 8px; font-size: 11px; font-weight: 700; color: var(--teal); text-decoration: none; }
+    /* Layer checkboxes */
+    .msp-layers { display: flex; flex-direction: column; gap: 9px; }
+    .msp-layer-row { display: flex; align-items: center; gap: 9px; cursor: pointer; font-family: var(--fhead); font-size: 12px; font-weight: 500; color: var(--gray-800); }
+    .msp-layer-row input[type=checkbox] { accent-color: var(--teal); width: 14px; height: 14px; cursor: pointer; flex-shrink: 0; }
+    .msp-swatch { width: 24px; height: 10px; border-radius: 2px; flex-shrink: 0; display: inline-block; }
+    /* Legend */
+    .msp-legend { display: flex; flex-direction: column; gap: 7px; }
+    .msp-leg-row { display: flex; align-items: center; gap: 9px; font-family: var(--fhead); font-size: 11px; color: var(--gray-600); }
+    .msp-leg-line { display: inline-block; width: 24px; flex-shrink: 0; border-radius: 2px; }
+    .msp-tip { font-family: var(--fbody); font-size: 11px; color: var(--gray-400); font-style: italic; line-height: 1.6; }
+    .msp-tip a { color: var(--teal); }
+    /* Expand button when collapsed */
+    #msp-expand {
+      position: absolute; top: 12px; left: 12px; z-index: 500;
+      background: white; border: 1.5px solid var(--gray-200); border-radius: 8px;
+      font-family: var(--fhead); font-size: 11px; font-weight: 700; color: var(--teal);
+      padding: 8px 14px; cursor: pointer; display: flex; align-items: center; gap: 7px;
+      box-shadow: 0 2px 12px rgba(0,45,51,0.12); transition: all 0.18s;
+    }
+    #msp-expand:hover { background: var(--teal); color: white; }
+
+    /* Map container */
+    #map-wrap { flex: 1; position: relative; }
+    #map { width: 100%; height: 100%; }
     .map-zoom-notice {
-      position: absolute;
-      bottom: 80px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,45,51,0.82); backdrop-filter: blur(6px);
+      position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,45,51,0.85); backdrop-filter: blur(6px);
       color: white; font-family: var(--fhead); font-size: 12px; font-weight: 600;
       padding: 8px 18px; border-radius: 20px;
-      pointer-events: none; z-index: 500;
-      opacity: 0; transition: opacity 0.3s;
-      white-space: nowrap;
+      pointer-events: none; z-index: 500; opacity: 0; transition: opacity 0.3s; white-space: nowrap;
     }
     .map-zoom-notice.visible { opacity: 1; }
 
-    /* Road name labels */
-    .road-label { background:none!important;border:none!important;box-shadow:none!important;font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:700;color:#222;text-shadow:1px 1px 0 #fff,-1px 1px 0 #fff,1px -1px 0 #fff,-1px -1px 0 #fff;white-space:nowrap;padding:0!important; }
-    .road-label::before { display:none!important; }
-    /* Address point labels */
-    .addr-label { background:none!important;border:none!important;box-shadow:none!important;font-family:'Plus Jakarta Sans',sans-serif;font-size:9px;font-weight:600;color:#002d33;text-shadow:1px 1px 0 rgba(255,255,255,0.95),-1px 1px 0 rgba(255,255,255,0.95),1px -1px 0 rgba(255,255,255,0.95),-1px -1px 0 rgba(255,255,255,0.95);white-space:nowrap;padding:0!important; }
-    .addr-label::before { display:none!important; }
+    /* Road name labels — positioned at midpoint, colored by type, white halo */
+    .road-lbl { pointer-events: none !important; }
+    .road-lbl span { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 10px; font-weight: 700; white-space: nowrap; line-height: 1; }
+    /* Address labels */
+    .addr-lbl { pointer-events: none !important; }
+    .addr-lbl span { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9px; font-weight: 600; color: #002d33; white-space: nowrap; line-height: 1; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff; }
+
+    /* Leaflet popup styling */
+    .leaflet-popup-content-wrapper { border-radius: 10px !important; box-shadow: 0 8px 32px rgba(0,45,51,0.18) !important; padding: 0 !important; overflow: hidden; }
+    .leaflet-popup-content { margin: 0 !important; }
+    .lp-head { background: var(--teal); padding: 10px 14px; font-family: var(--fhead); font-size: 13px; font-weight: 800; color: white; }
+    .lp-body { padding: 12px 14px; font-family: var(--fhead); font-size: 12px; }
+    .lp-row { margin-bottom: 6px; }
+    .lp-key { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gray-400); display: block; margin-bottom: 1px; }
+    .lp-val { color: var(--gray-800); font-weight: 600; }
+    .lp-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px; margin-bottom: 8px; }
+
+    /* Mobile */
+    @media (max-width: 640px) {
+      .map-section { flex-direction: column; height: auto; }
+      #map-search-panel { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid var(--gray-200); max-height: 40vh; }
+      #map-wrap { height: 55vh; }
+      #msp-expand { top: auto; bottom: 8px; }
+    }
 
     /* ══════════════════════════════════
        PDF MAPS SECTION
@@ -451,7 +495,6 @@
 <div class="page-nav">
   <div class="page-nav-inner">
     <button class="ptab active" data-tab="home">Home</button>
-    <button class="ptab" data-tab="address">Address Lookup</button>
     <button class="ptab" data-tab="map">Explore the Map</button>
     <button class="ptab" data-tab="maps">Downloadable Maps</button>
     <button class="ptab" data-tab="data">All GIS Data</button>
@@ -469,13 +512,13 @@
       <h2 class="home-title">GIS &amp; Addressing</h2>
       <p class="home-desc">Maps, address records, and geographic data for Carbon County. Free and open to the public.</p>
       <div class="action-grid">
-        <div class="action-card" onclick="goTab('address')">
+        <div class="action-card" onclick="goTab('map')">
           <div class="action-icon" style="background:rgba(23,152,209,0.2)">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#1798d1" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
           </div>
           <div class="action-title">Is my address on record?</div>
-          <div class="action-desc">Check if your address is in the 9-1-1 database.</div>
-          <div class="action-arrow">Look up →</div>
+          <div class="action-desc">Search the 9-1-1 address database from the map.</div>
+          <div class="action-arrow">Open map →</div>
         </div>
         <div class="action-card" onclick="goTab('map')">
           <div class="action-icon" style="background:rgba(14,120,59,0.2)">
@@ -546,133 +589,103 @@
 </div>
 
 <!-- ══════════════════════════════════
-     ADDRESS LOOKUP
-═══════════════════════════════════ -->
-<div class="section" id="tab-address">
-  <div class="tool-section">
-    <div class="tool-header">
-      <h2>9-1-1 Address Lookup</h2>
-      <p>Enter your street address to check if it's in the Carbon County 9-1-1 database. If it's not found, you can report it to our office.</p>
-    </div>
-    <div class="tool-card">
-      <div class="tool-label">Street Address</div>
-      <div class="input-row">
-        <div class="input-wrap">
-          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
-          <input type="text" id="addr-input" class="tool-input" placeholder="e.g. 123 Main St" autocomplete="off" onkeydown="if(event.key==='Enter')runAddrLookup()" />
-        </div>
-        <div class="input-wrap" style="max-width:190px;">
-          <input type="text" id="comm-input" class="tool-input no-icon" placeholder="e.g. Red Lodge" autocomplete="off" onkeydown="if(event.key==='Enter')runAddrLookup()" />
-        </div>
-        <button class="tool-btn" id="addr-btn" onclick="runAddrLookup()">
-          <span class="btn-label">Search</span><div class="spinner-sm"></div>
-        </button>
-      </div>
-      <p class="tool-hint">Enter a street address. Optionally add a community name to narrow results.</p>
-      <div class="tool-result" id="addr-result"></div>
-    </div>
-    <div class="tool-card" style="background:var(--gray-100);border-color:var(--gray-200);">
-      <p style="font-family:var(--fhead);font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-400);margin-bottom:7px;">About This Database</p>
-      <p style="font-family:var(--fbody);font-size:13px;color:var(--gray-600);line-height:1.7;font-style:italic;">Rural and newly built addresses may not always appear. If yours is missing, hit the report button and we will look into it. To apply for a new address, use the <a href="https://carboncomt.forms.govos.com/ng/fa/CCDevelopmentPackage" target="_blank" rel="noopener" style="color:var(--teal);">County Development Permit Application</a>.</p>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════
-     INTERACTIVE MAP
+     INTERACTIVE MAP (with integrated search)
 ═══════════════════════════════════ -->
 <div class="section" id="tab-map">
   <div class="map-section">
-    <div class="map-toolbar">
-      <span class="map-toolbar-label">Layers</span>
-      <button class="layer-toggle tog-boundary on" data-layer="boundary" onclick="toggleLayer(this)">
-        <span class="tog-dot" style="background:#64748b"></span> County Boundary
-      </button>
-      <button class="layer-toggle tog-roads" data-layer="roads" onclick="toggleLayer(this)">
-        <span class="tog-dot" style="background:#b45309"></span> Roads
-      </button>
-      <button class="layer-toggle" data-layer="ssap" onclick="toggleLayer(this)" style="--on-bg:#1798d1">
-        <span class="tog-dot" style="background:#1798d1"></span> Address Points
-      </button>
-      <button class="layer-toggle tog-parcels" data-layer="parcels" onclick="toggleLayer(this)">
-        <span class="tog-dot" style="background:#7c3aed"></span> Parcels
-      </button>
-      <button class="layer-toggle tog-flood" data-layer="flood" onclick="toggleLayer(this)">
-        <span class="tog-dot" style="background:#0369a1"></span> Floodplain
-      </button>
-      <button class="layer-toggle tog-grouse" data-layer="grouse" onclick="toggleLayer(this)">
-        <span class="tog-dot" style="background:#15803d"></span> Sage Grouse Habitat
-      </button>
+
+    <!-- Search panel — AGOL-style sidebar -->
+    <div id="map-search-panel">
+      <div id="msp-header">
+        <span id="msp-title">Search &amp; Layers</span>
+        <button id="msp-collapse" onclick="toggleMapPanel()" title="Collapse">‹</button>
+      </div>
+
+      <!-- Address / geocode search -->
+      <div class="msp-section">
+        <div class="msp-label">Address Search</div>
+        <div class="msp-input-row">
+          <input type="text" id="map-addr-input" placeholder="e.g. 355 Hwy 72" autocomplete="off"
+            onkeydown="if(event.key==='Enter')runMapSearch()" />
+          <button onclick="runMapSearch()" id="map-search-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+          </button>
+        </div>
+        <div class="msp-input-row" style="margin-top:5px;">
+          <input type="text" id="map-comm-input" placeholder="Community (optional)" autocomplete="off"
+            onkeydown="if(event.key==='Enter')runMapSearch()" style="font-size:11px;" />
+        </div>
+        <div id="map-search-result"></div>
+      </div>
+
+      <!-- Layer toggles -->
+      <div class="msp-section">
+        <div class="msp-label">Layers</div>
+        <div class="msp-layers">
+          <label class="msp-layer-row">
+            <input type="checkbox" checked data-layer-cb="boundary" onchange="toggleLayerCb(this,'boundary')" />
+            <span class="msp-swatch" style="background:#475569;border-radius:2px;"></span>
+            <span>County Boundary</span>
+          </label>
+          <label class="msp-layer-row">
+            <input type="checkbox" data-layer-cb="roads" onchange="toggleLayerCb(this,'roads')" />
+            <span class="msp-swatch" style="background:linear-gradient(90deg,#e60000 40%,#828282 40%);"></span>
+            <span>Roads</span>
+          </label>
+          <label class="msp-layer-row">
+            <input type="checkbox" data-layer-cb="ssap" onchange="toggleLayerCb(this,'ssap')" />
+            <span class="msp-swatch" style="background:#000;border-radius:1px;width:8px;height:8px;"></span>
+            <span>Address Points</span>
+          </label>
+          <label class="msp-layer-row">
+            <input type="checkbox" data-layer-cb="parcels" onchange="toggleLayerCb(this,'parcels')" />
+            <span class="msp-swatch" style="background:#a855f7;opacity:0.7;"></span>
+            <span>Parcels <small style="color:#a09a8e">(zoom 13+)</small></span>
+          </label>
+          <label class="msp-layer-row">
+            <input type="checkbox" data-layer-cb="flood" onchange="toggleLayerCb(this,'flood')" />
+            <span class="msp-swatch" style="background:#0369a1;opacity:0.6;"></span>
+            <span>Floodplain (FEMA)</span>
+          </label>
+          <label class="msp-layer-row">
+            <input type="checkbox" data-layer-cb="grouse" onchange="toggleLayerCb(this,'grouse')" />
+            <span class="msp-swatch" style="background:#15803d;opacity:0.6;"></span>
+            <span>Sage Grouse Habitat</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="msp-section">
+        <div class="msp-label">Road Legend</div>
+        <div class="msp-legend">
+          <div class="msp-leg-row"><span class="msp-leg-line" style="background:#e60000;height:3px;"></span>US / State Highway</div>
+          <div class="msp-leg-row"><span class="msp-leg-line" style="background:#828282;height:2px;"></span>County Road</div>
+          <div class="msp-leg-row"><span class="msp-leg-line" style="background:#000;height:1px;"></span>City / Town Street</div>
+          <div class="msp-leg-row"><span class="msp-leg-line" style="background:#a900e6;height:1.5px;"></span>Private Road</div>
+          <div class="msp-leg-row"><span class="msp-leg-line" style="background:#4ce600;height:1.5px;"></span>Public Land Access</div>
+          <div class="msp-leg-row"><span class="msp-leg-line" style="background:#b2b2b2;height:1px;"></span>Alley</div>
+        </div>
+      </div>
+
+      <div class="msp-section" style="border:none;">
+        <div class="msp-label">Tips</div>
+        <p class="msp-tip">Click any road, address point, or parcel for details. Turn on Parcels then click to see ownership info.</p>
+        <p class="msp-tip" style="margin-top:6px;">New address? <a href="https://carboncomt.forms.govos.com/ng/fa/CCDevelopmentPackage" target="_blank" rel="noopener">Apply here</a></p>
+      </div>
     </div>
-    <div style="position:relative;">
+
+    <!-- Collapsed tab -->
+    <button id="msp-expand" onclick="toggleMapPanel()" style="display:none;" title="Open search &amp; layers">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+      Search &amp; Layers
+    </button>
+
+    <div id="map-wrap">
       <div id="map"></div>
       <div class="map-zoom-notice" id="zoom-notice">Zoom in to see this layer</div>
     </div>
-  </div>
-</div>
 
-<!-- ══════════════════════════════════
-     PROPERTY & PARCEL
-═══════════════════════════════════ -->
-<div class="section" id="tab-parcel">
-  <div class="tool-section">
-    <div class="tool-header">
-      <h2>Property &amp; Parcel Lookup</h2>
-      <p>Search Montana Cadastral records for parcel information in Carbon County. You can search by owner name, geocode (parcel number), or street address.</p>
-    </div>
-    <div class="tool-card">
-      <div class="tool-label">Search By</div>
-      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
-        <button class="layer-toggle tog-boundary on" id="psearch-owner" onclick="setParcelMode('owner',this)" style="border-radius:6px;">Owner Name</button>
-        <button class="layer-toggle" id="psearch-geo" onclick="setParcelMode('geocode',this)" style="border-radius:6px;">Geocode / Parcel #</button>
-        <button class="layer-toggle" id="psearch-addr" onclick="setParcelMode('address',this)" style="border-radius:6px;">Street Address</button>
-      </div>
-      <div class="input-row">
-        <div class="input-wrap">
-          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="parcel-input" class="tool-input" placeholder="Enter owner last name…" autocomplete="off" onkeydown="if(event.key==='Enter')runParcelLookup()" />
-        </div>
-        <button class="tool-btn" id="parcel-btn" onclick="runParcelLookup()">
-          <span class="btn-label">Search</span><div class="spinner-sm"></div>
-        </button>
-      </div>
-      <p class="tool-hint" id="parcel-hint">Enter a last name or full name. Example: "Smith" or "Smith John"</p>
-      <div class="tool-result" id="parcel-result"></div>
-    </div>
-    <div class="tool-card" style="background:var(--gray-100);border-color:var(--gray-200);">
-      <p style="font-family:var(--fhead);font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-400);margin-bottom:7px;">Data Source</p>
-      <p style="font-family:var(--fbody);font-size:13px;color:var(--gray-600);line-height:1.7;font-style:italic;">Parcel data is sourced from the Montana State Library Cadastral database and may not reflect the most recent county records. For official parcel information contact the <a href="https://carbonmt.gov" target="_blank" rel="noopener" style="color:var(--teal);">Carbon County Clerk &amp; Recorder</a>.</p>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════
-     FLOODPLAIN CHECK
-═══════════════════════════════════ -->
-<div class="section" id="tab-flood">
-  <div class="tool-section">
-    <div class="tool-header">
-      <h2>Floodplain Check</h2>
-      <p>Find out if a property or address falls within a FEMA designated Special Flood Hazard Area (SFHA). This is commonly required for building permits, mortgages, and flood insurance determinations.</p>
-    </div>
-    <div class="tool-card">
-      <div class="tool-label">Street Address</div>
-      <div class="input-row">
-        <div class="input-wrap">
-          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
-          <input type="text" id="flood-input" class="tool-input" placeholder="e.g. 123 Main St, Red Lodge, MT" autocomplete="off" onkeydown="if(event.key==='Enter')runFloodCheck()" />
-        </div>
-        <button class="tool-btn" id="flood-btn" onclick="runFloodCheck()">
-          <span class="btn-label">Check</span><div class="spinner-sm"></div>
-        </button>
-      </div>
-      <p class="tool-hint">Include city and state for best results. Example: "456 Broadway Ave, Red Lodge, MT"</p>
-      <div class="tool-result" id="flood-result"></div>
-    </div>
-    <div class="tool-card" style="background:var(--gray-100);">
-      <p style="font-family:var(--fhead);font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-400);margin-bottom:7px;">Important Notice</p>
-      <p style="font-family:var(--fbody);font-size:13px;color:var(--gray-600);line-height:1.7;font-style:italic;">This tool provides a general indication based on FEMA's National Flood Hazard Layer. It is not a formal flood zone determination. For official determinations required by lenders or permits, request a <a href="https://msc.fema.gov/portal/home" target="_blank" rel="noopener" style="color:var(--teal);">FEMA Elevation Certificate</a> or contact our office.</p>
-    </div>
   </div>
 </div>
 
@@ -828,7 +841,7 @@
     </div>
     <div class="fcol">
       <h4>Tools</h4>
-      <a onclick="goTab('address')">9-1-1 Address Lookup</a>
+      <a onclick="goTab('map')">9-1-1 Address Lookup</a>
       <a onclick="goTab('map')">Explore the Map</a>
       <a onclick="goTab('map')">Property &amp; Parcel</a>
       <a onclick="goTab('map')">Floodplain Check</a>
@@ -894,9 +907,9 @@ function injectEmails() {
 // ══════════════════════════════════════════════════════════════
 // LEAFLET MAP
 // ══════════════════════════════════════════════════════════════
-let map, layers = {};
+let map, layers = {}, searchMarker = null, mapInitialized = false;
 
-// RCL road renderer from service drawingInfo
+// ── Renderers ──
 const RCL_RENDERER = {
   'US Highway':             { color: '#e60000', weight: 3,   dashArray: null },
   'Other Highway':          { color: '#e60000', weight: 3,   dashArray: null },
@@ -910,42 +923,75 @@ const RCL_RENDERER = {
   'Agency Admin Use Only':  { color: '#ff0000', weight: 1.5, dashArray: '6,4' },
 };
 
-// SSAP renderer from service drawingInfo
-const SSAP_RENDERER = {
-  structure: { shape: 'square', color: '#000000', size: 4 },
-  notPresent: { shape: 'circle', color: '#55ff00', size: 5 },
-};
-
 function rclStyle(feature) {
-  const sym = RCL_RENDERER[feature.properties.RoadSym] || { color: '#828282', weight: 1.5, dashArray: null };
-  return { color: sym.color, weight: sym.weight, dashArray: sym.dashArray, opacity: 0.9 };
+  const s = RCL_RENDERER[feature.properties.RoadSym] || { color: '#828282', weight: 1.5, dashArray: null };
+  return { color: s.color, weight: s.weight, dashArray: s.dashArray, opacity: 0.9 };
 }
 
 function ssapMarker(feature, latlng) {
-  const t = String(feature.properties.MT_PlcType || '1');
-  const isNotPresent = t === '2';
-  const sym = isNotPresent ? SSAP_RENDERER.notPresent : SSAP_RENDERER.structure;
-  if (sym.shape === 'square') {
-    return L.marker(latlng, { icon: L.divIcon({
-      className: '',
-      html: `<div style="width:${sym.size}px;height:${sym.size}px;background:${sym.color};transform:translate(-50%,-50%)"></div>`,
-      iconSize: [sym.size, sym.size], iconAnchor: [sym.size/2, sym.size/2]
-    })});
+  const t = feature.properties.MT_PlcType;
+  if (t === 2) {
+    return L.circleMarker(latlng, { radius: 3, fillColor: '#55ff00', fillOpacity: 1, color: '#000', weight: 0.6 });
   }
-  return L.circleMarker(latlng, { radius: sym.size/2, fillColor: sym.color, fillOpacity: 1, color: '#000', weight: 0.6 });
+  return L.marker(latlng, { icon: L.divIcon({
+    className: '',
+    html: '<div style="width:6px;height:6px;background:#000;transform:translate(-50%,-50%)"></div>',
+    iconSize: [6,6], iconAnchor: [3,3]
+  })});
+}
+
+// ── Popup builders ──
+function rclPopup(p) {
+  const name = p.AbbrvRd || p.FullRoadName || p.St_Name || 'Unnamed Road';
+  const rows = [
+    p.RoadSym    ? `<div class="lp-row"><span class="lp-key">Type</span><span class="lp-val">${p.RoadSym}</span></div>` : '',
+    p.Maintainer ? `<div class="lp-row"><span class="lp-key">Maintained by</span><span class="lp-val">${p.Maintainer}</span></div>` : '',
+    p.SurfaceType? `<div class="lp-row"><span class="lp-key">Surface</span><span class="lp-val">${p.SurfaceType}</span></div>` : '',
+    p.Access     ? `<div class="lp-row"><span class="lp-key">Access</span><span class="lp-val">${p.Access}</span></div>` : '',
+    (p.FromAddr_L||p.ToAddr_L) ? `<div class="lp-row"><span class="lp-key">Address Range</span><span class="lp-val">${p.FromAddr_L}–${p.ToAddr_L} (L) / ${p.FromAddr_R}–${p.ToAddr_R} (R)</span></div>` : '',
+  ].join('');
+  return `<div class="lp-head">${name}</div><div class="lp-body">${rows}</div>`;
+}
+
+function ssapPopup(p) {
+  const addr = p.AbbrvAdd || 'Address Point';
+  const typeMap = { 101:'Single-family home', 102:'Multi-family', 100:'Residential', 200:'Health facility', 300:'Emergency services', 400:'Transportation', 500:'Government', 600:'Education', 1100:'Commercial', 1200:'Agriculture', 1300:'Public attraction', 1400:'Industrial' };
+  const typeName = typeMap[p.MT_PlcType] || (p.MT_PlcType === 2 ? 'No structure present' : 'Structure');
+  const community = p.Post_Comm || p.Inc_Muni || '';
+  const rows = [
+    community ? `<div class="lp-row"><span class="lp-key">Community</span><span class="lp-val">${community}${p.Post_Code ? ', '+p.Post_Code : ''}</span></div>` : '',
+    `<div class="lp-row"><span class="lp-key">Type</span><span class="lp-val">${typeName}</span></div>`,
+    p.Total_Units > 1 ? `<div class="lp-row"><span class="lp-key">Units</span><span class="lp-val">${p.Total_Units}</span></div>` : '',
+  ].join('');
+  return `<div class="lp-head">${addr}</div><div class="lp-body">${rows}</div>`;
+}
+
+function parcelPopup(p) {
+  const owner = p.OwnerName || 'Unknown Owner';
+  const addr = [p.AddressLine1, p.CityStateZip].filter(s => s && s !== 'Null').join(', ');
+  const acres = p.GISAcres ? parseFloat(p.GISAcres).toFixed(2) + ' ac' : '';
+  const totalVal = p.TotalValue ? '$' + parseInt(p.TotalValue).toLocaleString() : '';
+  const rows = [
+    addr     ? `<div class="lp-row"><span class="lp-key">Situs Address</span><span class="lp-val">${addr}</span></div>` : '',
+    acres    ? `<div class="lp-row"><span class="lp-key">Acres</span><span class="lp-val">${acres}</span></div>` : '',
+    p.PropType ? `<div class="lp-row"><span class="lp-key">Property Type</span><span class="lp-val">${p.PropType}</span></div>` : '',
+    p.PARCELID ? `<div class="lp-row"><span class="lp-key">Parcel ID</span><span class="lp-val">${p.PARCELID}</span></div>` : '',
+    p.LegalDescriptionShort ? `<div class="lp-row"><span class="lp-key">Legal</span><span class="lp-val">${p.LegalDescriptionShort}</span></div>` : '',
+    totalVal ? `<div class="lp-row"><span class="lp-key">Total Value (${p.TaxYear||''})</span><span class="lp-val">${totalVal}</span></div>` : '',
+    p.OwnerAddress1 ? `<div class="lp-row"><span class="lp-key">Owner Address</span><span class="lp-val">${p.OwnerAddress1}, ${p.OwnerCity||''} ${p.OwnerState||''} ${p.OwnerZipCode||''}</span></div>` : '',
+  ].join('');
+  return `<div class="lp-head" style="background:#6d28d9">${owner}</div><div class="lp-body">${rows}</div>`;
 }
 
 function initMap() {
+  if (mapInitialized) return;
   mapInitialized = true;
 
-  map = L.map('map', { center: COUNTY_CENTER, zoom: 10, zoomControl: true });
+  map = L.map('map', { center: [45.17, -108.95], zoom: 10, zoomControl: true });
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-    subdomains: 'abcd', maxZoom: 20
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO', subdomains: 'abcd', maxZoom: 20
   }).addTo(map);
-
-  map.fitBounds(COUNTY_BOUNDS);
 
   // ── Sage Grouse ──
   layers.grouse = L.esri.dynamicMapLayer({
@@ -953,455 +999,293 @@ function initMap() {
     layers: [0], opacity: 0.55, attribution: 'MT DNRC'
   });
 
-  // ── FEMA Floodplain — ArcGIS Server item added to your AGOL org ──
-  // This item points to FEMA's server but AGOL proxies the tiles correctly
+  // ── FEMA Floodplain ──
   layers.flood = L.esri.dynamicMapLayer({
     url: 'https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer',
-    layers: [28],
-    opacity: 0.6,
-    attribution: 'FEMA NFHL',
-    useCors: false   // force JSONP to bypass CORS restriction
+    layers: [28], opacity: 0.6, attribution: 'FEMA NFHL', useCors: false
   });
 
-  // ── Montana Parcels ──
+  // ── Montana Parcels (image tiles, click via identify) ──
   layers.parcels = L.esri.dynamicMapLayer({
     url: 'https://gisservicemt.gov/arcgis/rest/services/MSDI_Framework/Parcels/MapServer',
     opacity: 0.75, attribution: 'MT State Library'
   });
 
-  // ── Roads (RCL) with renderer + labels at zoom 13+ ──
+  // ── Roads ──
   layers.roads = L.esri.featureLayer({
     url: 'https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/NG911_Core_Layers_View20251017/FeatureServer/15',
-    style: rclStyle,
-    minZoom: 10,
-    attribution: 'Carbon County GIS',
+    style: rclStyle, minZoom: 10, attribution: 'Carbon County GIS',
     onEachFeature: (feature, layer) => {
-      const p = feature.properties;
-      const name = p.RoadName || p.FullName || p.St_Name || p.ROAD_NAME || '';
-      const type = p.RoadSym  || '';
-      // Popup on click
-      layer.bindPopup(`
-        <div style="font-family:'Plus Jakarta Sans',sans-serif;min-width:160px;">
-          <div style="font-weight:800;font-size:13px;color:#002d33;margin-bottom:6px;">${name || 'Unnamed Road'}</div>
-          ${type ? `<div style="font-size:11px;color:#6b6560;"><b>Type:</b> ${type}</div>` : ''}
-        </div>`, { maxWidth: 220 });
-      // Label: permanent tooltip that follows the line, shown only at zoom 13+
-      if (name) {
-        const sym = RCL_RENDERER[type] || { color: '#828282' };
-        layer.bindTooltip(name, {
-          permanent: true,
-          direction: 'center',
-          className: 'road-label',
-          opacity: map.getZoom() >= 13 ? 0.9 : 0
-        });
-      }
+      layer.bindPopup(() => rclPopup(feature.properties), { maxWidth: 280 });
     }
   });
 
-  // ── SSAP Address Points with renderer + labels at zoom 15+ ──
+  // ── SSAP Address Points ──
   layers.ssap = L.esri.featureLayer({
     url: 'https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/NG911_Core_Layers_View20251017/FeatureServer/8',
-    pointToLayer: ssapMarker,
-    minZoom: 13,
-    attribution: 'Carbon County GIS',
+    pointToLayer: ssapMarker, minZoom: 13, attribution: 'Carbon County GIS',
     onEachFeature: (feature, layer) => {
-      const p = feature.properties;
-      const addr = p.AbbrvAdd || '';
-      const comm = p.Post_Comm || p.MSAGComm || '';
-      const status = p.MT_PlcType === '2' ? 'Not Present' : 'Structure';
-      layer.bindPopup(`
-        <div style="font-family:'Plus Jakarta Sans',sans-serif;min-width:160px;">
-          <div style="font-weight:800;font-size:13px;color:#002d33;margin-bottom:6px;">${addr || 'Address Point'}</div>
-          ${comm ? `<div style="font-size:11px;color:#6b6560;">${comm}</div>` : ''}
-          <div style="font-size:11px;color:#6b6560;"><b>Status:</b> ${status}</div>
-        </div>`, { maxWidth: 220 });
-      // Label: shown only at zoom 15+
-      if (addr) {
-        layer.bindTooltip(addr, {
-          permanent: true,
-          direction: 'top',
-          offset: [0, -6],
-          className: 'addr-label',
-          opacity: map.getZoom() >= 15 ? 0.9 : 0
-        });
-      }
+      layer.bindPopup(() => ssapPopup(feature.properties), { maxWidth: 260 });
     }
   });
 
+  // ── Road labels: shown at zoom 14+ as mid-segment markers ──
+  // We add labels AFTER features load by listening to the featureLayer's load event
+  layers.roadLabels = L.layerGroup();
+  layers.roads.on('load', () => {
+    if (map.getZoom() < 14) return;
+    updateRoadLabels();
+  });
+
+  // ── Address labels: shown at zoom 16+ ──
+  layers.ssapLabels = L.layerGroup();
+  layers.ssap.on('load', () => {
+    if (map.getZoom() < 16) return;
+    updateAddrLabels();
+  });
+
+  // ── Parcel identify on click ──
+  map.on('click', (e) => {
+    if (!map.hasLayer(layers.parcels)) return;
+    L.esri.identifyFeatures({
+      url: 'https://gisservicemt.gov/arcgis/rest/services/MSDI_Framework/Parcels/MapServer'
+    }).on(map).at(e.latlng).tolerance(3).run((err, fc) => {
+      if (err || !fc?.features?.length) return;
+      const p = fc.features[0].properties;
+      L.popup({ maxWidth: 300 })
+        .setLatLng(e.latlng)
+        .setContent(parcelPopup(p))
+        .openOn(map);
+    });
+  });
+
+  // ── Zoom-dependent behavior ──
   map.on('zoomend', () => {
     const z = map.getZoom();
     const notice = document.getElementById('zoom-notice');
-    const parcelOn = document.querySelector('[data-layer="parcels"]')?.classList.contains('on');
-    const ssapOn   = document.querySelector('[data-layer="ssap"]')?.classList.contains('on');
-    if (parcelOn) {
+
+    // Parcels zoom gate
+    const parcelCb = document.querySelector('[data-layer-cb="parcels"]');
+    if (parcelCb && parcelCb.checked) {
       if (z < 13) { notice.textContent = 'Zoom in to see parcels'; notice.classList.add('visible'); if (map.hasLayer(layers.parcels)) map.removeLayer(layers.parcels); }
       else { notice.classList.remove('visible'); if (!map.hasLayer(layers.parcels)) map.addLayer(layers.parcels); }
     }
-    if (ssapOn) {
+    // SSAP zoom gate
+    const ssapCb = document.querySelector('[data-layer-cb="ssap"]');
+    if (ssapCb && ssapCb.checked) {
       if (z < 13) { notice.textContent = 'Zoom in to see address points'; notice.classList.add('visible'); if (map.hasLayer(layers.ssap)) map.removeLayer(layers.ssap); }
       else { notice.classList.remove('visible'); if (!map.hasLayer(layers.ssap)) map.addLayer(layers.ssap); }
     }
-    if (!parcelOn && !ssapOn) notice.classList.remove('visible');
+    if ((!parcelCb || !parcelCb.checked) && (!ssapCb || !ssapCb.checked)) notice.classList.remove('visible');
 
-    // Road labels: show at zoom 13+
+    // Road labels at 14+
     if (map.hasLayer(layers.roads)) {
-      layers.roads.eachFeature(l => {
-        const tt = l.getTooltip();
-        if (tt) tt.setOpacity(z >= 13 ? 0.9 : 0);
-      });
+      if (z >= 14) { updateRoadLabels(); if (!map.hasLayer(layers.roadLabels)) map.addLayer(layers.roadLabels); }
+      else { map.removeLayer(layers.roadLabels); layers.roadLabels.clearLayers(); }
     }
-    // Address labels: show at zoom 15+
+    // Address labels at 16+
     if (map.hasLayer(layers.ssap)) {
-      layers.ssap.eachFeature(l => {
-        const tt = l.getTooltip();
-        if (tt) tt.setOpacity(z >= 15 ? 0.9 : 0);
-      });
+      if (z >= 16) { updateAddrLabels(); if (!map.hasLayer(layers.ssapLabels)) map.addLayer(layers.ssapLabels); }
+      else { map.removeLayer(layers.ssapLabels); layers.ssapLabels.clearLayers(); }
     }
-  });
-
-  // ── Map click — FEMA flood query + parcel link-out ──
-  // ── Parcel clicks via MapServer identify ──
-  map.on('click', (e) => {
-    if (!map.hasLayer(layers.parcels)) return; // only fire if parcels layer is on
-    const { lat, lng } = e.latlng;
-    L.esri.identifyFeatures({
-      url: 'https://gisservicemt.gov/arcgis/rest/services/MSDI_Framework/Parcels/MapServer'
-    })
-    .on(map)
-    .at([lat, lng])
-    .tolerance(3)
-    .run((err, featureCollection) => {
-      if (err || !featureCollection?.features?.length) return;
-      const p = featureCollection.features[0].properties;
-      const owner = [p.OWNERNME1, p.OWNERNME2].filter(Boolean).join('<br>') || 'Unknown';
-      const acres = p.ACREAGE ? parseFloat(p.ACREAGE).toFixed(2) + ' ac' : '';
-      L.popup({ maxWidth: 280 })
-        .setLatLng(e.latlng)
-        .setContent(`
-          <div style="font-family:'Plus Jakarta Sans',sans-serif;">
-            <div style="font-weight:800;font-size:13px;color:#002d33;margin-bottom:8px;border-bottom:1px solid #e5e1d8;padding-bottom:6px;">Parcel</div>
-            <div style="font-size:11px;color:#6b6560;line-height:1.8;">
-              <div><span style="text-transform:uppercase;font-size:9px;letter-spacing:.08em;color:#a09a8e;">Owner</span><br><strong style="color:#1a1a1a;">${owner}</strong></div>
-              ${p.SITUSADD ? `<div style="margin-top:5px;"><span style="text-transform:uppercase;font-size:9px;letter-spacing:.08em;color:#a09a8e;">Address</span><br>${p.SITUSADD}</div>` : ''}
-              ${p.GEOCODE  ? `<div style="margin-top:5px;"><span style="text-transform:uppercase;font-size:9px;letter-spacing:.08em;color:#a09a8e;">Geocode</span><br>${p.GEOCODE}</div>` : ''}
-              ${acres      ? `<div style="margin-top:5px;"><span style="text-transform:uppercase;font-size:9px;letter-spacing:.08em;color:#a09a8e;">Acreage</span><br>${acres}</div>` : ''}
-              ${p.LEGALDES ? `<div style="margin-top:5px;"><span style="text-transform:uppercase;font-size:9px;letter-spacing:.08em;color:#a09a8e;">Legal</span><br>${p.LEGALDES}</div>` : ''}
-            </div>
-          </div>`)
-        .openOn(map);
-    });
   });
 
   fetchCountyBoundary();
 }
 
-async function fetchCountyBoundary() {
-  try {
-    const params = new URLSearchParams({ where: '1=1', outFields: '*', f: 'geojson', outSR: 4326 });
-    const r = await fetch(`${BOUNDARY_URL}/query?${params}`);
-    const geojson = await r.json();
-    if (geojson.features && geojson.features.length > 0) {
-      layers.boundary = L.geoJSON(geojson, {
-        style: { color: '#002d33', weight: 2.5, fillOpacity: 0, dashArray: '6,4' }
-      }).addTo(map);
-      map.fitBounds(layers.boundary.getBounds(), { padding: [20, 20] });
-    }
-  } catch(e) {
-    map.fitBounds(COUNTY_BOUNDS);
-  }
+// ── Label helpers ──
+// Road labels: place one label per unique road name near the center of visible segments
+// Uses a simple grid-based dedup to avoid clustering
+function updateRoadLabels() {
+  layers.roadLabels.clearLayers();
+  const bounds = map.getBounds();
+  const placed = {}; // grid key -> true, for dedup
+  const cellSize = 0.04; // degrees, ~3km at this latitude
+
+  layers.roads.eachFeature(layer => {
+    const f = layer.feature;
+    if (!f) return;
+    const name = f.properties.AbbrvRd || f.properties.St_Name || '';
+    if (!name || name.length < 2) return;
+    const sym = RCL_RENDERER[f.properties.RoadSym];
+    if (!sym) return; // skip unknown types
+    // Get midpoint of geometry
+    const lls = layer.getLatLngs ? layer.getLatLngs() : null;
+    if (!lls || !lls.length) return;
+    const flat = lls.flat ? lls.flat(Infinity) : lls;
+    if (!flat.length) return;
+    const mid = flat[Math.floor(flat.length / 2)];
+    if (!bounds.contains(mid)) return;
+    // Grid dedup: same name in same cell → skip
+    const cellKey = `${name}|${Math.floor(mid.lat/cellSize)}|${Math.floor(mid.lng/cellSize)}`;
+    if (placed[cellKey]) return;
+    placed[cellKey] = true;
+
+    L.marker(mid, {
+      icon: L.divIcon({
+        className: 'road-lbl',
+        html: `<span style="color:${sym.color};text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff">${name}</span>`,
+        iconSize: null, iconAnchor: [0, 0]
+      }),
+      interactive: false, keyboard: false
+    }).addTo(layers.roadLabels);
+  });
+  if (map.getZoom() >= 14) map.addLayer(layers.roadLabels);
 }
 
-function toggleLayer(btn) {
-  const name = btn.dataset.layer;
+// Address labels: one label per address point, only shown at zoom 16+
+function updateAddrLabels() {
+  layers.ssapLabels.clearLayers();
+  const bounds = map.getBounds();
+  // Grid dedup to prevent overlap
+  const placed = {};
+  const cellSize = 0.002; // ~150m
 
-  // Boundary is a GeoJSON layer — slightly different handling
-  if (name === 'boundary') {
-    const isOn = btn.classList.contains('on');
-    btn.classList.toggle('on');
-    if (layers.boundary) {
-      isOn ? map.removeLayer(layers.boundary) : map.addLayer(layers.boundary);
+  layers.ssap.eachFeature(layer => {
+    const f = layer.feature;
+    if (!f) return;
+    const addr = f.properties.AbbrvAdd || '';
+    if (!addr) return;
+    const latlng = layer.getLatLng ? layer.getLatLng() : null;
+    if (!latlng || !bounds.contains(latlng)) return;
+    const cellKey = `${Math.floor(latlng.lat/cellSize)}|${Math.floor(latlng.lng/cellSize)}`;
+    if (placed[cellKey]) return;
+    placed[cellKey] = true;
+
+    L.marker([latlng.lat, latlng.lng], {
+      icon: L.divIcon({
+        className: 'addr-lbl',
+        html: `<span>${addr}</span>`,
+        iconSize: null, iconAnchor: [0, 8]
+      }),
+      interactive: false, keyboard: false
+    }).addTo(layers.ssapLabels);
+  });
+  if (map.getZoom() >= 16) map.addLayer(layers.ssapLabels);
+}
+
+async function fetchCountyBoundary() {
+  try {
+    const r = await fetch('https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/CountyBoundary/FeatureServer/0/query?where=1%3D1&outFields=*&f=geojson&outSR=4326');
+    const gj = await r.json();
+    if (gj.features?.length) {
+      layers.boundary = L.geoJSON(gj, { style: { color:'#002d33', weight:2.5, fillOpacity:0, dashArray:'6,4' } }).addTo(map);
+      map.fitBounds(layers.boundary.getBounds(), { padding:[20,20] });
     }
+  } catch(e) { map.fitBounds([[44.97,-109.43],[45.56,-108.42]]); }
+}
+
+// ── Layer toggle via checkbox ──
+function toggleLayerCb(cb, name) {
+  if (!map) return;
+  const notice = document.getElementById('zoom-notice');
+  if (name === 'boundary') {
+    if (layers.boundary) cb.checked ? map.addLayer(layers.boundary) : map.removeLayer(layers.boundary);
     return;
   }
-
-  if (!map || !layers[name]) return;
-
-  const currentlyOn = map.hasLayer(layers[name]);
-
-  if (currentlyOn) {
-    map.removeLayer(layers[name]);
-    btn.classList.remove('on');
-    if (name === 'parcels' || name === 'ssap') document.getElementById('zoom-notice').classList.remove('visible');
-  } else {
-    if (name === 'parcels' && map.getZoom() < 13) {
-      const notice = document.getElementById('zoom-notice');
-      notice.textContent = 'Zoom in further to see parcels';
+  if (!layers[name]) return;
+  if (cb.checked) {
+    if ((name === 'parcels' || name === 'ssap') && map.getZoom() < 13) {
+      notice.textContent = `Zoom in to see ${name === 'parcels' ? 'parcels' : 'address points'}`;
       notice.classList.add('visible');
       setTimeout(() => notice.classList.remove('visible'), 3000);
-      btn.classList.add('on');
-      return;
-    }
-    if (name === 'ssap' && map.getZoom() < 13) {
-      const notice = document.getElementById('zoom-notice');
-      notice.textContent = 'Zoom in further to see address points';
-      notice.classList.add('visible');
-      setTimeout(() => notice.classList.remove('visible'), 3000);
-      btn.classList.add('on');
       return;
     }
     map.addLayer(layers[name]);
-    btn.classList.add('on');
+    if (name === 'roads') { if (map.getZoom() >= 14) { updateRoadLabels(); map.addLayer(layers.roadLabels); } }
+    if (name === 'ssap')  { if (map.getZoom() >= 16) { updateAddrLabels(); map.addLayer(layers.ssapLabels); } }
+  } else {
+    map.removeLayer(layers[name]);
+    if (name === 'roads') { map.removeLayer(layers.roadLabels); layers.roadLabels.clearLayers(); }
+    if (name === 'ssap')  { map.removeLayer(layers.ssapLabels); layers.ssapLabels.clearLayers(); }
   }
 }
 
-// ══════════════════════════════════════════════════════════════
-// ADDRESS LOOKUP
-// ══════════════════════════════════════════════════════════════
-async function runAddrLookup() {
-  const input  = document.getElementById('addr-input');
-  const comm   = document.getElementById('comm-input');
-  const btn    = document.getElementById('addr-btn');
-  const result = document.getElementById('addr-result');
-  const term   = input.value.trim();
-  const commTerm = comm ? comm.value.trim() : '';
-  if (!term) { input.classList.add('error'); setTimeout(() => input.classList.remove('error'), 1500); return; }
-  setLoading(btn, true); result.style.display = 'none';
+// ── Map panel collapse ──
+function toggleMapPanel() {
+  const panel   = document.getElementById('map-search-panel');
+  const expand  = document.getElementById('msp-expand');
+  const collapse = document.getElementById('msp-collapse');
+  const isOpen  = panel.style.display !== 'none';
+  panel.style.display  = isOpen ? 'none' : 'flex';
+  expand.style.display = isOpen ? 'flex'  : 'none';
+  if (!isOpen) expand.style.display = 'flex';
+  panel.style.flexDirection = 'column';
+  if (map) setTimeout(() => map.invalidateSize(), 200);
+}
+
+// ── Map address search ──
+async function runMapSearch() {
+  const input  = document.getElementById('map-addr-input');
+  const comm   = document.getElementById('map-comm-input');
+  const result = document.getElementById('map-search-result');
+  const btn    = document.getElementById('map-search-btn');
+  const term   = (input.value || '').trim();
+  if (!term) { input.style.borderColor = '#f87171'; setTimeout(() => input.style.borderColor = '', 1200); return; }
+
+  btn.disabled = true;
+  result.innerHTML = '<div style="color:#a09a8e;font-size:11px;padding:6px 0">Searching…</div>';
+
   try {
+    const commTerm = (comm.value || '').trim();
     let where = `UPPER(AbbrvAdd) LIKE UPPER('${esc(term)}%')`;
     if (commTerm) where += ` AND UPPER(Post_Comm) LIKE UPPER('%${esc(commTerm)}%')`;
-    const params = new URLSearchParams({ where, outFields: '*', returnGeometry: true, outSR: 4326, resultRecordCount: 10, orderByFields: 'AbbrvAdd', f: 'json' });
-    let data = await (await fetch(`${SSAP_URL}/query?${params}`)).json();
-    // Retry with MSAGComm if Post_Comm failed
-    if (data.error && commTerm) {
-      let w2 = `UPPER(AbbrvAdd) LIKE UPPER('${esc(term)}%') AND UPPER(MSAGComm) LIKE UPPER('%${esc(commTerm)}%')`;
-      const p2 = new URLSearchParams({ where: w2, outFields: '*', returnGeometry: true, outSR: 4326, resultRecordCount: 10, orderByFields: 'AbbrvAdd', f: 'json' });
-      const d2 = await (await fetch(`${SSAP_URL}/query?${p2}`)).json();
-      if (!d2.error) data = d2;
-      else {
-        const p3 = new URLSearchParams({ where: `UPPER(AbbrvAdd) LIKE UPPER('${esc(term)}%')`, outFields: '*', returnGeometry: true, outSR: 4326, resultRecordCount: 10, orderByFields: 'AbbrvAdd', f: 'json' });
-        data = await (await fetch(`${SSAP_URL}/query?${p3}`)).json();
-      }
-    }
-    if (data.error) { result.innerHTML = errBox(data.error.message); result.style.display = 'block'; return; }
-    const features = data.features || [];
-    const full = commTerm ? `${term}, ${commTerm}` : term;
-    if (features.length > 0) {
-      const sorted = features.sort((a,b) => (a.attributes.AbbrvAdd||'').length - (b.attributes.AbbrvAdd||'').length);
-      const f = sorted[0].attributes, g = sorted[0].geometry;
-      const addr = f.AbbrvAdd || term;
-      const city = f.Post_Comm || f.MSAGComm || '';
-      const zip  = f.Post_Code || f.ZIP || '';
-      const state= f.State_Alpha || 'MT';
-      let mapLink = `https://carbonmt.maps.arcgis.com/apps/mapviewer/index.html?layers=a4d565d459f64c33925acb1f3d12579f`;
-      if (g) mapLink += `&center=${g.x},${g.y}&level=18`;
-      const multi = features.length > 1 ? `<p style="font-size:11px;font-family:var(--fhead);color:#16a34a;margin-top:4px;">${features.length} records found — showing closest match.</p>` : '';
-      result.innerHTML = `<div class="res-found">
-        <div class="res-header"><div class="res-icon green"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg></div>
-        <div><div class="res-tag green">Address Found</div><div class="res-title">${addr}</div>${multi}</div></div>
-        <div class="res-attrs">${attr('Address',addr)}${city?attr('Community',city):''}${state?attr('State',state):''}${zip?attr('ZIP',zip):''}</div>
-        <div class="res-actions"><a class="res-btn teal" href="${mapLink}" target="_blank" rel="noopener">View on Map <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg></a></div>
-      </div>`;
-    } else {
-      const _e = ['GIS','carbonmt.gov'].join('@');
-      const subj = encodeURIComponent('Address Not Found — Carbon County GIS Lookup');
-      const body = encodeURIComponent(`Hello,\n\nI searched for "${full}" using the Carbon County GIS Address Lookup and it was not found.\n\nCould you please look into this?\n\nThank you.`);
-      result.innerHTML = `<div class="res-notfound">
-        <div class="res-header"><div class="res-icon yellow"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg></div>
-        <div><div class="res-tag yellow">Not Found</div><div class="res-title">"${full}"</div><div class="res-subtitle">No record found in the 9-1-1 database. Try searching with just the house number and street name, or check spelling.</div></div></div>
-        <div class="res-actions"><a class="res-btn amber" href="mailto:${_e}?subject=${subj}&body=${body}">Report Missing Address <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0121.485 12 59.768 59.768 0 013.27 20.875L5.999 12zm0 0h7.5"/></svg></a></div>
-        <p class="res-note">Need a new address? Use the <a href="https://carboncomt.forms.govos.com/ng/fa/CCDevelopmentPackage" target="_blank" rel="noopener">Development Permit Application</a>.</p>
-      </div>`;
-    }
-    result.style.display = 'block';
-  } catch(e) { result.innerHTML = errBox(e.message); result.style.display = 'block'; }
-  finally { setLoading(btn, false); }
-}
-
-// ══════════════════════════════════════════════════════════════
-// PARCEL LOOKUP
-// ══════════════════════════════════════════════════════════════
-let parcelMode = 'owner';
-
-function setParcelMode(mode, btn) {
-  parcelMode = mode;
-  document.querySelectorAll('#psearch-owner,#psearch-geo,#psearch-addr').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-  const input = document.getElementById('parcel-input');
-  const hint  = document.getElementById('parcel-hint');
-  const placeholders = {
-    owner:   ['Enter owner last name…', 'Enter a last name or full name. Example: "Smith" or "Smith John"'],
-    geocode: ['Enter geocode or parcel #…', 'Enter a parcel geocode or number. Example: "08-1234-01-1-01-000"'],
-    address: ['Enter street address…', 'Enter a street address. Example: "123 Main St"']
-  };
-  input.placeholder = placeholders[mode][0];
-  hint.textContent  = placeholders[mode][1];
-  document.getElementById('parcel-result').style.display = 'none';
-}
-
-async function runParcelLookup() {
-  const input  = document.getElementById('parcel-input');
-  const btn    = document.getElementById('parcel-btn');
-  const result = document.getElementById('parcel-result');
-  const term   = input.value.trim();
-  if (!term) { input.classList.add('error'); setTimeout(() => input.classList.remove('error'), 1500); return; }
-  setLoading(btn, true); result.style.display = 'none';
-
-  try {
-    // Montana Cadastral — layer 0 is parcels
-    // Filter to Carbon County (COUNTY field) and search by mode
-    let whereClause = `UPPER(COUNTY) = 'CARBON'`;
-    if (parcelMode === 'owner')   whereClause += ` AND UPPER(OWNERNME1) LIKE UPPER('%${esc(term)}%')`;
-    if (parcelMode === 'geocode') whereClause += ` AND UPPER(GEOCODE) LIKE UPPER('%${esc(term)}%')`;
-    if (parcelMode === 'address') whereClause += ` AND UPPER(SITUSADD) LIKE UPPER('%${esc(term)}%')`;
-
-    const params = new URLSearchParams({
-      where: whereClause,
-      outFields: 'GEOCODE,OWNERNME1,OWNERNME2,SITUSADD,SITUSCITY,LEGALDES,ACREAGE,COUNTY',
-      returnGeometry: false,
-      resultRecordCount: 8,
-      f: 'json'
-    });
-    const data = await (await fetch(`${CADASTRAL_URL}/0/query?${params}`)).json();
-
-    if (data.error) { result.innerHTML = errBox(data.error.message); result.style.display = 'block'; return; }
+    const params = new URLSearchParams({ where, outFields: 'AbbrvAdd,Post_Comm,Post_Code,Inc_Muni,MT_PlcType', returnGeometry: true, outSR: 4326, resultRecordCount: 8, orderByFields: 'AbbrvAdd', f: 'json' });
+    const data = await (await fetch(`${SSAP_URL}/query?${params}`)).json();
     const features = data.features || [];
 
-    if (features.length > 0) {
-      const cards = features.map(feat => {
-        const f = feat.attributes;
-        const owner = [f.OWNERNME1, f.OWNERNME2].filter(Boolean).join(' / ');
-        const address = [f.SITUSADD, f.SITUSCITY].filter(Boolean).join(', ');
-        const acres = f.ACREAGE ? parseFloat(f.ACREAGE).toFixed(2) + ' ac' : '';
-        return `<div style="background:white;border:1px solid #dedad2;border-radius:10px;padding:16px;margin-bottom:10px;">
-          <div style="font-family:var(--fhead);font-size:14px;font-weight:800;color:var(--gray-800);margin-bottom:10px;">${owner || 'Unknown Owner'}</div>
-          <div class="res-attrs" style="border:1px solid #f0ede8;margin-bottom:10px;">
-            ${address ? attr('Address', address) : ''}
-            ${f.GEOCODE ? attr('Geocode', f.GEOCODE) : ''}
-            ${acres ? attr('Acreage', acres) : ''}
-            ${f.LEGALDES ? attr('Legal Desc.', f.LEGALDES.substring(0,40) + (f.LEGALDES.length>40?'…':'')) : ''}
-          </div>
-        </div>`;
-      }).join('');
-      const note = features.length === 8 ? `<p class="res-note">Showing first 8 results. Narrow your search for more specific results.</p>` : '';
-      result.innerHTML = `<div class="res-found"><div class="res-header"><div class="res-icon green"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg></div><div><div class="res-tag green">${features.length} Record${features.length>1?'s':''} Found</div></div></div>${cards}${note}</div>`;
-    } else {
-      result.innerHTML = `<div class="res-notfound"><div class="res-header"><div class="res-icon yellow"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg></div><div><div class="res-tag yellow">No Records Found</div><div class="res-title">No parcels matched "${term}"</div><div class="res-subtitle">Try a shorter search term or a different search type. For official records contact the <a href="https://carbonmt.gov" target="_blank">Carbon County Clerk &amp; Recorder</a>.</div></div></div></div>`;
-    }
-    result.style.display = 'block';
-  } catch(e) { result.innerHTML = errBox(e.message); result.style.display = 'block'; }
-  finally { setLoading(btn, false); }
-}
-
-// ══════════════════════════════════════════════════════════════
-// FLOODPLAIN CHECK
-// ══════════════════════════════════════════════════════════════
-async function runFloodCheck() {
-  const input  = document.getElementById('flood-input');
-  const btn    = document.getElementById('flood-btn');
-  const result = document.getElementById('flood-result');
-  const term   = input.value.trim();
-  if (!term) { input.classList.add('error'); setTimeout(() => input.classList.remove('error'), 1500); return; }
-  setLoading(btn, true); result.style.display = 'none';
-
-  try {
-    // Step 1: Geocode address using Census geocoder
-    const geoParams = new URLSearchParams({ address: term, benchmark: 'Public_AR_Current', format: 'json' });
-    const geoResp = await fetch(`${CENSUS_GEOCODE}?${geoParams}`);
-    const geoData = await geoResp.json();
-    const matches = geoData?.result?.addressMatches;
-
-    if (!matches || matches.length === 0) {
-      result.innerHTML = `<div class="res-notfound"><div class="res-header"><div class="res-icon yellow"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg></div>
-      <div><div class="res-tag yellow">Address Not Found</div><div class="res-title">Could not locate "${term}"</div>
-      <div class="res-subtitle">Try including the city and state. Example: "123 Main St, Red Lodge, MT"</div></div></div></div>`;
-      result.style.display = 'block'; return;
+    if (data.error || !features.length) {
+      const email = ['GIS','carbonmt.gov'].join('@');
+      const subj  = encodeURIComponent('Missing Address — Carbon County GIS');
+      const body  = encodeURIComponent(`Hi,\n\nI searched for "${term}" and it was not found in the 9-1-1 address database.\n\nPlease look into this. Thank you.`);
+      result.innerHTML = `<div class="msr-notfound"><div class="msr-title">Not found: "${term}"</div><div class="msr-detail">No match in the 9-1-1 database. Check spelling or try just the street name.</div><a class="msr-link" href="mailto:${email}?subject=${subj}&body=${body}">Report missing address →</a></div>`;
+      return;
     }
 
-    const match = matches[0];
-    const lon = match.coordinates.x;
-    const lat = match.coordinates.y;
-    const matchedAddr = match.matchedAddress;
+    // Remove old search marker
+    if (searchMarker) { map.removeLayer(searchMarker); searchMarker = null; }
 
-    // Step 2: Query FEMA NFHL for flood zone at that point
-    // Layer 28 = SFHA (Special Flood Hazard Areas), Layer 12 = Flood Hazard Zone
-    const point = { x: lon, y: lat, spatialReference: { wkid: 4326 } };
-    const femaParams = new URLSearchParams({
-      geometry: JSON.stringify(point),
-      geometryType: 'esriGeometryPoint',
-      inSR: 4326,
-      layers: 'all:28',
-      tolerance: 1,
-      mapExtent: `${lon-0.01},${lat-0.01},${lon+0.01},${lat+0.01}`,
-      imageDisplay: '400,400,96',
-      returnGeometry: false,
-      f: 'json'
+    // Show results list
+    const items = features.map(f => {
+      const p = f.properties || f.attributes;
+      const g = f.geometry;
+      const addr = p.AbbrvAdd || term;
+      const comm2 = p.Post_Comm || p.Inc_Muni || '';
+      return { addr, comm: comm2, zip: p.Post_Code || '', x: g?.x, y: g?.y };
     });
-    const femaResp = await fetch(`${FEMA_URL}/identify?${femaParams}`);
-    const femaData = await femaResp.json();
-    const femaResults = femaData?.results || [];
 
-    // Also try a spatial query on layer 28 directly as backup
-    let floodFeatures = femaResults;
-    if (floodFeatures.length === 0) {
-      const qParams = new URLSearchParams({
-        geometry: `${lon},${lat}`,
-        geometryType: 'esriGeometryPoint',
-        inSR: 4326,
-        spatialRel: 'esriSpatialRelIntersects',
-        outFields: 'FLD_ZONE,ZONE_SUBTY,SFHA_TF,STUDY_TYP',
-        returnGeometry: false,
-        f: 'json'
-      });
-      const qResp = await fetch(`${FEMA_URL}/28/query?${qParams}`);
-      const qData = await qResp.json();
-      floodFeatures = qData?.features || [];
-    }
+    const listHtml = items.map((it, i) =>
+      `<div onclick="zoomToResult(${it.y},${it.x},'${it.addr.replace(/'/g,"\\'")}','${it.comm}')" style="padding:7px 10px;border-radius:6px;cursor:pointer;margin-bottom:4px;background:#f7f5f0;transition:background .15s;" onmouseover="this.style.background='#e0f2f1'" onmouseout="this.style.background='#f7f5f0'">
+        <div style="font-weight:700;color:#002d33;font-size:12px;">${it.addr}</div>
+        ${it.comm ? `<div style="font-size:10px;color:#a09a8e;">${it.comm}${it.zip ? ', '+it.zip : ''}</div>` : ''}
+      </div>`
+    ).join('');
 
-    const femaLink = `https://msc.fema.gov/portal/search?AddressQuery=${encodeURIComponent(term)}`;
+    result.innerHTML = `<div class="msr-found"><div class="msr-title" style="margin-bottom:8px;">${items.length} result${items.length>1?'s':''} found</div>${listHtml}</div>`;
 
-    if (floodFeatures.length > 0) {
-      const f = floodFeatures[0].attributes || floodFeatures[0];
-      const zone = f.FLD_ZONE || f.fld_zone || 'A';
-      const subtype = f.ZONE_SUBTY || f.zone_subty || '';
-      const sfha = f.SFHA_TF || f.sfha_tf || 'T';
-      const inFlood = sfha === 'T' || zone.startsWith('A') || zone.startsWith('V');
+    // Auto-zoom to first result
+    if (items[0].x && items[0].y) zoomToResult(items[0].y, items[0].x, items[0].addr, items[0].comm);
 
-      if (inFlood) {
-        result.innerHTML = `<div class="res-found" style="background:#fef2f2;border-color:#fca5a5;">
-          <div class="res-header"><div class="res-icon red"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg></div>
-          <div><div class="res-tag" style="color:#991b1b;">In Special Flood Hazard Area</div><div class="res-title">${matchedAddr}</div></div></div>
-          <div class="res-attrs" style="border-color:#fecaca;">
-            ${attr('Flood Zone', zone)}
-            ${subtype ? attr('Zone Subtype', subtype) : ''}
-            ${attr('SFHA', 'Yes — flood insurance may be required')}
-          </div>
-          <div class="res-actions"><a class="res-btn teal" href="${femaLink}" target="_blank" rel="noopener">View FEMA Map <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg></a></div>
-          <p class="res-note">This is not an official flood zone determination. Contact our office or request a <a href="https://msc.fema.gov/portal/home" target="_blank" rel="noopener">FEMA Elevation Certificate</a> for official determinations.</p>
-        </div>`;
-      } else {
-        result.innerHTML = `<div class="res-found">
-          <div class="res-header"><div class="res-icon green"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg></div>
-          <div><div class="res-tag green">Not in Special Flood Hazard Area</div><div class="res-title">${matchedAddr}</div></div></div>
-          <div class="res-attrs">${attr('Flood Zone', zone || 'X')}${attr('SFHA', 'No')}</div>
-          <div class="res-actions"><a class="res-btn teal" href="${femaLink}" target="_blank" rel="noopener">View FEMA Map <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg></a></div>
-          <p class="res-note">This is not an official flood zone determination. Contact our office for official determinations.</p>
-        </div>`;
-      }
-    } else {
-      // Address found but no FEMA flood zone data — likely unmapped area
-      result.innerHTML = `<div class="res-found" style="background:#fefce8;border-color:#fde68a;">
-        <div class="res-header"><div class="res-icon" style="background:#ca8a04"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg></div>
-        <div><div class="res-tag" style="color:#92400e;">No Flood Zone Data</div><div class="res-title">${matchedAddr}</div>
-        <div class="res-subtitle">This area may not have been mapped by FEMA, or may be in an unmapped flood zone. This does not mean there is no flood risk.</div></div></div>
-        <div class="res-actions"><a class="res-btn teal" href="${femaLink}" target="_blank" rel="noopener">Check FEMA Map Service <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg></a></div>
-      </div>`;
-    }
-    result.style.display = 'block';
-  } catch(e) { result.innerHTML = errBox(e.message); result.style.display = 'block'; }
-  finally { setLoading(btn, false); }
+  } catch(e) {
+    result.innerHTML = `<div class="msr-error"><div class="msr-title">Error</div><div class="msr-detail">${e.message}</div></div>`;
+  } finally {
+    btn.disabled = false;
+  }
 }
 
-// ══════════════════════════════════════════════════════════════
+function zoomToResult(lat, lng, addr, community) {
+  if (!lat || !lng) return;
+  if (searchMarker) map.removeLayer(searchMarker);
+  map.setView([lat, lng], 17);
+  searchMarker = L.marker([lat, lng], {
+    icon: L.divIcon({
+      className: '',
+      html: `<div style="background:#00474f;color:white;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;white-space:nowrap;box-shadow:0 4px 16px rgba(0,45,51,0.3);transform:translateX(-50%)">${addr}</div>`,
+      iconAnchor: [0, 32]
+    })
+  }).addTo(map);
+}
+
 // GIS DATA CATALOG
 // ══════════════════════════════════════════════════════════════
 const DATA_CATS = [
