@@ -263,6 +263,10 @@
     .msr-result-item:hover { background: #e0f2f1; }
     .msp-tip { font-family: var(--fbody); font-size: 11px; color: var(--gray-400); font-style: italic; line-height: 1.6; }
     .msp-tip a { color: var(--teal); }
+    .msp-basemaps { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .bm-btn { font-family: var(--fhead); font-size: 11px; font-weight: 600; padding: 7px 6px; border-radius: var(--rsm); border: 1.5px solid var(--gray-200); background: var(--off-white); color: var(--gray-600); cursor: pointer; transition: all 0.15s; text-align: center; }
+    .bm-btn:hover { border-color: var(--teal); color: var(--teal); }
+    .bm-btn.active { background: var(--teal); color: white; border-color: var(--teal); }
     /* Expand button when collapsed */
     #msp-expand {
       position: absolute; top: 12px; left: 12px; z-index: 500;
@@ -586,7 +590,7 @@
         <div class="home-band-contact">
           <span style="font-family:var(--fhead);font-size:13px;font-weight:700;color:var(--gray-800);">Patrick Benson, GIS Coordinator</span>
           <a href="tel:4064457271">406-445-7271</a>
-          <a id="home-email" href="#"><span class="__cf_email__" data-cfemail="eaada3b9aa898b98888584879ec48d859c">[email&#160;protected]</span></a>
+          <a id="home-email" href="mailto:GIS@carbonmt.gov">GIS@carbonmt.gov</a>
           <span style="font-family:var(--fbody);font-size:12px;color:var(--gray-400);font-style:italic;">10 Oakes Ave S, Suite F · Red Lodge, MT</span>
         </div>
       </div>
@@ -624,6 +628,17 @@
         </div>
         <button id="map-clear-btn" onclick="clearMapSearch()" style="display:none;margin-top:6px;width:100%;background:none;border:1px solid var(--gray-200);border-radius:var(--rsm);font-family:var(--fhead);font-size:11px;font-weight:600;color:var(--gray-600);padding:5px;cursor:pointer;">✕ Clear result</button>
         <div id="map-search-result"></div>
+      </div>
+
+      <!-- Basemap switcher -->
+      <div class="msp-section">
+        <div class="msp-label">Basemap</div>
+        <div class="msp-basemaps">
+          <button class="bm-btn active" onclick="setBasemap('positron',this)">Streets</button>
+          <button class="bm-btn" onclick="setBasemap('satellite',this)">Satellite</button>
+          <button class="bm-btn" onclick="setBasemap('topo',this)">Topo</button>
+          <button class="bm-btn" onclick="setBasemap('dark',this)">Dark</button>
+        </div>
       </div>
 
       <!-- Layer toggles -->
@@ -794,7 +809,7 @@
           <strong>Patrick Benson, GIS Coordinator</strong>
           <span style="font-family:var(--fbody);font-size:13px;color:var(--gray-600);font-style:italic;">10 Oakes Ave S, Suite F<br/>Red Lodge, MT 59068</span>
           <a href="tel:4064457271">406-445-7271</a>
-          <a id="about-email" href="#"><span class="__cf_email__" data-cfemail="0f48465c4f6c6e7d6d6061627b21686079">[email&#160;protected]</span></a>
+          <a id="about-email" href="mailto:GIS@carbonmt.gov">GIS@carbonmt.gov</a>
         </div>
       </div>
       <div class="acard">
@@ -839,7 +854,7 @@
         10 Oakes Ave S, Suite F<br/>Red Lodge, MT 59068<br/><br/>
         Patrick Benson, GIS Coordinator<br/>
         <a href="tel:4064457271">406-445-7271</a><br/>
-        <a id="footer-email" href="#"><span class="__cf_email__" data-cfemail="66212f35260507140409080b1248010910">[email&#160;protected]</span></a>
+        <a id="footer-email" href="mailto:GIS@carbonmt.gov">GIS@carbonmt.gov</a>
       </address>
     </div>
     <div class="fcol">
@@ -862,7 +877,7 @@
   <div class="footer-bottom"><p>Carbon County GIS &bull; Red Lodge, Montana &bull; <span id="footer-year"></span></p></div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ══════════════════════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════════════════════
@@ -901,16 +916,28 @@ document.querySelectorAll('.ptab').forEach(btn => {
 // ══════════════════════════════════════════════════════════════
 function injectEmails() {
   const e = ['GIS', 'carbonmt.gov'].join('@');
-  ['home-email','about-email','footer-email'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.href = 'mailto:' + e; el.textContent = e; }
-  });
 }
 
 // ══════════════════════════════════════════════════════════════
 // LEAFLET MAP
 // ══════════════════════════════════════════════════════════════
-let map, layers = {}, searchMarker = null;
+let map, layers = {}, searchMarker = null, basemapLayer = null;
+
+const BASEMAPS = {
+  positron:  { url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',      attr: '&copy; OpenStreetMap contributors &copy; CARTO', subdomains: 'abcd', maxZoom: 20 },
+  satellite: { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', attr: '&copy; Esri, Maxar, GeoEye, USGS', maxZoom: 19 },
+  topo:      { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',  attr: '&copy; Esri, USGS, NOAA', maxZoom: 19 },
+  dark:      { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',        attr: '&copy; OpenStreetMap contributors &copy; CARTO', subdomains: 'abcd', maxZoom: 20 },
+};
+
+function setBasemap(key, btn) {
+  if (basemapLayer) map.removeLayer(basemapLayer);
+  const bm = BASEMAPS[key];
+  basemapLayer = L.tileLayer(bm.url, { attribution: bm.attr, subdomains: bm.subdomains || 'abc', maxZoom: bm.maxZoom }).addTo(map);
+  basemapLayer.bringToBack();
+  document.querySelectorAll('.bm-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
 
 // ── Renderers ──
 const RCL_RENDERER = {
@@ -986,10 +1013,7 @@ function initMap() {
   mapInitialized = true;
 
   map = L.map('map', { center: [45.17, -108.95], zoom: 10, zoomControl: true });
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; OpenStreetMap contributors &copy; CARTO', subdomains: 'abcd', maxZoom: 20
-  }).addTo(map);
+  setBasemap('positron', document.querySelector('.bm-btn.active'));
 
   // ── Sage Grouse ──
   layers.grouse = L.esri.dynamicMapLayer({
@@ -1035,11 +1059,10 @@ function initMap() {
     updateRoadLabels();
   });
 
-  // ── Address labels: shown at zoom 16+ ──
+  // ── Address labels: update after every tile load ──
   layers.ssapLabels = L.layerGroup();
   layers.ssap.on('load', () => {
-    if (map.getZoom() < 16) return;
-    updateAddrLabels();
+    if (map.hasLayer(layers.ssap)) updateAddrLabels();
   });
 
   // ── Parcel identify on click ──
@@ -1081,10 +1104,9 @@ function initMap() {
       if (z >= 14) { updateRoadLabels(); if (!map.hasLayer(layers.roadLabels)) map.addLayer(layers.roadLabels); }
       else { map.removeLayer(layers.roadLabels); layers.roadLabels.clearLayers(); }
     }
-    // Address labels at 16+
+    // Address labels: re-run collision detection on every zoom change
     if (map.hasLayer(layers.ssap)) {
-      if (z >= 16) { updateAddrLabels(); if (!map.hasLayer(layers.ssapLabels)) map.addLayer(layers.ssapLabels); }
-      else { map.removeLayer(layers.ssapLabels); layers.ssapLabels.clearLayers(); }
+      updateAddrLabels();
     }
   });
 
@@ -1131,29 +1153,46 @@ function updateRoadLabels() {
   if (map.getZoom() >= 14) map.addLayer(layers.roadLabels);
 }
 
-// Address labels: one label per visible address point at zoom 16+
+// Address labels: pixel-space collision detection.
+// Projects every loaded point to screen coordinates, then greedily places
+// a label only when no already-placed label is within MIN_PX pixels.
+// At low zoom points are crowded so few labels appear; zoom in and they
+// spread out so more (eventually all) appear — no hardcoded zoom threshold.
 function updateAddrLabels() {
   layers.ssapLabels.clearLayers();
-  const bounds = map.getBounds();
+  const MIN_PX = 55; // min screen-pixel distance between label anchors
 
+  const candidates = [];
   layers.ssap.eachFeature(layer => {
     const f = layer.feature;
     if (!f) return;
     const addr = f.properties.AbbrvAdd || '';
     if (!addr) return;
     const latlng = layer.getLatLng ? layer.getLatLng() : null;
-    if (!latlng || !bounds.contains(latlng)) return;
+    if (!latlng) return;
+    const pt = map.latLngToContainerPoint(latlng);
+    candidates.push({ latlng, addr, px: pt.x, py: pt.y });
+  });
 
-    L.marker([latlng.lat, latlng.lng], {
+  const placed = [];
+  candidates.forEach(c => {
+    const blocked = placed.some(p => {
+      const dx = c.px - p.px, dy = c.py - p.py;
+      return (dx*dx + dy*dy) < MIN_PX * MIN_PX;
+    });
+    if (blocked) return;
+    placed.push({ px: c.px, py: c.py });
+    L.marker(c.latlng, {
       icon: L.divIcon({
         className: 'addr-lbl',
-        html: `<span>${addr}</span>`,
+        html: `<span>${c.addr}</span>`,
         iconSize: null, iconAnchor: [0, 8]
       }),
       interactive: false, keyboard: false
     }).addTo(layers.ssapLabels);
   });
-  if (map.getZoom() >= 16) map.addLayer(layers.ssapLabels);
+
+  map.addLayer(layers.ssapLabels);
 }
 
 async function fetchCountyBoundary() {
@@ -1186,7 +1225,7 @@ function toggleLayerCb(cb, name) {
     }
     map.addLayer(layers[name]);
     if (name === 'roads') { if (map.getZoom() >= 14) { updateRoadLabels(); map.addLayer(layers.roadLabels); } }
-    if (name === 'ssap')  { if (map.getZoom() >= 16) { updateAddrLabels(); map.addLayer(layers.ssapLabels); } }
+    if (name === 'ssap')  { updateAddrLabels(); }
   } else {
     map.removeLayer(layers[name]);
     if (name === 'roads') { map.removeLayer(layers.roadLabels); layers.roadLabels.clearLayers(); }
@@ -1223,10 +1262,12 @@ async function runMapSearch() {
 
   try {
     const commTerm = (comm.value || '').trim();
-    let where = `UPPER(AbbrvAdd) LIKE UPPER('${esc(term)}%')`;
-    if (commTerm) where += ` AND UPPER(Post_Comm) LIKE UPPER('%${esc(commTerm)}%')`;
+    // Search AbbrvAdd (short) and full address field; LIKE '%term%' catches mid-string matches
+    const termEsc = esc(term);
+    let where = `UPPER(AbbrvAdd) LIKE UPPER('%${termEsc}%') OR UPPER(Add_Number || ' ' || St_Name) LIKE UPPER('%${termEsc}%')`;
+    if (commTerm) where = `(${where}) AND UPPER(Post_Comm) LIKE UPPER('%${esc(commTerm)}%')`;
     const params = new URLSearchParams({
-      where, outFields: 'AbbrvAdd,Post_Comm,Post_Code,Inc_Muni,MT_PlcType',
+      where, outFields: 'AbbrvAdd,Add_Number,St_Name,Post_Comm,Post_Code,Inc_Muni,MT_PlcType',
       returnGeometry: true, outSR: 4326, resultRecordCount: 8,
       orderByFields: 'AbbrvAdd', f: 'json'
     });
@@ -1301,55 +1342,109 @@ function zoomToResult(lat, lng, addr, community) {
   }).addTo(map);
 }
 
-// Dynamic legend
-const LEGEND_DEFS = {
-  boundary: { label: 'County Boundary', items: [{ type:'line', color:'#002d33', weight:2, dash:true, label:'Carbon County' }] },
+// Dynamic legend — fetches real symbology images from service /legend endpoints
+// Static entries for FeatureLayer-based layers (boundary, roads, ssap)
+const LEGEND_STATIC = {
+  boundary: { label: 'County Boundary', items: [
+    { swatch: '<span style="width:24px;height:12px;display:inline-flex;align-items:center;flex-shrink:0;"><span style="width:100%;border-top:2px dashed #002d33;"></span></span>', label: 'Carbon County' }
+  ]},
   roads: { label: 'Roads', items: [
-    { type:'line', color:'#e60000', weight:3, label:'US / State Highway' },
-    { type:'line', color:'#828282', weight:2, label:'County Road' },
-    { type:'line', color:'#000000', weight:1, label:'City / Town Street' },
-    { type:'line', color:'#a900e6', weight:1.5, label:'Private Road' },
-    { type:'line', color:'#4ce600', weight:1.5, label:'Public Land Access' },
-    { type:'line', color:'#b2b2b2', weight:1, label:'Alley' },
+    { swatch: '<span style="width:24px;height:3px;background:#e60000;display:inline-block;flex-shrink:0;border-radius:1px;"></span>', label: 'US / State Highway' },
+    { swatch: '<span style="width:24px;height:2px;background:#828282;display:inline-block;flex-shrink:0;border-radius:1px;"></span>', label: 'County Road' },
+    { swatch: '<span style="width:24px;height:1px;background:#000;display:inline-block;flex-shrink:0;border-radius:1px;"></span>', label: 'City / Town Street' },
+    { swatch: '<span style="width:24px;height:1.5px;background:#a900e6;display:inline-block;flex-shrink:0;border-radius:1px;"></span>', label: 'Private Road' },
+    { swatch: '<span style="width:24px;height:1.5px;background:#4ce600;display:inline-block;flex-shrink:0;border-radius:1px;"></span>', label: 'Public Land Access' },
+    { swatch: '<span style="width:24px;height:1px;background:#b2b2b2;display:inline-block;flex-shrink:0;border-radius:1px;"></span>', label: 'Alley' },
   ]},
   ssap: { label: 'Address Points', items: [
-    { type:'square', color:'#000000', label:'Structure present' },
-    { type:'circle', color:'#55ff00', label:'No structure' },
+    { swatch: '<span style="width:10px;height:10px;background:#000;display:inline-block;flex-shrink:0;"></span>', label: 'Structure present' },
+    { swatch: '<span style="width:10px;height:10px;background:#55ff00;border:1px solid #333;border-radius:50%;display:inline-block;flex-shrink:0;"></span>', label: 'No structure' },
   ]},
-  parcels: { label: 'Parcels', items: [{ type:'fill', color:'#a855f7', label:'Parcel boundary' }] },
-  flood:   { label: 'Floodplain (FEMA)', items: [{ type:'fill', color:'#0369a1', label:'Special Flood Hazard Area' }] },
-  grouse:  { label: 'Sage Grouse Habitat', items: [{ type:'fill', color:'#15803d', label:'Administrative area' }] },
 };
 
-function updateLegend() {
+// Service legend URLs — these return base64 images of actual symbology
+const LEGEND_SERVICES = {
+  parcels: { url: 'https://gisservicemt.gov/arcgis/rest/services/MSDI_Framework/Parcels/MapServer/legend?f=json', label: 'Parcels' },
+  flood:   { url: 'https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/legend?f=json&layers=28', label: 'Floodplain (FEMA)', useCors: false },
+  grouse:  { url: 'https://gis.dnrc.mt.gov/arcgis/rest/services/MSGHCP/SageGrouseAdministrative/MapServer/legend?f=json', label: 'Sage Grouse Habitat' },
+};
+const _legendCache = {};
+
+async function fetchServiceLegend(key) {
+  if (_legendCache[key]) return _legendCache[key];
+  const svc = LEGEND_SERVICES[key];
+  if (!svc) return null;
+  try {
+    // FEMA may need JSONP — try regular fetch first, fall back to image proxy pattern
+    let url = svc.url;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    // ArcGIS legend response: { layers: [{ layerId, layerName, legend: [{ label, imageData, contentType, height, width }] }] }
+    const layers = data.layers || [];
+    const items = [];
+    layers.forEach(lyr => {
+      (lyr.legend || []).forEach(entry => {
+        if (entry.imageData) {
+          items.push({
+            swatch: `<img src="data:${entry.contentType || 'image/png'};base64,${entry.imageData}" width="${entry.width||20}" height="${entry.height||20}" style="flex-shrink:0;image-rendering:pixelated;" />`,
+            label: entry.label || lyr.layerName || ''
+          });
+        }
+      });
+    });
+    if (items.length) { _legendCache[key] = items; return items; }
+  } catch(e) { /* fall through to null */ }
+  return null;
+}
+
+async function updateLegend() {
   const container = document.getElementById('dynamic-legend');
   if (!container) return;
+
   let html = '';
-  ['boundary','roads','ssap','parcels','flood','grouse'].forEach(key => {
+  const layerOrder = ['boundary','roads','ssap','parcels','flood','grouse'];
+
+  for (const key of layerOrder) {
     const cb = document.querySelector(`[data-layer-cb="${key}"]`);
-    if (!cb || !cb.checked) return;
-    const def = LEGEND_DEFS[key];
-    if (!def) return;
-    html += `<div class="leg-group"><div class="leg-group-label">${def.label}</div>`;
-    def.items.forEach(item => {
-      let swatch = '';
-      if (item.type === 'line') {
-        if (item.dash) swatch = `<span style="width:24px;height:12px;display:inline-flex;align-items:center;flex-shrink:0;"><span style="width:100%;border-top:2px dashed ${item.color};"></span></span>`;
-        else swatch = `<span style="width:24px;height:${Math.max(1,item.weight||1.5)}px;background:${item.color};display:inline-block;flex-shrink:0;border-radius:1px;"></span>`;
-      } else if (item.type === 'square') {
-        swatch = `<span style="width:10px;height:10px;background:${item.color};display:inline-block;flex-shrink:0;"></span>`;
-      } else if (item.type === 'circle') {
-        swatch = `<span style="width:10px;height:10px;background:${item.color};border:1px solid #333;border-radius:50%;display:inline-block;flex-shrink:0;"></span>`;
-      } else if (item.type === 'fill') {
-        swatch = `<span style="width:18px;height:12px;background:${item.color};opacity:0.5;border:1px solid ${item.color};display:inline-block;flex-shrink:0;border-radius:2px;"></span>`;
-      }
-      html += `<div class="msp-leg-row">${swatch}${item.label}</div>`;
-    });
-    html += '</div>';
-  });
+    if (!cb || !cb.checked) continue;
+
+    if (LEGEND_STATIC[key]) {
+      const def = LEGEND_STATIC[key];
+      html += `<div class="leg-group"><div class="leg-group-label">${def.label}</div>`;
+      def.items.forEach(item => {
+        html += `<div class="msp-leg-row">${item.swatch}<span>${item.label}</span></div>`;
+      });
+      html += '</div>';
+    } else if (LEGEND_SERVICES[key]) {
+      // Show label immediately, fetch asynchronously
+      const label = LEGEND_SERVICES[key].label;
+      html += `<div class="leg-group" id="leg-group-${key}"><div class="leg-group-label">${label}</div><div class="msp-leg-row"><span style="font-style:italic;color:var(--gray-400);font-size:10px;">Loading…</span></div></div>`;
+    }
+  }
+
   if (!html) html = '<div class="leg-empty">Turn on a layer to see its legend.</div>';
   container.innerHTML = html;
+
+  // Now async-fetch service legends and inject
+  for (const key of ['parcels','flood','grouse']) {
+    const cb = document.querySelector(`[data-layer-cb="${key}"]`);
+    if (!cb || !cb.checked) continue;
+    const grp = document.getElementById(`leg-group-${key}`);
+    if (!grp) continue;
+    const items = await fetchServiceLegend(key);
+    if (items && items.length) {
+      const label = LEGEND_SERVICES[key].label;
+      grp.innerHTML = `<div class="leg-group-label">${label}</div>` +
+        items.map(it => `<div class="msp-leg-row">${it.swatch}<span>${it.label}</span></div>`).join('');
+    } else {
+      // Couldn't fetch — show a plain note
+      const label = LEGEND_SERVICES[key].label;
+      grp.innerHTML = `<div class="leg-group-label">${label}</div><div class="msp-leg-row" style="font-size:10px;color:var(--gray-400);font-style:italic;">See map for symbology</div>`;
+    }
+  }
 }
+
+
 
 // GIS DATA CATALOG
 // ══════════════════════════════════════════════════════════════
