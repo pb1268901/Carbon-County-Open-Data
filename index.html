@@ -590,7 +590,7 @@
         <div class="home-band-contact">
           <span style="font-family:var(--fhead);font-size:13px;font-weight:700;color:var(--gray-800);">Patrick Benson, GIS Coordinator</span>
           <a href="tel:4064457271">406-445-7271</a>
-          <a id="home-email" href="mailto:GIS@carbonmt.gov">GIS@carbonmt.gov</a>
+          <a id="home-email" href="/cdn-cgi/l/email-protection#33747a6073505241515c5d5e471d545c45"><span class="__cf_email__" data-cfemail="25626c7665464457474a4b48510b424a53">[email&#160;protected]</span></a>
           <span style="font-family:var(--fbody);font-size:12px;color:var(--gray-400);font-style:italic;">10 Oakes Ave S, Suite F · Red Lodge, MT</span>
         </div>
       </div>
@@ -809,7 +809,7 @@
           <strong>Patrick Benson, GIS Coordinator</strong>
           <span style="font-family:var(--fbody);font-size:13px;color:var(--gray-600);font-style:italic;">10 Oakes Ave S, Suite F<br/>Red Lodge, MT 59068</span>
           <a href="tel:4064457271">406-445-7271</a>
-          <a id="about-email" href="mailto:GIS@carbonmt.gov">GIS@carbonmt.gov</a>
+          <a id="about-email" href="/cdn-cgi/l/email-protection#e7a0aeb4a78486958588898a93c9808891"><span class="__cf_email__" data-cfemail="d89f918b98bbb9aabab7b6b5acf6bfb7ae">[email&#160;protected]</span></a>
         </div>
       </div>
       <div class="acard">
@@ -854,7 +854,7 @@
         10 Oakes Ave S, Suite F<br/>Red Lodge, MT 59068<br/><br/>
         Patrick Benson, GIS Coordinator<br/>
         <a href="tel:4064457271">406-445-7271</a><br/>
-        <a id="footer-email" href="mailto:GIS@carbonmt.gov">GIS@carbonmt.gov</a>
+        <a id="footer-email" href="/cdn-cgi/l/email-protection#7136382231121003131e1f1c055f161e07"><span class="__cf_email__" data-cfemail="3f78766c7f5c5e4d5d5051524b11585049">[email&#160;protected]</span></a>
       </address>
     </div>
     <div class="fcol">
@@ -877,7 +877,7 @@
   <div class="footer-bottom"><p>Carbon County GIS &bull; Red Lodge, Montana &bull; <span id="footer-year"></span></p></div>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ══════════════════════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════════════════════
@@ -1055,8 +1055,7 @@ function initMap() {
   // We add labels AFTER features load by listening to the featureLayer's load event
   layers.roadLabels = L.layerGroup();
   layers.roads.on('load', () => {
-    if (map.getZoom() < 14) return;
-    updateRoadLabels();
+    if (map.hasLayer(layers.roads)) updateRoadLabels();
   });
 
   // ── Address labels: update after every tile load ──
@@ -1099,10 +1098,9 @@ function initMap() {
     }
     if ((!parcelCb || !parcelCb.checked) && (!ssapCb || !ssapCb.checked)) notice.classList.remove('visible');
 
-    // Road labels at 14+
+    // Road labels: re-run collision+priority on every zoom
     if (map.hasLayer(layers.roads)) {
-      if (z >= 14) { updateRoadLabels(); if (!map.hasLayer(layers.roadLabels)) map.addLayer(layers.roadLabels); }
-      else { map.removeLayer(layers.roadLabels); layers.roadLabels.clearLayers(); }
+      updateRoadLabels();
     }
     // Address labels: re-run collision detection on every zoom change
     if (map.hasLayer(layers.ssap)) {
@@ -1114,43 +1112,89 @@ function initMap() {
 }
 
 // ── Label helpers ──
-// Road labels: place one label per unique road name near the center of visible segments
-// Uses a simple grid-based dedup to avoid clustering
+// Road label priority order — higher priority wins contested screen space
+const ROAD_LABEL_PRIORITY = {
+  'US Highway':              0,
+  'Other Highway':           0,
+  'State Highway':           0,
+  'County Road':             1,
+  'City / Town Street':      2,
+  'Private Road':            3,
+  'Public Land Access Road': 4,
+  'Public - OHV':            4,
+  'Alley':                   5,
+  'Agency Admin Use Only':   5,
+  'Driveway':                6,
+  'Non-motorized Trail':     6,
+};
+
+// Road labels: pixel-space collision detection, priority-sorted so higher-class
+// roads always win when competing for the same screen space.
+// Also deduplicates by name within a ~2km grid so long named roads don't
+// repeat a label every segment — but different named roads can still coexist.
 function updateRoadLabels() {
   layers.roadLabels.clearLayers();
-  const bounds = map.getBounds();
-  const placed = {}; // grid key -> true, for dedup
-  const cellSize = 0.04; // degrees, ~3km at this latitude
+  const MIN_PX   = 80;  // min pixel gap between any two road labels
+  const CELL_DEG = 0.02; // ~1.5km — one label per named road per cell
 
+  // 1. Collect all visible segments with their midpoint pixel coords
+  const candidates = [];
   layers.roads.eachFeature(layer => {
     const f = layer.feature;
     if (!f) return;
     const name = f.properties.AbbrvRd || f.properties.St_Name || '';
     if (!name || name.length < 2) return;
     const sym = RCL_RENDERER[f.properties.RoadSym];
-    if (!sym) return; // skip unknown types
-    // Get midpoint of geometry
+    if (!sym) return;
+    const priority = ROAD_LABEL_PRIORITY[f.properties.RoadSym] ?? 6;
+
     const lls = layer.getLatLngs ? layer.getLatLngs() : null;
     if (!lls || !lls.length) return;
     const flat = lls.flat ? lls.flat(Infinity) : lls;
     if (!flat.length) return;
     const mid = flat[Math.floor(flat.length / 2)];
-    if (!bounds.contains(mid)) return;
-    // Grid dedup: same name in same cell → skip
-    const cellKey = `${name}|${Math.floor(mid.lat/cellSize)}|${Math.floor(mid.lng/cellSize)}`;
-    if (placed[cellKey]) return;
-    placed[cellKey] = true;
 
-    L.marker(mid, {
+    const pt = map.latLngToContainerPoint(mid);
+    candidates.push({ mid, name, sym, priority, px: pt.x, py: pt.y });
+  });
+
+  // 2. Sort: highest priority (lowest number) first, then by segment length proxy (longer = more central)
+  candidates.sort((a, b) => a.priority - b.priority);
+
+  // 3. Greedy placement with two dedup checks:
+  //    a) pixel-space: no other label within MIN_PX pixels (any road)
+  //    b) name+cell: same road name already labeled in this grid cell
+  const pixelPlaced = [];   // [{px,py}] — all placed labels for pixel collision
+  const nameCells   = {};   // "name|cellX|cellY" — per-name dedup
+
+  candidates.forEach(c => {
+    // Per-name cell dedup
+    const cx = Math.floor(c.mid.lat / CELL_DEG);
+    const cy = Math.floor(c.mid.lng / CELL_DEG);
+    const cellKey = `${c.name}|${cx}|${cy}`;
+    if (nameCells[cellKey]) return;
+
+    // Pixel collision with all already-placed labels
+    const blocked = pixelPlaced.some(p => {
+      const dx = c.px - p.px, dy = c.py - p.py;
+      return (dx*dx + dy*dy) < MIN_PX * MIN_PX;
+    });
+    if (blocked) return;
+
+    nameCells[cellKey] = true;
+    pixelPlaced.push({ px: c.px, py: c.py });
+
+    L.marker(c.mid, {
       icon: L.divIcon({
         className: 'road-lbl',
-        html: `<span style="color:${sym.color};text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff">${name}</span>`,
+        html: `<span style="color:${c.sym.color};text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff">${c.name}</span>`,
         iconSize: null, iconAnchor: [0, 0]
       }),
       interactive: false, keyboard: false
     }).addTo(layers.roadLabels);
   });
-  if (map.getZoom() >= 14) map.addLayer(layers.roadLabels);
+
+  map.addLayer(layers.roadLabels);
 }
 
 // Address labels: pixel-space collision detection.
@@ -1224,7 +1268,7 @@ function toggleLayerCb(cb, name) {
       updateLegend(); return;
     }
     map.addLayer(layers[name]);
-    if (name === 'roads') { if (map.getZoom() >= 14) { updateRoadLabels(); map.addLayer(layers.roadLabels); } }
+    if (name === 'roads') { updateRoadLabels(); }
     if (name === 'ssap')  { updateAddrLabels(); }
   } else {
     map.removeLayer(layers[name]);
@@ -1262,26 +1306,77 @@ async function runMapSearch() {
 
   try {
     const commTerm = (comm.value || '').trim();
-    // Search AbbrvAdd (short) and full address field; LIKE '%term%' catches mid-string matches
-    const termEsc = esc(term);
-    let where = `UPPER(AbbrvAdd) LIKE UPPER('%${termEsc}%') OR UPPER(Add_Number || ' ' || St_Name) LIKE UPPER('%${termEsc}%')`;
-    if (commTerm) where = `(${where}) AND UPPER(Post_Comm) LIKE UPPER('%${esc(commTerm)}%')`;
-    const params = new URLSearchParams({
-      where, outFields: 'AbbrvAdd,Add_Number,St_Name,Post_Comm,Post_Code,Inc_Muni,MT_PlcType',
-      returnGeometry: true, outSR: 4326, resultRecordCount: 8,
+    const t = esc(term);
+    const c = esc(commTerm);
+
+    // ── SSAP query: match AbbrvAdd OR St_Name (separate clauses — no || concatenation) ──
+    let ssapWhere = `UPPER(AbbrvAdd) LIKE UPPER('%${t}%') OR UPPER(St_Name) LIKE UPPER('%${t}%')`;
+    if (commTerm) ssapWhere = `(${ssapWhere}) AND UPPER(Post_Comm) LIKE UPPER('%${c}%')`;
+
+    const ssapParams = new URLSearchParams({
+      where: ssapWhere,
+      outFields: 'AbbrvAdd,Add_Number,St_Name,Post_Comm,Post_Code,Inc_Muni',
+      returnGeometry: true, outSR: 4326, resultRecordCount: 6,
       orderByFields: 'AbbrvAdd', f: 'json'
     });
-    const data = await (await fetch(`${SSAP_URL}/query?${params}`)).json();
-    const features = (data.features || []).filter(f => f.geometry);
 
-    if (data.error || !features.length) {
-      const emailAddr = ['GIS','carbonmt.gov'].join('@');
-      const full  = commTerm ? `${term}, ${commTerm}` : term;
-      const subj  = encodeURIComponent('Missing Address — Carbon County GIS');
-      const body  = encodeURIComponent(`Hi,\n\nI searched for "${full}" and it was not found in the 9-1-1 address database.\n\nPlease look into this. Thank you.`);
+    // ── RCL query: match AbbrvRd OR FullRoadName ──
+    const rclWhere = `UPPER(AbbrvRd) LIKE UPPER('%${t}%') OR UPPER(FullRoadName) LIKE UPPER('%${t}%')`;
+    const rclParams = new URLSearchParams({
+      where: rclWhere,
+      outFields: 'AbbrvRd,FullRoadName,RoadSym',
+      returnGeometry: true, outSR: 4326, resultRecordCount: 4,
+      orderByFields: 'AbbrvRd', f: 'json'
+    });
+
+    const RCL_URL = 'https://services1.arcgis.com/lo6DwqkHoBfbpsNX/arcgis/rest/services/NG911_Core_Layers_View20251017/FeatureServer/15';
+
+    // Fire both queries in parallel
+    const [ssapResp, rclResp] = await Promise.all([
+      fetch(`${SSAP_URL}/query?${ssapParams}`).then(r => r.json()).catch(() => ({ features: [] })),
+      fetch(`${RCL_URL}/query?${rclParams}`).then(r => r.json()).catch(() => ({ features: [] }))
+    ]);
+
+    // Build result items from SSAP (address points)
+    const ssapItems = (ssapResp.features || [])
+      .filter(f => f.geometry)
+      .map(f => {
+        const p = f.properties || f.attributes;
+        const g = f.geometry;
+        const label = p.AbbrvAdd || `${p.Add_Number || ''} ${p.St_Name || ''}`.trim() || term;
+        const sub   = p.Post_Comm || p.Inc_Muni || '';
+        const zip   = p.Post_Code || '';
+        return { label, sub: sub + (zip ? ', ' + zip : ''), x: g.x, y: g.y, type: 'address' };
+      });
+
+    // Build result items from RCL (road centerlines) — use midpoint of geometry
+    const rclItems = [];
+    const seenRoads = new Set();
+    (rclResp.features || [])
+      .filter(f => f.geometry)
+      .forEach(f => {
+        const p = f.properties || f.attributes;
+        const name = p.AbbrvRd || p.FullRoadName || '';
+        if (!name || seenRoads.has(name)) return;
+        seenRoads.add(name);
+        // Get midpoint of the polyline
+        const paths = f.geometry.paths || f.geometry.rings || [];
+        if (!paths.length || !paths[0].length) return;
+        const path = paths[0];
+        const mid  = path[Math.floor(path.length / 2)];
+        rclItems.push({ label: name, sub: p.RoadSym || 'Road', x: mid[0], y: mid[1], type: 'road' });
+      });
+
+    const allItems = [...ssapItems, ...rclItems];
+
+    if (!allItems.length) {
+      const emailAddr = ['GIS', 'carbonmt.gov'].join('@');
+      const full = commTerm ? `${term}, ${commTerm}` : term;
+      const subj = encodeURIComponent('Missing Address — Carbon County GIS');
+      const body = encodeURIComponent(`Hi,\n\nI searched for "${full}" and it was not found.\n\nPlease look into this. Thank you.`);
       result.innerHTML = `<div class="msr-notfound">
-        <div class="msr-title">Not found in 9-1-1 database</div>
-        <div class="msr-detail">"${full}" — no match. Check spelling, or try just the house number and street name (e.g. 355 Hwy 72).</div>
+        <div class="msr-title">Not found in database</div>
+        <div class="msr-detail">"${commTerm ? term + ', ' + commTerm : term}" — no match. Try just a house number and street (e.g. 355 Hwy 72) or a road name (e.g. Gabrian Rd).</div>
         <a class="msr-link" href="mailto:${emailAddr}?subject=${subj}&body=${body}">Report missing address →</a>
         <div class="msr-detail" style="margin-top:6px;">Need a new address? <a href="https://carboncomt.forms.govos.com/ng/fa/CCDevelopmentPackage" target="_blank" rel="noopener" style="color:var(--teal)">Apply here</a></div>
       </div>`;
@@ -1291,28 +1386,26 @@ async function runMapSearch() {
 
     if (searchMarker) { map.removeLayer(searchMarker); searchMarker = null; }
 
-    const items = features.map(f => {
-      const p = f.properties || f.attributes;
-      const g = f.geometry;
-      return { addr: p.AbbrvAdd || term, comm: p.Post_Comm || p.Inc_Muni || '', zip: p.Post_Code || '', x: g.x, y: g.y };
-    });
-
-    const listHtml = items.map(it =>
-      `<div onclick="zoomToResult(${it.y},${it.x},${JSON.stringify(it.addr)},${JSON.stringify(it.comm)})"
+    const listHtml = allItems.map(it => {
+      const icon = it.type === 'road'
+        ? '<span style="font-size:9px;background:#e5e7eb;color:#6b7280;padding:1px 5px;border-radius:3px;margin-right:5px;font-family:var(--fhead);font-weight:700;">ROAD</span>'
+        : '';
+      return `<div onclick="zoomToResult(${it.y},${it.x},${JSON.stringify(it.label)},${JSON.stringify(it.sub)})"
         style="padding:7px 10px;border-radius:6px;cursor:pointer;margin-bottom:4px;background:#f7f5f0;transition:background .15s;"
         onmouseover="this.style.background='#e0f2f1'" onmouseout="this.style.background='#f7f5f0'">
-        <div style="font-weight:700;color:#002d33;font-size:12px;">${it.addr}</div>
-        ${it.comm ? `<div style="font-size:10px;color:#a09a8e;">${it.comm}${it.zip ? ', '+it.zip : ''}</div>` : ''}
-      </div>`
-    ).join('');
+        <div style="font-weight:700;color:#002d33;font-size:12px;">${icon}${it.label}</div>
+        ${it.sub ? `<div style="font-size:10px;color:#a09a8e;">${it.sub}</div>` : ''}
+      </div>`;
+    }).join('');
 
-    const foundMsg = items.length === 1
-      ? `<div class="msr-found"><div class="msr-title" style="color:#15803d;margin-bottom:6px;">✓ Address found in database</div>${listHtml}</div>`
-      : `<div class="msr-found"><div class="msr-title" style="color:#15803d;margin-bottom:6px;">✓ ${items.length} matches found</div>${listHtml}</div>`;
-    result.innerHTML = foundMsg;
+    const total = allItems.length;
+    result.innerHTML = `<div class="msr-found">
+      <div class="msr-title" style="color:#15803d;margin-bottom:6px;">✓ ${total} result${total > 1 ? 's' : ''} found</div>
+      ${listHtml}
+    </div>`;
     clearBtn.style.display = 'block';
 
-    zoomToResult(items[0].y, items[0].x, items[0].addr, items[0].comm);
+    zoomToResult(allItems[0].y, allItems[0].x, allItems[0].label, allItems[0].sub);
 
   } catch(e) {
     result.innerHTML = `<div class="msr-error"><div class="msr-title">Error</div><div class="msr-detail">${e.message}</div></div>`;
@@ -1565,9 +1658,8 @@ function thumbFallback(img, type) {
 
 function esc(s) { return s.replace(/'/g, "''"); }
 function attr(label, val) { return `<div class="attr-item"><span class="attr-lbl">${label}</span><span class="attr-val">${val}</span></div>`; }
-function errBox(msg) { return `<div class="res-error">⚠️ An error occurred. Please try again.<br/><small style="opacity:.5;font-size:10px;">${msg||''}</small></div>`; }
+function errBox(msg) { return `<div class="res-error">\u26a0\ufe0f An error occurred. Please try again.<br/><small style="opacity:.5;font-size:10px;">${msg||''}</small></div>`; }
 function setLoading(btn, on) { btn.disabled = on; btn.classList.toggle('loading', on); }
-
 
 function filterCatalog(tag) {
   activeCatTag = tag;
