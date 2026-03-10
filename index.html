@@ -1051,9 +1051,9 @@ function initMap() {
     }
   });
 
-  // ── Road labels: shown at zoom 14+ as mid-segment markers ──
-  // We add labels AFTER features load by listening to the featureLayer's load event
-  layers.roadLabels = L.layerGroup();
+  // ── Road labels via leaflet-textpath ──
+  // setText() draws text along the actual polyline geometry.
+  // We re-run after every load and zoom so dedup stays current.
   layers.roads.on('load', () => {
     if (map.hasLayer(layers.roads)) updateRoadLabels();
   });
@@ -1098,10 +1098,8 @@ function initMap() {
     }
     if ((!parcelCb || !parcelCb.checked) && (!ssapCb || !ssapCb.checked)) notice.classList.remove('visible');
 
-    // Road labels: re-run collision+priority on every zoom
-    if (map.hasLayer(layers.roads)) {
-      updateRoadLabels();
-    }
+    // Road labels: re-run textpath dedup on every zoom
+    if (map.hasLayer(layers.roads)) updateRoadLabels();
     // Address labels: re-run collision detection on every zoom change
     if (map.hasLayer(layers.ssap)) {
       updateAddrLabels();
@@ -1112,7 +1110,7 @@ function initMap() {
 }
 
 // ── Label helpers ──
-// Road label priority order — higher priority wins contested screen space
+
 const ROAD_LABEL_PRIORITY = {
   'US Highway':              0,
   'Other Highway':           0,
@@ -1128,74 +1126,97 @@ const ROAD_LABEL_PRIORITY = {
   'Non-motorized Trail':     6,
 };
 
-// Road labels: pixel-space collision detection, priority-sorted so higher-class
-// roads always win when competing for the same screen space.
-// Also deduplicates by name within a ~2km grid so long named roads don't
-// repeat a label every segment — but different named roads can still coexist.
-function updateRoadLabels() {
-  layers.roadLabels.clearLayers();
-  const MIN_PX   = 80;  // min pixel gap between any two road labels
-  const CELL_DEG = 0.02; // ~1.5km — one label per named road per cell
+// Clear all textpath labels from road features
+function clearRoadLabels() {
+  layers.roads.eachFeature(layer => {
+    if (layer.setText) layer.setText(null);
+  });
+}
 
-  // 1. Collect all visible segments with their midpoint pixel coords
+// Road labels using leaflet-textpath:
+// 1. Collect all loaded segments with name, priority, pixel-midpoint
+// 2. Sort by priority (highways first)
+// 3. For each segment, suppress if:
+//    a) same name already placed within SAME_NAME_PX pixels (duplicate suppression), OR
+//    b) any label already placed within MIN_PX pixels (density control)
+// 4. Call layer.setText() on winners — text follows actual line geometry
+function updateRoadLabels() {
+  clearRoadLabels();
+
+  const MIN_PX       = 90;   // min px between any two labels (density)
+  const SAME_NAME_PX = 160;  // min px between two labels of the same name (dedup)
+
+  // Collect candidates
   const candidates = [];
   layers.roads.eachFeature(layer => {
     const f = layer.feature;
-    if (!f) return;
+    if (!f || !layer.getLatLngs) return;
     const name = f.properties.AbbrvRd || f.properties.St_Name || '';
     if (!name || name.length < 2) return;
     const sym = RCL_RENDERER[f.properties.RoadSym];
     if (!sym) return;
     const priority = ROAD_LABEL_PRIORITY[f.properties.RoadSym] ?? 6;
 
-    const lls = layer.getLatLngs ? layer.getLatLngs() : null;
-    if (!lls || !lls.length) return;
-    const flat = lls.flat ? lls.flat(Infinity) : lls;
+    // Use the actual polyline midpoint
+    const lls = layer.getLatLngs();
+    const flat = Array.isArray(lls[0]) ? lls.flat(Infinity) : lls;
     if (!flat.length) return;
     const mid = flat[Math.floor(flat.length / 2)];
+    const pt  = map.latLngToContainerPoint(mid);
 
-    const pt = map.latLngToContainerPoint(mid);
-    candidates.push({ mid, name, sym, priority, px: pt.x, py: pt.y });
+    // Rough pixel length of the segment — skip very short segments at current zoom
+    const p0 = map.latLngToContainerPoint(flat[0]);
+    const p1 = map.latLngToContainerPoint(flat[flat.length - 1]);
+    const segPx = Math.sqrt(Math.pow(p1.x-p0.x,2) + Math.pow(p1.y-p0.y,2));
+
+    candidates.push({ layer, name, sym, priority, px: pt.x, py: pt.y, segPx });
   });
 
-  // 2. Sort: highest priority (lowest number) first, then by segment length proxy (longer = more central)
-  candidates.sort((a, b) => a.priority - b.priority);
+  // Sort: priority first, then longer segments preferred (they look better with text)
+  candidates.sort((a, b) => a.priority - b.priority || b.segPx - a.segPx);
 
-  // 3. Greedy placement with two dedup checks:
-  //    a) pixel-space: no other label within MIN_PX pixels (any road)
-  //    b) name+cell: same road name already labeled in this grid cell
-  const pixelPlaced = [];   // [{px,py}] — all placed labels for pixel collision
-  const nameCells   = {};   // "name|cellX|cellY" — per-name dedup
+  const allPlaced   = [];            // {px, py} — every placed label
+  const namePlaced  = {};            // name -> [{px,py}] — placed labels per name
 
   candidates.forEach(c => {
-    // Per-name cell dedup
-    const cx = Math.floor(c.mid.lat / CELL_DEG);
-    const cy = Math.floor(c.mid.lng / CELL_DEG);
-    const cellKey = `${c.name}|${cx}|${cy}`;
-    if (nameCells[cellKey]) return;
+    // Skip very short segments (text won't fit)
+    if (c.segPx < 40) return;
 
-    // Pixel collision with all already-placed labels
-    const blocked = pixelPlaced.some(p => {
+    const myPx = { px: c.px, py: c.py };
+
+    // Same-name dedup: too close to another label with the same name?
+    const sameNameList = namePlaced[c.name] || [];
+    const tooCloseSame = sameNameList.some(p => {
+      const dx = c.px - p.px, dy = c.py - p.py;
+      return (dx*dx + dy*dy) < SAME_NAME_PX * SAME_NAME_PX;
+    });
+    if (tooCloseSame) return;
+
+    // General density: too close to any placed label?
+    const tooClose = allPlaced.some(p => {
       const dx = c.px - p.px, dy = c.py - p.py;
       return (dx*dx + dy*dy) < MIN_PX * MIN_PX;
     });
-    if (blocked) return;
+    if (tooClose) return;
 
-    nameCells[cellKey] = true;
-    pixelPlaced.push({ px: c.px, py: c.py });
+    // Place it
+    allPlaced.push(myPx);
+    if (!namePlaced[c.name]) namePlaced[c.name] = [];
+    namePlaced[c.name].push(myPx);
 
-    L.marker(c.mid, {
-      icon: L.divIcon({
-        className: 'road-lbl',
-        html: `<span style="color:${c.sym.color};text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff">${c.name}</span>`,
-        iconSize: null, iconAnchor: [0, 0]
-      }),
-      interactive: false, keyboard: false
-    }).addTo(layers.roadLabels);
+    // Draw text along the line geometry
+    const textStyle = `font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:700;fill:${c.sym.color};paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;`;
+    c.layer.setText('\u00a0' + c.name + '\u00a0', {
+      repeat: false,
+      center: true,
+      below: false,
+      offset: 4,
+      attributes: { style: textStyle }
+    });
   });
-
-  map.addLayer(layers.roadLabels);
 }
+
+
 
 // Address labels: pixel-space collision detection.
 // Projects every loaded point to screen coordinates, then greedily places
@@ -1272,7 +1293,7 @@ function toggleLayerCb(cb, name) {
     if (name === 'ssap')  { updateAddrLabels(); }
   } else {
     map.removeLayer(layers[name]);
-    if (name === 'roads') { map.removeLayer(layers.roadLabels); layers.roadLabels.clearLayers(); }
+    if (name === 'roads') { clearRoadLabels(); }
     if (name === 'ssap')  { map.removeLayer(layers.ssapLabels); layers.ssapLabels.clearLayers(); }
   }
   updateLegend();
@@ -1309,13 +1330,24 @@ async function runMapSearch() {
     const t = esc(term);
     const c = esc(commTerm);
 
-    // ── SSAP query: match AbbrvAdd OR St_Name (separate clauses — no || concatenation) ──
-    let ssapWhere = `UPPER(AbbrvAdd) LIKE UPPER('%${t}%') OR UPPER(St_Name) LIKE UPPER('%${t}%')`;
+    // ── SSAP query: AbbrvAdd only (St_Name is not an SSAP field) ──
+    // Split numeric prefix from street name so "163 gabrian road" matches "163 Gabrian Rd"
+    const numMatch = term.match(/^(\d+)\s+(.+)$/);
+    let ssapWhere;
+    if (numMatch) {
+      // Has a number prefix — search both short and full address fields
+      const num = esc(numMatch[1]);
+      const street = esc(numMatch[2].split(/\s+/)[0]); // first word of street name
+      ssapWhere = `(CAST(Add_Number AS VARCHAR(10)) = '${num}' AND UPPER(AbbrvAdd) LIKE UPPER('%${street}%')) OR UPPER(AbbrvAdd) LIKE UPPER('%${t}%')`;
+    } else {
+      // No number — match in AbbrvAdd or Add_Full
+      ssapWhere = `UPPER(AbbrvAdd) LIKE UPPER('%${t}%')`;
+    }
     if (commTerm) ssapWhere = `(${ssapWhere}) AND UPPER(Post_Comm) LIKE UPPER('%${c}%')`;
 
     const ssapParams = new URLSearchParams({
       where: ssapWhere,
-      outFields: 'AbbrvAdd,Add_Number,St_Name,Post_Comm,Post_Code,Inc_Muni',
+      outFields: 'AbbrvAdd,Add_Full,Add_Number,Post_Comm,Post_Code,Inc_Muni',
       returnGeometry: true, outSR: 4326, resultRecordCount: 6,
       orderByFields: 'AbbrvAdd', f: 'json'
     });
@@ -1343,7 +1375,7 @@ async function runMapSearch() {
       .map(f => {
         const p = f.properties || f.attributes;
         const g = f.geometry;
-        const label = p.AbbrvAdd || `${p.Add_Number || ''} ${p.St_Name || ''}`.trim() || term;
+        const label = p.AbbrvAdd || p.Add_Full || term;
         const sub   = p.Post_Comm || p.Inc_Muni || '';
         const zip   = p.Post_Code || '';
         return { label, sub: sub + (zip ? ', ' + zip : ''), x: g.x, y: g.y, type: 'address' };
