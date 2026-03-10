@@ -907,7 +907,7 @@ function injectEmails() {
 // ══════════════════════════════════════════════════════════════
 // LEAFLET MAP
 // ══════════════════════════════════════════════════════════════
-let map, layers = {}, searchMarker = null, mapInitialized = false;
+let map, layers = {}, searchMarker = null;
 
 // ── Renderers ──
 const RCL_RENDERER = {
@@ -1408,13 +1408,19 @@ function attr(label, val) { return `<div class="attr-item"><span class="attr-lbl
 function errBox(msg) { return `<div class="res-error">⚠️ An error occurred. Please try again.<br/><small style="opacity:.5;font-size:10px;">${msg||''}</small></div>`; }
 function setLoading(btn, on) { btn.disabled = on; btn.classList.toggle('loading', on); }
 
-// ══════════════════════════════════════════�
 
-// ══════════════════════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════════════════════
-document.getElementById('footer-year').textContent = new Date().getFullYear();
-injectEmails();
+function filterCatalog(tag) {
+  activeCatTag = tag;
+  document.querySelectorAll('.ctab').forEach(b => b.classList.toggle('on', b.dataset.tag === tag));
+  renderCatalog();
+}
+
+function searchCatalog(val) {
+  catSearch = val.trim().toLowerCase();
+  renderCatalog();
+}
+
 </script>
 </body>
 </html>
+
