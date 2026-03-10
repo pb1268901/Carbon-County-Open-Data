@@ -590,7 +590,7 @@
         <div class="home-band-contact">
           <span style="font-family:var(--fhead);font-size:13px;font-weight:700;color:var(--gray-800);">Patrick Benson, GIS Coordinator</span>
           <a href="tel:4064457271">406-445-7271</a>
-          <a id="home-email" href="/cdn-cgi/l/email-protection#33747a6073505241515c5d5e471d545c45"><span class="__cf_email__" data-cfemail="25626c7665464457474a4b48510b424a53">[email&#160;protected]</span></a>
+          <a id="home-email" href="#" class="js-email"></a>
           <span style="font-family:var(--fbody);font-size:12px;color:var(--gray-400);font-style:italic;">10 Oakes Ave S, Suite F · Red Lodge, MT</span>
         </div>
       </div>
@@ -809,7 +809,7 @@
           <strong>Patrick Benson, GIS Coordinator</strong>
           <span style="font-family:var(--fbody);font-size:13px;color:var(--gray-600);font-style:italic;">10 Oakes Ave S, Suite F<br/>Red Lodge, MT 59068</span>
           <a href="tel:4064457271">406-445-7271</a>
-          <a id="about-email" href="/cdn-cgi/l/email-protection#e7a0aeb4a78486958588898a93c9808891"><span class="__cf_email__" data-cfemail="d89f918b98bbb9aabab7b6b5acf6bfb7ae">[email&#160;protected]</span></a>
+          <a id="about-email" href="#" class="js-email"></a>
         </div>
       </div>
       <div class="acard">
@@ -854,7 +854,7 @@
         10 Oakes Ave S, Suite F<br/>Red Lodge, MT 59068<br/><br/>
         Patrick Benson, GIS Coordinator<br/>
         <a href="tel:4064457271">406-445-7271</a><br/>
-        <a id="footer-email" href="/cdn-cgi/l/email-protection#7136382231121003131e1f1c055f161e07"><span class="__cf_email__" data-cfemail="3f78766c7f5c5e4d5d5051524b11585049">[email&#160;protected]</span></a>
+        <a id="footer-email" href="#" class="js-email"></a>
       </address>
     </div>
     <div class="fcol">
@@ -877,7 +877,7 @@
   <div class="footer-bottom"><p>Carbon County GIS &bull; Red Lodge, Montana &bull; <span id="footer-year"></span></p></div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ══════════════════════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════════════════════
@@ -906,6 +906,18 @@ function goTab(name) {
   if (name === 'map' && !mapInitialized) initMap();
   if (name === 'data' && allItems.length === 0) fetchCatalog();
 }
+
+
+// ── Email assembly — built in JS so Cloudflare never sees it in HTML source ──
+// Split across two variables so even concatenated source strings aren't scrapeable
+(function() {
+  const u = 'GIS', d = 'carbonmt' + '.' + 'gov';
+  const addr = u + '@' + d;
+  document.querySelectorAll('.js-email').forEach(el => {
+    el.href = 'mailto:' + addr;
+    el.textContent = addr;
+  });
+})();
 
 document.querySelectorAll('.ptab').forEach(btn => {
   btn.addEventListener('click', () => goTab(btn.dataset.tab));
@@ -1204,7 +1216,12 @@ function updateRoadLabels() {
     if (!namePlaced[c.name]) namePlaced[c.name] = [];
     namePlaced[c.name].push(myPx);
 
-    // Draw text along the line geometry
+    // Draw text along the line geometry.
+    // leaflet-textpath follows digitizing direction — skip segments running
+    // right-to-left so text never renders upside-down.
+    const p0px = map.latLngToContainerPoint(flat[0]);
+    const p1px = map.latLngToContainerPoint(flat[flat.length - 1]);
+    if (p1px.x < p0px.x) return; // right-to-left segment — skip to avoid flipped text
     const textStyle = `font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:700;fill:${c.sym.color};paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;`;
     c.layer.setText('\u00a0' + c.name + '\u00a0', {
       repeat: false,
