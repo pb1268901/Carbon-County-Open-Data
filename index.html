@@ -1181,7 +1181,7 @@ function updateRoadLabels() {
     const p1 = map.latLngToContainerPoint(flat[flat.length - 1]);
     const segPx = Math.sqrt(Math.pow(p1.x-p0.x,2) + Math.pow(p1.y-p0.y,2));
 
-    candidates.push({ layer, name, sym, priority, px: pt.x, py: pt.y, segPx });
+    candidates.push({ layer, name, sym, priority, px: pt.x, py: pt.y, segPx, flat });
   });
 
   // Sort: priority first, then longer segments preferred (they look better with text)
@@ -1219,8 +1219,8 @@ function updateRoadLabels() {
     // Draw text along the line geometry.
     // leaflet-textpath follows digitizing direction — skip segments running
     // right-to-left so text never renders upside-down.
-    const p0px = map.latLngToContainerPoint(flat[0]);
-    const p1px = map.latLngToContainerPoint(flat[flat.length - 1]);
+    const p0px = map.latLngToContainerPoint(c.flat[0]);
+    const p1px = map.latLngToContainerPoint(c.flat[c.flat.length - 1]);
     if (p1px.x < p0px.x) return; // right-to-left segment — skip to avoid flipped text
     const textStyle = `font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:700;fill:${c.sym.color};paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;`;
     c.layer.setText('\u00a0' + c.name + '\u00a0', {
